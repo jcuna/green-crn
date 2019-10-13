@@ -1,0 +1,126 @@
+@import "vars";
+
+#header {
+  color: $semiWhite;
+  font-size: 20px;
+  height: $headerHeight;
+  margin-bottom: 10px;
+  -webkit-box-shadow: 0 0 40px 0 rgba(82,63,105,0.1);
+  box-shadow: 0 0 40px 0 rgba(82,63,105,0.1);
+  .logo {
+    color: #ffffff;
+    line-height: inherit;
+    margin: 0;
+    padding: 10px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    img {
+      height: 100%;
+    }
+  }
+
+  .inner {
+    position: relative;
+    z-index: 99;
+    background-color: $theme;
+    padding: 40px;
+
+    ul.super-menu {
+      position: absolute;
+      top: 0;
+      right: 0;
+      margin: 0;
+      padding: 0;
+      > li {
+        display: inline-block;
+        vertical-align: top;
+      }
+      .user-icon {
+        margin: 15px 8px;
+
+        .user-pic {
+          background-color: $semiWhite;
+          border-radius: 50%;
+          color: $black;
+          padding: 10px 12px;
+          cursor: pointer;
+          position: relative;
+          text-transform: uppercase;
+          &:hover {
+            opacity: 0.8;
+          }
+
+        }
+        .user-menu {
+          &:before {
+
+          }
+          width: 116px;
+          background-color: $blue;
+          top: $topMenu;
+          border: $fontMenus solid 1px;
+          position: absolute;
+          padding: 6px 10px;
+          display: none;
+          ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            li {
+              hr {
+                margin: 0;
+                border-top: 1px solid rgba(0,0,0,.3);
+              }
+              margin-bottom: 8px;
+
+              a {
+                color: $semiWhite;
+                text-decoration: none;
+                padding-bottom: 4px;
+                &:hover {
+                  color: #FFFFFF;
+                }
+              }
+            }
+
+          }
+        }
+        .user-menu-display {
+          display: block;
+        }
+
+      }
+
+      .navPanelToggle {
+        position: relative;
+        margin: 6px 10px;
+      }
+    }
+
+    .menu-grid {
+      font-size: 46px;
+      cursor: pointer;
+      padding: 8px;
+      &:hover {
+        color: rgba(255, 255, 255, 0.6);
+      }
+    }
+  }
+
+  #banner {
+    padding-top: 100px;
+    height: $bannerHeight;
+    background-image: url(/images/background.jpg);
+    background-size: cover;
+    background-position: top;
+    background-repeat: no-repeat;
+    text-align: center;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 30px;
+    color: #fff;
+  }
+}

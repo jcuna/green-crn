@@ -1,0 +1,27 @@
+$theme: #CBEADD;
+$themeDark: #B64E3D;
+$green: #324345;
+$bootstrapGreen: #28A745;
+$blue: #242938;
+$darkBlue: #1E2432;
+$clearBlue: #959CB6;
+$grey: #F7F7F7;
+$greyDark: #E8E8E8;
+$height-footer: 110px;
+$headerHeight: 250px;
+$heightResolve: $height-footer + $headerHeight + 36;
+$warning: #FFC107;
+$labelDim: 24px;
+$fontMenus: #989EB3;
+$topMenu: 80px;
+$bannerHeight: 140 + $topMenu;
+$semiWhite: #D4E0EF;
+$black: #1D2129;
+$backgroundColor: #F1F2F7;
+$link: #5867DD;
+$hover1: #5D78FF;
+$hover2: #5F7CFB;
+$bootstrapRed: #721c24;
+
+@import url('https://fonts.googleapis.com/css?family=Kaushan+Script');
+@import url('https://fonts.googleapis.com/css?family=Kaushan+Script|Libre+Barcode+128+Text');

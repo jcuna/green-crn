@@ -1,0 +1,31 @@
+{% extends "header.html" %}
+
+{% block content %}
+
+<form method="post" action="/api/install">
+    {% if error %}
+        <p class="alert alert-danger" role="alert">{{ error }}</p>
+    {% endif %}
+    <div class="form-group">
+        <label for="name">First Name</label>
+        <input type="text" class="form-control" id="name" name="first_name" aria-describedby="nameHelp" placeholder="Enter First Name">
+        <small id="nameHelp" class="form-text text-muted">Enter your first name.</small>
+    </div>
+    <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input type="text" class="form-control" id="lastName" name="last_name" aria-describedby="lastHelp" placeholder="Enter Last name">
+        <small id="lastHelp" class="form-text text-muted">Enter last name.</small>
+    </div>
+    <div class="form-group">
+        <label for="InputEmail1">Email address</label>
+        <input type="email" class="form-control" id="InputEmail1" name="email" aria-describedby="emailHelp" placeholder="Enter email">
+        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+    </div>
+    <div class="form-group">
+        <label for="InputPassword1">Password</label>
+        <input type="password" class="form-control" name="password" id="InputPassword1" placeholder="Password">
+    </div>
+    <button type="submit" name="submit" class="btn btn-primary">Submit</button>
+</form>
+
+{% endblock %}

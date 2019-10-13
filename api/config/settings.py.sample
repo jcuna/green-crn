@@ -1,0 +1,44 @@
+SECRET_KEY = '{SecretKey}'
+SQLALCHEMY_DATABASE_URI = 'postgresql://{DbUser}:{DbPw}@{Db_EndPoint}/{DbName}'
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+SQLALCHEMY_ENGINE_OPTIONS = {
+    'pool_recycle': True
+}
+DB_COLLATION = 'und-x-icu'
+
+APP_ENV = 'production'
+DEBUG = False
+
+# for dev, we use sendmail so use config like
+MAIL_MAILER = '/usr/sbin/ssmtp'
+MAIL_MAILER_FLAGS = '-t'
+
+# for prod we use smtp:
+MAIL_SERVER = 'localhost'
+MAIL_PORT = 25
+MAIL_USE_TLS = True
+MAIL_USE_SSL = False
+MAIL_USERNAME = 'username'
+MAIL_PASSWORD = 'password'
+MAIL_MAX_EMAILS = None
+MAIL_ASCII_ATTACHMENTS = False
+
+# this is needed for both configs
+MAIL_DEFAULT_SENDER = 'bot@roomanize.com'
+
+# requires a caching config
+# config options @https://flask-caching.readthedocs.io/en/latest/
+CACHE_CONFIG = {
+    'CACHE_TYPE': 'simple',
+    'CACHE_KEY_PREFIX': 'local_dev',
+}
+
+TIME_ZONE = 'America/New_York'
+# the following entry is used to test external urls for dev environments.
+# this is used to test receipts upload functionality via smart phone
+# make sure to include protocol http cs https.
+EXTERNAL_DEV_URL = 'http://10.0.0.23:8000'
+
+AWS_ACCESS_KEY_ID = ''
+AWS_SECRET_ACCESS_KEY = ''
+AWS_FILE_MANAGER_BUCKET_NAME = ''

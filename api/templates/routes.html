@@ -1,0 +1,23 @@
+{% extends "header.html" %}
+
+{% block content %}
+    <h1>Routes</h1>
+    <table class="table table-dark">
+        <thead>
+        <tr>
+            <th>Endpoint</th>
+            <th>URL</th>
+            <th>Link</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for endpoint, url in routes.items() %}
+        <tr>
+            <td>{{ endpoint }}</td>
+            <td>{{ url }}</td>
+            <td><a target="_blank" href="{{ '/api' + url }}" />Go to</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

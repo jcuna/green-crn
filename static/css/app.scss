@@ -1,0 +1,482 @@
+@import 'vars';
+@import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700");
+
+html {
+  -webkit-font-smoothing: antialiased;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, ".SFNSText-Regular", sans-serif;
+  min-height: 100%;
+  position: relative;
+  background-color: $backgroundColor;
+  body {
+    background-color: $backgroundColor;
+    margin-bottom: $height-footer + $headerHeight + 36;
+    overflow-x: hidden;
+    .footer {
+      width: 100%;
+      height: $height-footer;
+    }
+  }
+
+  .body-container {
+    left: 0;
+    position: relative;
+    height: 100%;
+    width: 100%;
+    -webkit-transition: all 1s ease;
+    -moz-transition: all 1s ease;
+    -o-transition: all 1s ease;
+    -ms-transition: all 1s ease;
+    transition: all 1s ease;
+    & .alert {
+      & span {
+        position: absolute;
+        right: 6px;
+        top: 0;
+        cursor: pointer;
+        padding: 4px;
+        font-size: 20px;
+      }
+    }
+
+    & .content-area {
+      min-height: 100%;
+
+      .widget {
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-flex: 1;
+        -ms-flex-positive: 1;
+        flex-grow: 1;
+        -webkit-box-orient: vertical;
+        -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        -webkit-box-shadow: 0 0 13px 0 rgba(82,63,105,0.05);
+        box-shadow: 0 0 13px 0 rgba(82,63,105,0.05);
+        background-color: #FFFFFF;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        padding: 8px;
+
+        h3, h2, h1 {
+          text-align: center;
+          color: $clearBlue;
+        }
+      }
+
+      .transparent {
+        background-color: transparent;
+        padding: 0;
+      }
+    }
+
+    form {
+      border: 1px solid $greyDark;
+      padding: 20px;
+      border-radius: 4px;
+
+      .row-item {
+        margin-bottom: 1rem;
+      }
+    }
+  }
+
+  .parent-container {
+    .overlay {
+      opacity: 1;
+    }
+
+    .modal {
+
+      .modal-dialog {
+        .modal-content {
+          background-color: $backgroundColor;
+        }
+
+        .modal-body {
+          background-color: #FFFFFF;
+        }
+        margin: 60px auto;
+      }
+
+      display: block;
+      background-color: rgba(0, 0, 0, 0.4);
+
+      button {
+        &:focus {
+          outline: none;
+        }
+        span {
+          cursor: pointer;
+        }
+      }
+    }
+
+    @media screen and (max-width: 1280px) {
+      .menu-short {
+        width: 80%;
+      }
+    }
+  }
+
+  .sortable {
+    cursor: pointer;
+  }
+
+  .btn {
+    cursor: pointer;
+  }
+}
+
+.chart:before {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 16px;
+  left: 34px;
+  background: $greyDark;
+  border-radius: 3px 0 0 3px;
+  margin-top: 4px;
+}
+
+.up:after {
+  content: "";
+  background: none;
+  width: 11px;
+  height: 26px;
+  border-left: 4px solid $greyDark;
+  border-bottom: 4px solid $greyDark;
+  border-bottom-left-radius: 10px;
+  position: absolute;
+  left: 24px;
+  bottom: 9px;
+}
+
+.down:after {
+  content: "";
+  width: 11px;
+  height: 24px;
+  border-left: 4px solid $greyDark;
+  border-top: 4px solid $greyDark;
+  border-top-left-radius: 8px;
+  position: absolute;
+  left: 24px;
+  top: 10px;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+.autocomplete {
+  ul.item-list {
+    list-style: none;
+    padding: 0;
+    border: solid 1px $grey;
+    position: absolute;
+    z-index: 5;
+    background: #FFFFFF;
+    right: 0;
+    left: 0;
+    margin-top: 4px;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
+    box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
+    overflow: scroll;
+    max-height: 320px;
+    li {
+      padding: 8px 20px;
+      cursor: pointer;
+      &:hover {
+        background: $greyDark;
+      }
+    }
+    li.paginate,
+    li.unselectable {
+      cursor: not-allowed;
+      span {
+        cursor: pointer;
+        color: $black;
+      }
+    }
+    li.paginate {
+      &:hover {
+        opacity: 0.6;
+      }
+      text-align: center;
+      .left {
+        margin-right: 4px;
+      }
+      .right {
+        margin-left: 4px;
+      }
+    }
+  }
+
+  > span {
+    position: absolute;
+    z-index: 6;
+    top: 0;
+    right: 8px;
+    font-size: 26px;
+    color: $black;
+    cursor: pointer;
+    &:hover {
+      opacity: 0.6;
+    }
+  }
+}
+
+.loading-list {
+  height: 38px;
+  &:hover {
+    background: transparent;
+  }
+}
+
+.loading-list,
+.loading-button {
+  position: relative;
+  cursor: progress!important;
+  &:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: auto;
+    z-index: 1;
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    vertical-align: text-bottom;
+    border: 0.25em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-border .75s linear infinite;
+  }
+}
+
+.loading-button {
+  &:after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: rgba(40, 40, 40, 0.8);
+  }
+}
+
+
+.line:after {
+  content: "";
+  position: absolute;
+  width: 23px;
+  height: 4px;
+  left: 11px;
+  top: 34px;
+  background: $greyDark;
+}
+
+.warning-prompt {
+  i {
+    color: $warning;
+    margin: 0 4px;
+  }
+}
+
+@media (min-width: 768px) {
+  .modal-dialog {
+    max-width: 764px;
+  }
+}
+
+.checkbox-wrapper {
+
+  cursor: pointer;
+
+  .checkbox {
+    padding: 2px 10px;
+    position: relative;
+    background: #EEE;
+    border: 1px solid #DDD;
+
+    &:active {
+      top: 2px;
+    }
+
+    &:hover {
+      background: #DDD;
+    }
+
+    &:after {
+      opacity: 0.2;
+      content: '';
+      position: absolute;
+      width: 9px;
+      height: 5px;
+      background: transparent;
+      top: 7px;
+      left: 6px;
+      border: 3px solid #333;
+      border-top: none;
+      border-right: none;
+
+      transform: rotate(-45deg);
+    }
+  }
+
+  .ticked {
+    &:after {
+      opacity: 1;
+    }
+  }
+
+  .checkbox-label {
+    margin-left: 10px;
+  }
+}
+
+table .svg-inline--fa {
+  font-size: 28px;
+  position: absolute;
+  margin-top: -4px;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.clicker,
+.fa-user-edit,
+.fa-trash,
+.fa-edit {
+  cursor: pointer;
+}
+
+.first-load-spinner {
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: $theme;
+
+  h3 {
+    text-align: center;
+    top: 22%;
+    position: relative;
+    color: $semiWhite;
+  }
+
+  #continuous-spinner {
+    top: calc(100% - 70%);
+  }
+}
+
+.body-container.body-displaced {
+  width: 80%;
+}
+
+.table-actions {
+  text-align: right;
+  width: 100%;
+  padding: 10px;
+
+  .btn {
+    margin-right: 10px;
+  }
+
+  input {
+    width: 260px;
+    margin-right: 10px;
+    display: inline;
+    top: 2px;
+    position: relative;
+  }
+}
+
+.pagination {
+  .page-link {
+    cursor: pointer;
+  }
+  justify-content: center;
+  .active {
+    .page-link {
+      background-color: $clearBlue;
+      border-color: $clearBlue;
+    }
+  }
+}
+
+
+path {
+  pointer-events: none;
+}
+
+.breadcrumb {
+  background-color: transparent;
+
+  .breadcrumb-item {
+    position: relative;
+    padding: 0 8px;
+    font-size: 20px;
+    color: $clearBlue;
+    -webkit-transition: all 0.3s;
+    transition: all 0.3s;
+  }
+  .breadcrumb-item + .breadcrumb-item:before {
+    display: block;
+    padding: 0;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    content: " ";
+    background: rgba(149, 156, 182, 0.5);
+    position: absolute;
+    top: 14px;
+    left: 0;
+  }
+
+  a {
+    outline: none !important;
+    color: $clearBlue;
+    &:hover {
+      color: $hover1;
+      text-decoration: none;
+    }
+  }
+
+}
+.pagination a,
+a {
+  color: $link;
+  text-decoration: none;
+  background-color: transparent;
+  &:hover {
+    color: $hover2;
+    text-decoration: none;
+  }
+}
+
+.card {
+  margin-bottom: 12px;
+}
+
+.row {
+  .card {
+    width: 100%;
+  }
+}
+
+.urgent {
+  color: $bootstrapRed;
+  font-weight: bold;
+}
+
+.success {
+  color: $bootstrapGreen;
+  font-weight: bold;
+}

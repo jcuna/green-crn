@@ -1,0 +1,9 @@
+{% extends "header.html" %}
+{% block content %}
+
+<h2>Hola, {{ name }}</h2>
+
+<p>Un Administrador te ha creado una cuenta, haz click en el enlace para activarla y crear una contraseña</p>
+<a href="{{ url + token }}">Activate account</a>
+
+{% endblock %}

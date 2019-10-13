@@ -1,0 +1,93 @@
+@import "vars";
+.mobile-menu {
+  margin-right: -20%;
+  position: fixed;
+  background: $blue;
+  height: 100%;
+  width: 20%;
+  right: 0;
+  z-index: 999;
+  text-align: right;
+  font-size: 25px;
+  -webkit-transition: all 1s ease;
+  -moz-transition: all 1s ease;
+  -o-transition: all 1s ease;
+  -ms-transition: all 1s ease;
+  transition: all 1s ease;
+
+  > .menu-toggler {
+    padding: 15px;
+    font-size: 30px;
+    cursor: pointer;
+    color: $clearBlue;
+    &:hover {
+      opacity: 0.6;
+    }
+  }
+
+  .menu-item {
+    svg {
+      margin-right: 15px;
+    }
+
+    @media screen and (max-width: 1040px) {
+      text-align: center;
+      span {
+        display: none;
+      }
+
+      h2.app-logo {
+        display: none;
+      }
+    }
+  }
+
+  @media screen and (max-width: 1040px) {
+    h2.app-logo {
+      display: none;
+    }
+  }
+
+  #mobile-nav {
+    text-align: left;
+    clear: both;
+    .menu-item {
+      display: block;
+      padding: 10px;
+      border-top: solid 1px rgba(255, 255, 255, 0.25);
+      color: $fontMenus;
+      text-decoration: none;
+      &:hover {
+        background-color: $darkBlue;
+        color: #FFFFFF;
+      }
+    }
+
+    .active {
+      background-color: $darkBlue;
+      color: #FFFFFF;
+    }
+  }
+
+  h2.app-logo {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    font-family: 'Libre Barcode 128 Text', cursive;
+    padding-top: 10px;
+    text-align: center;
+    color: #d4e0ef;
+    font-size: 70px;
+    text-transform: uppercase;
+    span {
+      color: $theme;
+    }
+  }
+}
+
+.mobile-menu.slide {
+  margin-right: 0;
+}
