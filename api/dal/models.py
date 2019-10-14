@@ -142,11 +142,13 @@ class Role(db.Model, ModelIter):
 
 class CompanyProfile(db.Model, ModelIter):
     __tablename__ = 'company_profile'
+    fillable = ['name', 'address', 'contact']
 
     id = db.Column(BigInteger, primary_key=True)
-    name = db.Column(db.String(30, collation=configs.DB_COLLATION), unique=True)
-    address = db.Column(db.Text(collation=configs.DB_COLLATION))
-    contact = db.Column(db.String(10, collation=configs.DB_COLLATION))
+    name = db.Column(db.String(30, collation=configs.DB_COLLATION), unique=True, nullable=False)
+    address = db.Column(db.Text(collation=configs.DB_COLLATION), nullable=False)
+    contact = db.Column(db.String(10, collation=configs.DB_COLLATION), nullable=False)
+    logo = db.Column(db.LargeBinary)
 
 
 class Audit(db.Model, ModelIter):

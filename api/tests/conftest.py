@@ -26,7 +26,7 @@ def client():
     tear_files()
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def no_db_client():
     """
     Returns client with no db

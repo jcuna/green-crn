@@ -1,7 +1,7 @@
 import datetime
 import re
 from flask_socketio import emit
-import sqlalchemy
+from sqlalchemy.exc import OperationalError, ProgrammingError, IntegrityError
 from flask import session, json, current_app, render_template, url_for, request
 from sqlalchemy.orm import joinedload
 from core import Cache, API
@@ -20,7 +20,7 @@ class Users(API):
         if 'logged_in' in session:
             try:
                 user = User.query.filter_by(email=session['user_email']).first()
-            except (sqlalchemy.exc.ProgrammingError, sqlalchemy.exc.OperationalError):
+            except (ProgrammingError, OperationalError):
                 return Result.error('install', 501)
             if user:
                 return user_to_dict(user)
@@ -31,7 +31,7 @@ class Users(API):
                 # if table not exist we cache it to avoid multiple
                 # executions when a user is just logged out.
                 Cache.remember('users.count', User.query.count, 24 * 60 * 60)
-            except (sqlalchemy.exc.ProgrammingError, sqlalchemy.exc.OperationalError):
+            except (ProgrammingError, OperationalError):
                 return Result.error('install', 501)
 
         return Result.error('no session', 403)
@@ -265,7 +265,7 @@ class Roles(API):
         try:
             Role.query.filter_by(id=role_id).delete()
             db.session.commit()
-        except sqlalchemy.exc.IntegrityError as e:
+        except IntegrityError as e:
             return Result.error('integrity constraint', 409)
 
         return Result.success()

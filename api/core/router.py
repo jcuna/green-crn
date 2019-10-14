@@ -1,12 +1,12 @@
 import importlib
-import sqlalchemy
+from sqlalchemy.exc import ProgrammingError, OperationalError
 from flask import Flask, url_for, render_template, redirect, request, Blueprint
 from flask_restful import Api
 import json
 from config.routes import register, no_permissions
 import re
 from dal import db
-from dal.models import User, Role, UserAttributes, admin_access, admin_preferences
+from dal.models import User, Role, UserAttributes, admin_access, admin_preferences, CompanyProfile
 from dal.shared import get_fillable
 
 permissions = {}
@@ -23,10 +23,10 @@ class Router:
         app.url_map.strict_slashes = False
 
         for concat_data, concat_route in register().items():
-            parts = re.split('\W+', concat_data)
+            parts = re.split('\\W+', concat_data)
 
             full_routes = []
-            for route in re.split('\|', concat_route):
+            for route in re.split('\\|', concat_route):
                 full_routes.append('/' + self.version + route)
 
             pack_name = 'views.' + parts[0]
@@ -56,14 +56,15 @@ def install():
         user_count = User.query.count()
         if user_count > 0:
             return redirect('/')
-    except sqlalchemy.exc.ProgrammingError:
+    except (ProgrammingError, OperationalError):
         from helpers import run_migration
         run_migration()
 
     if request.method == 'POST':
         data = request.form
         if 'first_name' in data and data['first_name'] and 'last_name' in data and data['last_name'] \
-                and 'email' in data and data['email'] and 'password' in data and data['password']:
+                and 'email' in data and data['email'] and 'password' in data and data['password']\
+                and 'company_name' in data and 'address' in data and 'contact' in data:
             user_data = get_fillable(User, **data)
             user = User(**user_data)
             user.email = user.email.lower()
@@ -73,6 +74,10 @@ def install():
                 user_access=json.dumps(admin_access),
                 user_preferences=json.dumps(admin_preferences)
             )
+
+            company_data = get_fillable(CompanyProfile, **data)
+            company = CompanyProfile(**company_data)
+            company.name = data['company_name']
 
             admin_perms = {}
 
@@ -84,6 +89,7 @@ def install():
 
             user.roles.append(role)
             db.session.add(user)
+            db.session.add(company)
 
             db.session.commit()
 

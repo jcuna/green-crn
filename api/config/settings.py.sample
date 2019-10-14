@@ -24,7 +24,7 @@ MAIL_MAX_EMAILS = None
 MAIL_ASCII_ATTACHMENTS = False
 
 # this is needed for both configs
-MAIL_DEFAULT_SENDER = 'bot@roomanize.com'
+MAIL_DEFAULT_SENDER = 'bot@greencrn.com'
 
 # requires a caching config
 # config options @https://flask-caching.readthedocs.io/en/latest/
