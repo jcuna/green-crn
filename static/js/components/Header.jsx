@@ -21,15 +21,15 @@ class Header extends React.Component {
         this.state = {
             userNameClass: this.props.initialClass,
             dispatchedRolesWS: false,
-            dispatchedUserWS: false
+            dispatchedUserWS: false,
+            logo: this.getLogo(props.company.data),
         };
     }
-
-    componentDidUpdate({ clickedContent, appState }) {
-        if (Header.userMenuIsShowing(this.state.userNameClass) && this.props.clickedContent !== clickedContent) {
+    componentDidUpdate(prevProps) {
+        const { user, dispatch, appState, clickedContent, company } = this.props;
+        if (Header.userMenuIsShowing(this.state.userNameClass) && clickedContent !== prevProps.clickedContent) {
             this.hideUserMenu();
         }
-        const { user, dispatch } = this.props;
 
         if (user.status === STATUS.PROCESSED) {
             if (!this.state.dispatchedRolesWS && user.roles.length > 0) {
@@ -46,15 +46,27 @@ class Header extends React.Component {
                 dispatch(listenUserChanges(user.id));
             }
         }
-        if (appState === 1 && this.props.appState === 0) {
+        if (prevProps.appState === 1 && appState === 0) {
             window.location.href = `${API_PREFIX}install`;
         }
+        if (prevProps.company.status !== company.status && company.status === STATUS.COMPLETE) {
+            this.setState({
+                logo: this.getFetchRolesOptions(company.data)
+            });
+        }
+    }
+
+    getLogo(company) {
+        if (company.logo) {
+            return `data:image/png;base64,${company.logo}`;
+        }
+        return '/images/logo.png';
     }
 
     getFetchRolesOptions(user) {
         const options = {
             shouldFetch: false,
-            roles: []
+            roles: [],
         };
 
         user.roles.forEach(r => {
@@ -72,7 +84,6 @@ class Header extends React.Component {
         return userNameClass.includes(Header.defaultProps.extraClass);
     }
 
-
     render() {
         const { user } = this.props;
         const loggedIn = user.status === STATUS.PROCESSED;
@@ -80,7 +91,7 @@ class Header extends React.Component {
         return (
             <header id="header">
                 <div className="inner">
-                    <Link to="/" className="logo"><img src="/images/logo.png"/></Link>
+                    <Link to="/" className="logo"><img src={ this.state.logo }/></Link>
 
                     { loggedIn &&
                         <ul className="super-menu">
@@ -94,10 +105,6 @@ class Header extends React.Component {
                         </ul>
                     }
                 </div>
-                <section id="banner">
-                    <h1>{ 'placeholder company' }</h1>
-                    <p>Contabilidad y manejo de clientes</p>
-                </section>
             </header>
         );
     }
@@ -168,6 +175,7 @@ class Header extends React.Component {
         clickedContent: PropTypes.bool,
         projects: PropTypes.object,
         history: PropTypes.object,
+        company: PropTypes.object,
         appState: PropTypes.number,
     }
 }

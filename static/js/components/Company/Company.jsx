@@ -7,11 +7,11 @@ import PropTypes from 'prop-types';
 import Checkbox from '../../utils/Checkbox';
 import FormGenerator from '../../utils/FromGenerator';
 import {
-    clearProjectEditing,
-    createProject,
-    editProject,
+    clearCompanyEditing,
+    createCompany,
+    editCompany,
     fetchCompany,
-    updateProject,
+    updateCompany,
 } from '../../actions/companyActions';
 import Link from 'react-router-dom/es/Link';
 import { hasAccess } from '../../utils/config';
@@ -34,7 +34,7 @@ export default class Company extends React.Component {
             const project = this.getEditingProject(props);
 
             if (project) {
-                props.dispatch(editProject(project));
+                props.dispatch(editCompany(project));
             }
         }
         this.selectCheckBox = this.selectCheckBox.bind(this);
@@ -48,7 +48,7 @@ export default class Company extends React.Component {
             this.setState({
                 button: { value: 'Agregar', disabled: true }
             });
-            dispatch(clearProjectEditing());
+            dispatch(clearCompanyEditing());
         } else if ((typeof this.props.match.params.project_id !== 'undefined' && projects.status === STATUS.COMPLETE &&
             Number(projects.editing.id) !== Number(this.props.match.params.project_id)) ||
             (typeof this.props.match.params.project_id !== 'undefined' && projects.status === STATUS.PENDING &&
@@ -56,7 +56,7 @@ export default class Company extends React.Component {
             const project = this.getEditingProject(this.props);
 
             if (project) {
-                dispatch(editProject(project));
+                dispatch(editCompany(project));
             }
         }
     }
@@ -65,7 +65,7 @@ export default class Company extends React.Component {
         const editMode = typeof this.props.match.params.project_id !== 'undefined';
 
         if (editMode && this.props.projects.editing.id !== '') {
-            this.props.dispatch(clearProjectEditing());
+            this.props.dispatch(clearCompanyEditing());
         }
     }
 
@@ -224,7 +224,7 @@ export default class Company extends React.Component {
     }
 
     updateProjectStatus(checkbox) {
-        this.props.dispatch(updateProject({
+        this.props.dispatch(updateCompany({
             id: checkbox.id,
             active: checkbox.checked
         }, () => {
@@ -265,9 +265,9 @@ export default class Company extends React.Component {
 
         if (editMode) {
             data = { ...this.state.project, id: this.props.match.params.project_id };
-            action = updateProject;
+            action = updateCompany;
         } else {
-            action = createProject;
+            action = createCompany;
             data = { ...this.state.project };
         }
 
@@ -276,7 +276,7 @@ export default class Company extends React.Component {
 
             if (editMode) {
                 id = data.id;
-                this.props.dispatch(editProject(data));
+                this.props.dispatch(editCompany(data));
             }
             this.props.dispatch(fetchCompany());
             this.props.dispatch(fetchUser());

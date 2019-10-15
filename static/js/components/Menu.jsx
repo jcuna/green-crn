@@ -20,10 +20,11 @@ export default class Menu extends React.Component {
     }
 
     render() {
+        const { data } = this.props.company;
         return (
             <div className={ this.className }>
                 <FontAwesome className={ 'menu-toggler' } onClick={ this.toggleMenu } type="times"/>
-                <h2 className='app-logo'><span>Room</span>anize</h2>
+                <h2 className='company-name'>{ data.name }</h2>
                 <nav id="mobile-nav">
                     { this.getLinksBasedOffAccess() }
                 </nav>
@@ -92,6 +93,7 @@ export default class Menu extends React.Component {
         roles: PropTypes.object,
         showMobileMenu: PropTypes.bool,
         dispatch: PropTypes.func,
-        history: PropTypes.object
+        history: PropTypes.object,
+        company: PropTypes.object,
     }
 }

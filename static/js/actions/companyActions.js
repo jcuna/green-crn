@@ -14,21 +14,18 @@ export const COMPANY_EDITING_CLEAR = 'COMPANY_EDITING_CLEAR';
 export const fetchCompany = (fail) =>
     (dispatch) => {
         dispatch({ type: COMPANY_FETCHING });
-        token.through().then(header =>
-            api({
-                url: `/projects`,
-                method: 'GET',
-                headers: header
-            }).then((resp) => {
-                dispatch({ type: COMPANY_FETCHED, payload: resp.data });
-            }, err => {
-                fail && fail(err);
-                dispatch({ type: COMPANY_FETCHED_FAIL });
-            })
-        );
+        api({
+            url: `/company`,
+            method: 'GET',
+        }).then((resp) => {
+            dispatch({ type: COMPANY_FETCHED, payload: resp.data });
+        }, err => {
+            fail && fail(err);
+            dispatch({ type: COMPANY_FETCHED_FAIL });
+        });
     };
 
-export const createProject = (data, success) =>
+export const createCompany = (data, success) =>
     (dispatch) => {
         dispatch({ type: COMPANY_CREATING });
         token.through().then(header =>
@@ -42,7 +39,7 @@ export const createProject = (data, success) =>
             }));
     };
 
-export const updateProject = (data, success) =>
+export const updateCompany = (data, success) =>
     (dispatch) => {
         dispatch({ type: COMPANY_UPDATING });
         token.through().then(header =>
@@ -57,12 +54,12 @@ export const updateProject = (data, success) =>
         );
     };
 
-export const editProject = (project) =>
+export const editCompany = (project) =>
     (dispatch) => {
         dispatch({ type: COMPANY_EDITING, payload: project });
     };
 
-export const clearProjectEditing = () =>
+export const clearCompanyEditing = () =>
     (dispatch) => {
         dispatch({ type: COMPANY_EDITING_CLEAR });
     };

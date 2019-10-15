@@ -119,4 +119,4 @@ settings.py
 .develop
 db
 
-images/logo.*
+log/

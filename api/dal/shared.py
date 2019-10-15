@@ -1,3 +1,4 @@
+from base64 import b64encode
 from datetime import datetime
 from decimal import Decimal, getcontext
 from math import ceil
@@ -88,7 +89,7 @@ def access_required(f):
             for name, grant in role.get_permissions.items():
                 if name == permissions[request.endpoint]:
                     for access in grant:
-                        if access == access_map()[request.method]:
+                        if access == access_map[request.method]:
                             has_access = True
                             break
 
@@ -100,13 +101,12 @@ def access_required(f):
     return access_decorator
 
 
-def access_map():
-    return {
-        'GET': 'read',
-        'PUT': 'write',
-        'POST': 'write',
-        'DELETE': 'delete'
-    }
+access_map = {
+    'GET': 'read',
+    'PUT': 'write',
+    'POST': 'write',
+    'DELETE': 'delete'
+}
 
 
 class Paginator:
@@ -148,6 +148,8 @@ class ModelIter(object):
                     yield column.name, str(attr.isoformat())
                 elif isinstance(attr, bool) or isinstance(attr, int):
                     yield column.name, attr
+                elif isinstance(attr, bytes):
+                    yield column.name, b64encode(attr).decode()
                 elif not isinstance(attr, str):
                     yield column.name, str(attr) if attr is not None else None
                 else:

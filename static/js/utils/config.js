@@ -13,24 +13,6 @@ export const getEndpoint = (endpoint) => {
 
 export const menuItems = [
     {
-        icon: 'fas fa-folder-open',
-        link: ENDPOINTS.EXPENSES_URL,
-        name: 'Gastos',
-        endpoint: getEndpoint(ENDPOINTS.EXPENSES_URL)
-    },
-    {
-        icon: 'fas fa-file-contract',
-        link: ENDPOINTS.RECEIPTS_URL,
-        name: 'Recibos',
-        endpoint: getEndpoint(ENDPOINTS.RECEIPTS_URL)
-    },
-    {
-        icon: 'fas fa-people-carry',
-        link: ENDPOINTS.TENANTS_URL,
-        name: 'Inquilinos',
-        endpoint: getEndpoint(ENDPOINTS.TENANTS_URL)
-    },
-    {
         icon: 'fas fa-lock',
         link: ENDPOINTS.ROLES_URL,
         name: 'Roles',
@@ -43,15 +25,9 @@ export const menuItems = [
         endpoint: getEndpoint(ENDPOINTS.USERS_MANAGER_URL)
     },
     {
-        icon: 'fas fa-bed',
-        link: ENDPOINTS.ROOMS_URL,
-        name: 'Habitaciones',
-        endpoint: getEndpoint(ENDPOINTS.ROOMS_URL)
-    },
-    {
         icon: 'fas fa-chart-line',
         link: ENDPOINTS.COMPANY_URL,
-        name: 'Proyectos',
+        name: 'Perfil empresarial',
         endpoint: getEndpoint(ENDPOINTS.COMPANY_URL)
     },
 ];

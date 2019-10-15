@@ -78,6 +78,8 @@ def install():
             company_data = get_fillable(CompanyProfile, **data)
             company = CompanyProfile(**company_data)
             company.name = data['company_name']
+            if 'logo' in request.files:
+                company.logo = request.files.get('logo').read()
 
             admin_perms = {}
 

@@ -6,6 +6,7 @@ from flask import request
 from config import configs
 from dal.models import Audit
 from flask_restful import Resource
+from dal.shared import access_map
 from .router import Router
 from .utils import get_logger, app_path
 from .middleware import Middleware, error_handler
@@ -14,7 +15,7 @@ from simplecrypt import encrypt, decrypt
 from base64 import b64encode, b64decode
 from core.queue_worker import MaxMessageSizeExceededError
 from core import mem_queue
-
+from config.routes import no_permissions, default_access
 
 class Cache:
 
@@ -51,6 +52,11 @@ class API(Resource):
 
     def dispatch_request(self, *args, **kwargs):
         output = super(Resource, self).dispatch_request(*args, **kwargs)
+
+        view_name = '%s.%s' %( self.__class__.__module__, self.__class__.__name__)
+        if view_name in no_permissions or \
+                view_name in default_access and access_map[request.method.upper()] in default_access[view_name]:
+            return output
 
         user_id = None
         if hasattr(request, 'user'):

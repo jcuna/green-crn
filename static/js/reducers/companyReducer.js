@@ -9,19 +9,19 @@ const editingInitState = {
     name: '',
     contact: '',
     address: '',
-    active: false,
+    logo: '',
     id: '',
 };
 
 export default function companyReducer(state = {
     status: STATUS.PENDING,
     editing: editingInitState,
-    projects: [],
+    data: {},
 }, action) {
     switch (action.type) {
         case COMPANY_FETCHED:
             return {
-                ...state, status: STATUS.COMPLETE, projects: action.payload.projects
+                ...state, status: STATUS.COMPLETE, data: action.payload
             };
 
         case COMPANY_EDITING:
@@ -33,7 +33,6 @@ export default function companyReducer(state = {
             return {
                 ...state, editing: editingInitState
             };
-
 
         default:
             return state;

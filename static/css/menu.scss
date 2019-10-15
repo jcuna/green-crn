@@ -36,14 +36,14 @@
         display: none;
       }
 
-      h2.app-logo {
+      h2.company-name {
         display: none;
       }
     }
   }
 
   @media screen and (max-width: 1040px) {
-    h2.app-logo {
+    h2.company-name {
       display: none;
     }
   }
@@ -69,19 +69,19 @@
     }
   }
 
-  h2.app-logo {
+  h2.company-name {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    font-family: 'Libre Barcode 128 Text', cursive;
     padding-top: 10px;
     text-align: center;
     color: #d4e0ef;
-    font-size: 70px;
-    text-transform: uppercase;
+    font-size: 44px;
+    font-weight: lighter;
+    -webkit-font-smoothing: antialiased;
     span {
       color: $theme;
     }

@@ -13,37 +13,21 @@ export default class UserManager extends React.Component {
         super(props);
 
         const rolesCheckboxes = {};
-        const projectsCheckboxes = {};
 
         let roles = [];
-        const projects = [];
 
         if (typeof props.editingUser !== 'undefined') {
             props.editingUser.roles.forEach(role => {
                 rolesCheckboxes[role.name] = true;
             });
             roles = props.editingUser.roles;
-
-            props.projects.projects.forEach(project => {
-                if (typeof props.editingUser.attributes.access.projects !== 'undefined' &&
-                    props.editingUser.attributes.access.projects.includes(project.id)) {
-                    projectsCheckboxes[project.name] = true;
-                    projects.push(project.id);
-                }
-            });
         }
-
         this.state = {
             deleteButtonClass: 'btn btn-danger',
             actionButtonDisabled: true,
             rolesCheckboxes,
-            projectsCheckboxes,
             roles,
-            attributes: {
-                access: {
-                    projects
-                }
-            },
+            attributes: [], // no attributes yet
             first_name: props.editingUser && props.editingUser.first_name || null,
             last_name: props.editingUser && props.editingUser.last_name || null,
             email: props.editingUser && props.editingUser.email || null,
@@ -51,7 +35,6 @@ export default class UserManager extends React.Component {
 
         this.updateUserData = this.updateUserData.bind(this);
         this.updateUserDataRoles = this.updateUserDataRoles.bind(this);
-        this.updateUserDataAccess = this.updateUserDataAccess.bind(this);
     }
 
     render() {
@@ -61,7 +44,6 @@ export default class UserManager extends React.Component {
         } }/>
         { this.rolesSection }
         <hr/>
-        { this.projectsSection }
         <div style={ { textAlign: 'right' } }>
             <button className='btn btn-secondary'
                 style={ { marginRight: '10px' } }
@@ -74,18 +56,6 @@ export default class UserManager extends React.Component {
             </button>
         </div>
         </div>;
-    }
-
-    get projectsSection() {
-        const { projects } = this.props.projects;
-
-        return (
-            <div>
-                <h5>Dar accesso a los siguientes proyectos:</h5>
-                <hr/>
-                { this.itemList(projects, this.updateUserDataAccess, 'projectsCheckboxes') }
-            </div>
-        );
     }
 
     get rolesSection() {
@@ -108,7 +78,6 @@ export default class UserManager extends React.Component {
             } }>
                 { items.map(item => {
                     const checked = this.state[stateValue][item.name] === true;
-
                     return <li key={ item.id }><Checkbox
                         checked={ checked }
                         onChange={ callback }
@@ -118,15 +87,6 @@ export default class UserManager extends React.Component {
                 })}
             </ul>
         );
-    }
-
-    recordCheckboxValues(checkbox, stateValue) {
-        const checkboxState = this.state[stateValue];
-
-        checkboxState[checkbox.name] = checkbox.checked;
-        this.setState({
-            [stateValue]: checkboxState
-        });
     }
 
     updateUserData(event, validation) {
@@ -203,23 +163,12 @@ export default class UserManager extends React.Component {
         this.updateUserData();
     }
 
-    updateUserDataAccess(checkbox) {
-        this.recordCheckboxValues(checkbox, 'projectsCheckboxes');
+    recordCheckboxValues(checkbox, stateValue) {
+        const checkboxState = this.state[stateValue];
 
-        const projects = [];
-
-        this.props.projects.projects.forEach(item => {
-            if (this.state.projectsCheckboxes[item.name]) {
-                projects.push(item.id);
-            }
-        });
-
+        checkboxState[checkbox.name] = checkbox.checked;
         this.setState({
-            attributes: {
-                access: {
-                    projects
-                }
-            }
+            [stateValue]: checkboxState
         });
     }
 
@@ -257,12 +206,6 @@ export default class UserManager extends React.Component {
             });
         }
         return elements;
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (prevState.attributes.access.projects.length !== this.state.attributes.access.projects.length) {
-            this.updateUserData();
-        }
     }
 
     static propTypes = {

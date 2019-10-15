@@ -28,7 +28,7 @@ export const ENDPOINTS = {
     ACCOUNT_LOGOUT: '/account/logout',
     ROLES_URL: '/roles',
     USERS_MANAGER_URL: '/usuarios',
-    COMPANY_URL: '/company',
+    COMPANY_URL: '/empresa',
     NOT_FOUND: '/error/404',
     NO_ACCESS: '/error/403',
 };

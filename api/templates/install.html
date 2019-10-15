@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<form method="post" action="/api/install">
+<form method="post" action="/api/install" enctype="multipart/form-data">
     {% if error %}
         <p class="alert alert-danger" role="alert">{{ error }}</p>
     {% endif %}
@@ -28,22 +28,22 @@
     <div class="form-group">
         <label for="companyName">Company Name</label>
         <input type="text" class="form-control" id="companyName" name="company_name" aria-describedby="lastHelp" placeholder="Enter Company Name">
-        <small id="lastHelp" class="form-text text-muted">Enter Company Name.</small>
+        <small id="comanyHelp" class="form-text text-muted">Enter Company Name.</small>
     </div>
     <div class="form-group">
         <label for="companyAddress">Company Address</label>
         <input type="text" class="form-control" id="companyAddress" name="address" aria-describedby="lastHelp" placeholder="Address">
-        <small id="lastHelp" class="form-text text-muted">Enter Company Address.</small>
+        <small id="addressHelp" class="form-text text-muted">Enter Company Address.</small>
     </div>
     <div class="form-group">
         <label for="companyContact">Company Contact Number</label>
         <input type="text" class="form-control" id="companyContact" name="contact" aria-describedby="lastHelp" placeholder="Contact">
-        <small id="lastHelp" class="form-text text-muted">Enter Company Contact Number.</small>
+        <small id="contactHelp" class="form-text text-muted">Enter Company Contact Number.</small>
     </div>
     <div class="form-group">
         <label for="companyLogo">Company Logo</label>
-        <input type="image" accept="image/png" class="form-control" id="companyLogo" name="logo" aria-describedby="lastHelp" placeholder="Contact">
-        <small id="lastHelp" class="form-text text-muted">Upload company logo.</small>
+        <input type="file" accept="image/png" class="form-control" id="companyLogo" name="logo" aria-describedby="lastHelp" placeholder="Logo">
+        <small id="logoHelp" class="form-text text-muted">Upload company logo.</small>
     </div>
     <button type="submit" name="submit" class="btn btn-primary">Submit</button>
 </form>
