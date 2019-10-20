@@ -6,7 +6,7 @@ import json
 from config.routes import register, no_permissions
 import re
 from dal import db
-from dal.models import User, Role, UserAttributes, admin_access, admin_preferences, CompanyProfile
+from dal.user import User, Role, UserAttributes, admin_access, admin_preferences, CompanyProfile
 from dal.shared import get_fillable
 
 permissions = {}
@@ -53,8 +53,7 @@ def routes():
 @base.route('/install', methods=['GET', 'POST'])
 def install():
     try:
-        user_count = User.query.count()
-        if user_count > 0:
+        if User.query.count() > 0:
             return redirect('/')
     except (ProgrammingError, OperationalError):
         from helpers import run_migration

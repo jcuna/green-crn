@@ -44,7 +44,7 @@ module.exports = env => {
         plugins: [
 
             new HtmlWebpackPlugin({
-                title: env.APP_NAME,
+                title: 'green CRN',
                 hash: !isDev,
                 template: 'index.html',
                 favicon: 'favicon.ico',

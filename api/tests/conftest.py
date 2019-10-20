@@ -2,6 +2,7 @@ from base64 import b64encode
 from multiprocessing import Process
 from time import sleep
 import pytest
+from flask.testing import FlaskClient
 from tests import tear_files, init, endpoint
 from tests.seeders import seed_admin
 
@@ -13,14 +14,12 @@ def client():
     """
     init()
 
-    from app import db, init_app
+    from app import init_app
     from helpers import run_migration
 
     app = init_app()
     with app.test_client() as client:
         with app.app_context():
-            db.create_all()
-            db.session.commit()
             run_migration()
         yield client
     tear_files()
@@ -42,8 +41,7 @@ def no_db_client():
 
 
 @pytest.fixture(scope='module')
-def admin_login(client):
-
+def admin_login(client: FlaskClient):
     admin_resp = seed_admin(client)
     assert b'Redirecting...' in admin_resp.data, 'Must redirect upon valid admin creation'
     assert admin_resp.status_code == 302
@@ -55,7 +53,9 @@ def admin_login(client):
     login_resp = client.post(endpoint('/login'), headers=auth)
     assert 'token' in login_resp.json, 'token expected'
     assert login_resp.status_code == 200
-    return login_resp.json
+    return {
+        'X-Access-Token': login_resp.json['token']['value']
+    }
 
 
 @pytest.fixture(scope='module')

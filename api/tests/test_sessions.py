@@ -6,19 +6,18 @@ from tests import endpoint
 
 
 def test_install(no_db_client):
-    from dal.models import User
-    from dal.models import CompanyProfile
+    from dal.user import User
+    from dal.user import CompanyProfile
 
     rv = no_db_client.get(endpoint('/user'))
     assert rv.json['error'] == 'install'
     assert rv.status_code == 501
 
     with pytest.raises(OperationalError) as ex:
-        User.query.all()
+        User.query.count()
         assert 'no such table' in ex.value
 
     no_db_client.get('/install')
-    assert len(User.query.all()) == 0
 
     post = {
         'email': 'testuser@domain.com',
@@ -59,7 +58,6 @@ def test_no_session(no_db_client):
 
 
 def test_login(no_db_client):
-
     auth = {
         'Authorization': 'Basic ' + b64encode(b'testuser@domain.com' + b':' + b'master').decode()
     }

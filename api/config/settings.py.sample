@@ -39,6 +39,6 @@ TIME_ZONE = 'America/New_York'
 # make sure to include protocol http cs https.
 EXTERNAL_DEV_URL = 'http://10.0.0.23:8000'
 
-AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY = ''
-AWS_FILE_MANAGER_BUCKET_NAME = ''
+AWS_ACCESS_KEY_ID = '{AccessKeyId}'
+AWS_SECRET_ACCESS_KEY = '{SecretAccessKey}'
+BUCKETS_PREFIX = '{BucketsPrefix}'

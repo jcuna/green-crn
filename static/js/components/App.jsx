@@ -21,6 +21,7 @@ import 'bootstrap-scss/bootstrap-grid.scss';
 import 'bootstrap-scss/bootstrap-reboot.scss';
 import '../../css/app.scss';
 import '../../css/overrides.scss';
+import ReactDOM from 'react-dom';
 
 class App extends React.Component {
     constructor(props) {
@@ -50,6 +51,13 @@ class App extends React.Component {
             ));
         }
         this.clickedContent = this.clickedContent.bind(this);
+    }
+
+    componentDidUpdate(prevProps) {
+        const { company } = this.props;
+        if (prevProps.company.data.name !== company.data.name) {
+            ReactDOM.render(company.data.name, document.querySelector('title'));
+        }
     }
 
     permissionsPending() {

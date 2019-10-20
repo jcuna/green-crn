@@ -1,5 +1,5 @@
 import json
-from config import random_token
+from config import random_token, configs
 from dal import db
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -118,7 +118,7 @@ class UserToken(db.Model, ModelIter):
 class Role(db.Model, ModelIter):
     __tablename__ = 'roles'
 
-    id = db.Column(BigInteger, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(30, collation=configs.DB_COLLATION), index=True)
     permissions = db.Column(db.Text(collation=configs.DB_COLLATION))
 
@@ -140,17 +140,6 @@ class Role(db.Model, ModelIter):
         return combined_permissions
 
 
-class CompanyProfile(db.Model, ModelIter):
-    __tablename__ = 'company_profile'
-    fillable = ['name', 'address', 'contact']
-
-    id = db.Column(BigInteger, primary_key=True)
-    name = db.Column(db.String(30, collation=configs.DB_COLLATION), unique=True, nullable=False)
-    address = db.Column(db.Text(collation=configs.DB_COLLATION), nullable=False)
-    contact = db.Column(db.String(10, collation=configs.DB_COLLATION), nullable=False)
-    logo = db.Column(db.LargeBinary)
-
-
 class Audit(db.Model, ModelIter):
     __tablename__ = 'audits'
 
@@ -165,3 +154,14 @@ class Audit(db.Model, ModelIter):
     response = db.Column(db.Text(collation=configs.DB_COLLATION))
 
     user = relationship(User, uselist=False)
+
+
+class CompanyProfile(db.Model, ModelIter):
+    __tablename__ = 'company_profile'
+    fillable = ['name', 'address', 'contact', 'logo']
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(30, collation=configs.DB_COLLATION), unique=True, nullable=False)
+    address = db.Column(db.Text(collation=configs.DB_COLLATION), nullable=False)
+    contact = db.Column(db.String(10, collation=configs.DB_COLLATION), nullable=False)
+    logo = db.Column(db.LargeBinary)

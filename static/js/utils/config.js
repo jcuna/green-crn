@@ -13,6 +13,12 @@ export const getEndpoint = (endpoint) => {
 
 export const menuItems = [
     {
+        icon: 'fas fa-briefcase',
+        link: ENDPOINTS.COMPANY_URL,
+        name: 'Perfil Empresarial',
+        endpoint: getEndpoint(ENDPOINTS.COMPANY_URL)
+    },
+    {
         icon: 'fas fa-lock',
         link: ENDPOINTS.ROLES_URL,
         name: 'Roles',
@@ -23,12 +29,6 @@ export const menuItems = [
         link: ENDPOINTS.USERS_MANAGER_URL,
         name: 'Usuarios',
         endpoint: getEndpoint(ENDPOINTS.USERS_MANAGER_URL)
-    },
-    {
-        icon: 'fas fa-chart-line',
-        link: ENDPOINTS.COMPANY_URL,
-        name: 'Perfil empresarial',
-        endpoint: getEndpoint(ENDPOINTS.COMPANY_URL)
     },
 ];
 

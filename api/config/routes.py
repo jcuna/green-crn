@@ -13,6 +13,23 @@ def register():
         'users.Activate@user_activate_url': '/account/activate-pass',
         'users.Audit@audit_url': '/audit|/audit/<int:user_id>',
         'company.Company@company_url': '/company',
+
+        'meta.Countries@country_url': '/meta/countries',
+        'meta.SourceProjects@source_projects_url': '/meta/source-projects',
+        'meta.ProjectTypes@project_types_url': '/meta/project-types',
+        'meta.Distributors@distributors_url': '/meta/distributors',
+        'meta.Rates@rates_url': '/meta/rates',
+        'meta.Transformers@transformers_url': '/meta/transformers',
+        'meta.TrCapacities@tr_capacities_url': '/meta/tr-capacities',
+        'meta.Phases@phases_url': '/meta/phases',
+        'meta.Tensions@tensions_url': '/meta/tensions',
+        'meta.PanelModels@panel_models_url': '/meta/panel-models',
+        'meta.InverterModels@inverter_models_url': '/meta/inverter-models',
+
+        'customers.Customers@customers_url': '/customers|/customers/<int:customer_id>',
+        'customers.CustomerProjects@customer_projects_url': '/customers/projects',
+        'customers.CustomerInstallations@customer_installations_url': '/customers/installations',
+        'customers.CustomerDocuments@customer_documents_url': '/customers/documents',
     }
 
 
@@ -26,4 +43,14 @@ no_permissions = [
 
 default_access = {
     'views.company.Company': ['read'],
+    'views.meta.Countries': ['read'],
+    'views.meta.SourceProjects': ['read'],
+    'views.meta.ProjectTypes': ['read'],
+    'views.meta.Distributors': ['read'],
+    'views.meta.Rates': ['read'],
+    'views.meta.Transformers': ['read'],
+    'views.meta.TrCapacities': ['read'],
+    'views.meta.Tensions': ['read'],
+    'views.meta.PanelModels': ['read'],
+    'views.meta.InverterModels': ['read'],
 }

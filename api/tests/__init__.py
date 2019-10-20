@@ -18,10 +18,16 @@ CACHE_CONFIG = {
     'CACHE_KEY_PREFIX': 'local_dev'
 }
 TIME_ZONE = 'America/New_York'
+
+AWS_ACCESS_KEY_ID = 'AKIAQL2QSMWWVSFKWKOO'
+AWS_SECRET_ACCESS_KEY = '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'
+BUCKETS_PREFIX = 'enestar-'
+
 """ % (os.path.dirname(os.environ['APP_SETTINGS_PATH']) + '/testdb')
 
 
 def init():
+    tear_files()  ## just in case
     settings_fd = open(os.environ['APP_SETTINGS_PATH'], 'w+')
     settings_fd.write(config)
     settings_fd.close()
@@ -33,7 +39,11 @@ def tear_files():
     except OSError:
         if os.path.exists(os.path.dirname(os.environ['APP_SETTINGS_PATH']) + '/testdb'):
             raise
-    os.unlink(os.environ['APP_SETTINGS_PATH'])
+    try:
+        os.unlink(os.environ['APP_SETTINGS_PATH'])
+    except OSError:
+        if os.path.exists(os.environ['APP_SETTINGS_PATH']):
+            raise
 
 
 def endpoint(uri):

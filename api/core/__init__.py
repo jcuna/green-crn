@@ -4,7 +4,7 @@ from datetime import timedelta
 from time import sleep, time
 from flask import request
 from config import configs
-from dal.models import Audit
+from dal.user import Audit
 from flask_restful import Resource
 from dal.shared import access_map
 from .router import Router

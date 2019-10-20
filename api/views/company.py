@@ -1,5 +1,5 @@
 from core import API
-from dal.models import CompanyProfile
+from dal.user import CompanyProfile
 from views import Result
 
 class Company(API):

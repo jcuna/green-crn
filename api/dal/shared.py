@@ -2,6 +2,7 @@ from base64 import b64encode
 from datetime import datetime
 from decimal import Decimal, getcontext
 from math import ceil
+from sqlalchemy import orm
 from flask_sqlalchemy import SQLAlchemy, BaseQuery
 from sqlalchemy.orm import joinedload
 from functools import wraps
@@ -31,6 +32,10 @@ def row2dict(row):
 
 
 def get_fillable(model: db.Model, get_attr_object=False, **kwargs):
+
+    if len(kwargs) == 0:
+        raise Exception('Model keywords are missing. Try ** or spread key values')
+
     if not hasattr(model, 'fillable') and any(kwargs):
         raise Exception('Must declare a fillable on class ' + model.__name__)
 
@@ -41,14 +46,14 @@ def get_fillable(model: db.Model, get_attr_object=False, **kwargs):
                 key = getattr(model, attribute_name)
             else:
                 key = attribute_name
-            fillable[key] = kwargs[attribute_name][0] if isinstance(kwargs[attribute_name], list) else \
+            fillable[key] = kwargs[attribute_name] if isinstance(kwargs[attribute_name], list) else \
                 kwargs[attribute_name]
 
     return fillable
 
 
 def token_required(f):
-    from dal.models import User
+    from dal.user import User
     from flask import current_app, request
 
     @wraps(f)
@@ -138,19 +143,57 @@ class ModelIter(object):
         super(self, *args, **kwargs)
 
     def __iter__(self):
-        if hasattr(self, '__table__'):
+        if isinstance(self, db.Model):
             for column in self.__table__.columns:
+                if hasattr(self.__mapper__.attrs, column.name) and getattr(self.__mapper__.attrs, column.name).deferred:
+                    continue
+
                 attr = getattr(self, column.name)
-                if isinstance(attr, Decimal):
+                if isinstance(attr, bool) or isinstance(attr, int) or isinstance(attr, float) or attr is None:
+                    yield column.name, attr
+                elif isinstance(attr, Decimal):
                     getcontext().prec = 2
-                    yield column.name, str(attr)
+                    yield column.name, float(attr)
                 elif isinstance(attr, datetime):
                     yield column.name, str(attr.isoformat())
-                elif isinstance(attr, bool) or isinstance(attr, int):
-                    yield column.name, attr
                 elif isinstance(attr, bytes):
                     yield column.name, b64encode(attr).decode()
                 elif not isinstance(attr, str):
-                    yield column.name, str(attr) if attr is not None else None
+                    yield column.name, str(attr)
                 else:
                     yield column.name, attr
+        if hasattr(self, '__mapper__'):
+            # models that have not been loaded
+            unloaded = orm.attributes.instance_state(self).unloaded
+            for relationship in self.__mapper__.relationships:
+                if relationship.key not in unloaded and hasattr(self, relationship.key):
+                    value = getattr(self, relationship.key)
+                    if isinstance(value, list):
+                        yield relationship.key, list(map(dict, value))
+                    else: yield relationship.key, dict(value)
+
+
+class Point(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __composite_values__(self):
+        return self.x, self.y
+
+    def __repr__(self):
+        return "Point(x=%r, y=%r)" % (self.x, self.y)
+
+    def __eq__(self, other):
+        return isinstance(other, Point) and \
+               other.x == self.x and \
+               other.y == self.y
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def get_tuple(self):
+        return self.x, self.y
+
+    def get_list(self):
+        return [self.x, self.y]
