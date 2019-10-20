@@ -147,3 +147,6 @@ def test_customer_data(client: FlaskClient, admin_login):
     assert isinstance(customer.json['customer_installations'][0]['inverters'], list)
     assert isinstance(customer.json['customer_installations'][0]['installation_documents'], list)
     assert len(customer.json['customer_installations'][0]['installation_documents']) == 1
+    assert customer.json['customer_installations'][0]['installation_documents'][0]['name'] == 'SOMETHING'
+    assert customer.json['customer_installations'][0]['installation_documents'][0]['file_extension'] == '.pdf'
+    assert 'something-' in customer.json['customer_installations'][0]['installation_documents'][0]['object_key']

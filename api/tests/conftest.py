@@ -1,10 +1,21 @@
+import sys
 from base64 import b64encode
+from importlib import import_module
 from multiprocessing import Process
 from time import sleep
 import pytest
 from flask.testing import FlaskClient
 from tests import tear_files, init, endpoint
 from tests.seeders import seed_admin
+
+
+injector = import_module('tests.injector')
+del sys.modules['boto3']
+sys.modules['boto3'] = injector
+sys.modules['boto3.dynamodb'] = injector
+sys.modules['boto3.dynamodb.conditions'] = injector
+sys.modules['psycopg2'] = injector
+
 
 
 @pytest.fixture(scope='module')

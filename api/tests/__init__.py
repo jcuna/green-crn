@@ -19,8 +19,8 @@ CACHE_CONFIG = {
 }
 TIME_ZONE = 'America/New_York'
 
-AWS_ACCESS_KEY_ID = 'AKIAQL2QSMWWVSFKWKOO'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY_ID = 'ASHWAAAQQQIII3453HHHH'
+AWS_SECRET_ACCESS_KEY = 'aws_secret_key_goes_here'
 BUCKETS_PREFIX = 'enestar-'
 
 """ % (os.path.dirname(os.environ['APP_SETTINGS_PATH']) + '/testdb')
@@ -52,3 +52,7 @@ def endpoint(uri):
 
 def front_end_date(date: datetime = datetime.utcnow(), _time: str = str(time.min)):
     return ' '.join([str(date.date()), _time])
+
+
+class Mock(object):
+    pass
