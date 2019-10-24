@@ -9,7 +9,6 @@ def init_app(mode='web') -> Flask:
     this_app = Flask(__name__)
     this_app.config.from_object(configs)
     this_app.env = configs.APP_ENV
-    core.Encryptor.password = configs.SECRET_KEY
 
     if mode == 'web':
         # configure the app to log to a file.

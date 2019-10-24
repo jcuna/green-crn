@@ -13,7 +13,7 @@ if [[ "$1" != "" && "$1" != "stop" && "$1" != "ssh" && "$1" != "build" && "$1" !
     exit 1;
 fi
 
-LATEST_API=1.1
+LATEST_API=1.2
 APP_NAME="green-crn"
 API_IMG_NAME="$APP_NAME-api"
 API_CONTAINER_NAME="docker_api_"
@@ -38,7 +38,7 @@ if [[ "$1" == "test" ]]; then
       FLAGS="$FLAGS $3"
       APPEND="${@:4}"
     fi
-    COMMAND="pytest $FLAGS tests/$APPEND"
+    COMMAND="pytest --cov=. --cov-config=tests/.coveragerc $FLAGS tests/$APPEND"
     printf "%s\n" "$COMMAND"
 
     docker exec -ti "$CONTAINER_ID" bash -c \

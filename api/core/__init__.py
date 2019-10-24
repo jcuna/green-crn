@@ -11,7 +11,7 @@ from .router import Router
 from .utils import get_logger, app_path
 from .middleware import Middleware, error_handler
 from flask_caching import Cache as CacheService
-from simplecrypt import encrypt, decrypt
+from cryptography.fernet import Fernet
 from base64 import b64encode, b64decode
 from core.queue_worker import MaxMessageSizeExceededError
 from core import mem_queue
@@ -116,16 +116,19 @@ def audit_runner():
 
 class Encryptor:
 
+    def __init__(self, password):
+        self.package = Fernet(password)
+
     password = 'password'
     """ Make sure to change this in your app setup Encryptor.password = @configPW """
 
     def encrypt(self, string: str) -> str:
-        return b64encode(encrypt(self.password, string))
+        return b64encode(self.package.encrypt(string.encode('utf8')))
 
     def decrypt(self, string: str) -> str:
-        return decrypt(self.password, b64decode(string)).decode('utf8')
+        return self.package.decrypt(b64decode(string)).decode('utf8')
 
 
 # auto exec
 cache = CacheService()
-encryptor = Encryptor()
+encryptor = Encryptor(configs.SECRET_KEY)

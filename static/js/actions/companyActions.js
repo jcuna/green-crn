@@ -15,7 +15,7 @@ export const fetchCompany = (fail) =>
     (dispatch) => {
         dispatch({ type: COMPANY_FETCHING });
         api({
-            url: `/company`,
+            url: '/company',
             method: 'GET',
         }).then((resp) => {
             dispatch({ type: COMPANY_FETCHED, payload: resp.data });

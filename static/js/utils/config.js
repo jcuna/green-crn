@@ -19,6 +19,12 @@ export const menuItems = [
         endpoint: getEndpoint(ENDPOINTS.COMPANY_URL)
     },
     {
+        icon: 'fas fa-user-friends',
+        link: ENDPOINTS.CUSTOMERS_URL,
+        name: 'Clientes',
+        endpoint: getEndpoint(ENDPOINTS.CUSTOMERS_URL)
+    },
+    {
         icon: 'fas fa-lock',
         link: ENDPOINTS.ROLES_URL,
         name: 'Roles',

@@ -1,0 +1,12 @@
+[run]
+omit =
+    tests/*
+    runner.py
+    config/settings.py
+    wsgi.py
+
+[report]
+exclude_lines =
+    # Ignore imports
+    def debug*
+    if __name__ == '__main__'*

@@ -390,8 +390,12 @@ class FormGenerator extends React.Component {
     }
 
     getSecondParam(element) {
-        return element.options.map((val, p) =>
-            React.createElement('option', { value: p, key: p }, val));
+        return element.options.map((val, p) => {
+            if (Array.isArray(val)) {
+                return React.createElement('option', { value: p, key: p }, val);
+            }
+            return React.createElement('option', { value: val.value, key: val.value }, val.label);
+        });
     }
 
     static get alpha_num_re() {

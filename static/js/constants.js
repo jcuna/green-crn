@@ -28,13 +28,10 @@ export const ENDPOINTS = {
     ACCOUNT_LOGOUT: '/account/logout',
     ROLES_URL: '/roles',
     USERS_MANAGER_URL: '/usuarios',
+    CUSTOMERS_URL: '/clientes',
     COMPANY_URL: '/empresa',
     NOT_FOUND: '/error/404',
     NO_ACCESS: '/error/403',
-};
-
-export const BACKEND_URLS = {
-    EXPENSE_SCANS: '/expense-scans'
 };
 
 export const ACCESS_TYPES = {
@@ -45,7 +42,6 @@ export const ACCESS_TYPES = {
 
 export const INVALID_LANDING_PAGES = [
     '',
-    ENDPOINTS.ACCOUNT_LOGOUT,
     ENDPOINTS.ACCOUNT_LOGOUT,
 ];
 

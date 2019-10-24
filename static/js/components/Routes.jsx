@@ -11,9 +11,11 @@ import Users from './user/Users';
 import ErrorPage from './ErrorPage';
 import { hasAccess } from '../utils/config';
 import PropTypes from 'prop-types';
-import Company from './Company/Company';
+import Company from './company/Company';
 import Account from './user/Account';
 import { ACCESS_TYPES, ENDPOINTS } from '../constants';
+import Customers from './customers/Customers';
+import CustomersList from './customers/CustomersList';
 
 export default class Routes extends React.Component {
     render() {
@@ -37,6 +39,12 @@ export default class Routes extends React.Component {
                 <Route exact path={ `${ ep.COMPANY_URL }/:project_id([0-9]+)?` } render={ props => this.getComponent(
                     Company, props, false, ep.COMPANY_URL,
                 ) }/>
+
+                <Route exact path={ `${ ep.CUSTOMERS_URL }` }
+                    render={ props => this.getComponent(CustomersList, props, false, ep.COMPANY_URL) }/>
+
+                <Route exact path={ `${ ep.CUSTOMERS_URL }/:action(info|proyecto|instalacion|docs)?/:id([0-9]+)?` }
+                    render={ props => this.getComponent(Customers, props, false, ep.COMPANY_URL) }/>
 
                 <Route exact path={ ep.ACCOUNT_PROFILE } render={ props =>
                     this.getComponent(Account, props, true) }

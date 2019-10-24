@@ -82,7 +82,7 @@ def queue_process():
 
     with app.test_client() as client:
         p.start()
-        sleep(0.1)
+        sleep(0.4)
         yield p
 
     p.terminate()

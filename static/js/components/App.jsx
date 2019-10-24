@@ -130,6 +130,7 @@ const getInitialState = (state) => {
         token: state.user.token,
         roles: state.roles.roles,
         company: state.company,
+        meta: state.meta,
     };
 };
 

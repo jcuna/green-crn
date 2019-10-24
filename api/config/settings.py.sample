@@ -1,4 +1,4 @@
-SECRET_KEY = '{SecretKey}'
+SECRET_KEY = '{SecretKey}' # create with Fernet.generate_key().decode()
 SQLALCHEMY_DATABASE_URI = 'postgresql://{DbUser}:{DbPw}@{Db_EndPoint}/{DbName}'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ENGINE_OPTIONS = {
