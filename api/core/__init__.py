@@ -119,9 +119,6 @@ class Encryptor:
     def __init__(self, password):
         self.package = Fernet(password)
 
-    password = 'password'
-    """ Make sure to change this in your app setup Encryptor.password = @configPW """
-
     def encrypt(self, string: str) -> str:
         return b64encode(self.package.encrypt(string.encode('utf8')))
 
