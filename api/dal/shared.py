@@ -170,7 +170,7 @@ class ModelIter(object):
                     value = getattr(self, relationship.key)
                     if isinstance(value, list):
                         yield relationship.key, list(map(dict, value))
-                    else: yield relationship.key, dict(value)
+                    else: yield relationship.key, dict(value) if value else value
 
 
 class Point(object):
