@@ -1,15 +1,17 @@
 import datetime
 import re
+
 from flask_socketio import emit
 from sqlalchemy.exc import OperationalError, ProgrammingError, IntegrityError
 from flask import session, json, current_app, render_template, url_for, request
 from sqlalchemy.orm import joinedload
+from flask_mail import Message
+
 from core import Cache, API
 from core.middleware import HttpException
 from core.router import permissions
 from dal.shared import get_fillable, token_required, access_required, Paginator
 from dal.user import User, db, Role, UserToken, UserAttributes
-from flask_mail import Message
 from views import Result
 
 

@@ -1,4 +1,11 @@
 # customer setup required documents per section
+# This will need to be rethought to be created on demand
+# and make use of global variables and local substitution variables
+
+from dal.customer import Country, Province, SourceProject, ProjectType, PanelModel, InverterModel, Distributor, Rate, \
+    Transformer, TrCapacity, Phase, Tension, Integration
+
+
 DOCUMENTS_SECTION_CLIENT = [
     'CEDULA',
     'RNC',
@@ -10,8 +17,8 @@ DOCUMENTS_SECTION_LEGAL = [
     'TITULO DE PROPIEDAD',
     'CONTRATO DE ALQUILER',
     'FACTURA ELECTRICA',
-    'COTIZACIONES', # multiple estimates
-    'COTIZACION PFA', # final estimate
+    'COTIZACIONES',  # multiple estimates
+    'COTIZACION PFA',  # final estimate
     'FORM. CONOCE A TU CLIENTE ENESTAR',
     'FORM. CONOCE A TU CLIENTE ASEGURADORA',
     'CONTRATO DE ENESTAR',
@@ -58,3 +65,20 @@ DOCUMENTS_SECTION_CNE = [
 
 
 DOCUMENT_UPLOAD_BUCKET = 'installation-documents'
+
+
+updatable_lists = [
+    Country,
+    Province,
+    SourceProject,
+    ProjectType,
+    PanelModel,
+    InverterModel,
+    Distributor,
+    Rate,
+    Transformer,
+    TrCapacity,
+    Phase,
+    Tension,
+    Integration
+]

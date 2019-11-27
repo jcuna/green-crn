@@ -41,10 +41,16 @@ export default class Routes extends React.Component {
                 ) }/>
 
                 <Route exact path={ `${ ep.CUSTOMERS_URL }` }
-                    render={ props => this.getComponent(CustomersList, props, false, ep.COMPANY_URL) }/>
-
-                <Route exact path={ `${ ep.CUSTOMERS_URL }/:action(info|proyecto|instalacion|docs)?/:id([0-9]+)?` }
-                    render={ props => this.getComponent(Customers, props, false, ep.COMPANY_URL) }/>
+                    render={ props => this.getComponent(CustomersList, props, false, ep.CUSTOMERS_URL) }
+                />
+                <Route
+                    exact path={ `${ ep.CUSTOMERS_URL }/:action(info|proyectos)?/:id([0-9]+)?` }
+                    render={ props => this.getComponent(Customers, props, false, ep.CUSTOMERS_URL) }
+                />
+                <Route
+                    exact path={ `${ ep.CUSTOMER_PROJECTS_URL }/:id([0-9]+)?/:action(nuevo|docs|instalación)?` }
+                    render={ props => this.getComponent(Customers, props, false, ep.CUSTOMERS_URL) }
+                />
 
                 <Route exact path={ ep.ACCOUNT_PROFILE } render={ props =>
                     this.getComponent(Account, props, true) }

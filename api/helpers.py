@@ -167,7 +167,7 @@ countries = [
 
 
 source_projects = ['ENESTAR', 'OCHOA', 'OTRA']
-project_types = ['COMERCIAL','RESIDENCIAL']
+project_types = ['COMERCIAL', 'RESIDENCIAL']
 distributors = ['EDENORTE', 'EDESUR', 'EDEESTE', 'UERS']
 rates = ['BTS1', 'BTS2', 'MTD', 'MTD2']
 transformers = ['PROPIO', 'DISTRIBUIDORA', 'NO']

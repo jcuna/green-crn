@@ -51,7 +51,7 @@ class Header extends React.Component {
         }
         if (prevProps.company.status !== company.status && company.status === STATUS.COMPLETE) {
             this.setState({
-                logo: this.getFetchRolesOptions(company.data)
+                logo: this.getLogo(company.data)
             });
         }
     }

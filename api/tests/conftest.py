@@ -3,8 +3,10 @@ from base64 import b64encode
 from importlib import import_module
 from multiprocessing import Process
 from time import sleep
+
 import pytest
 from flask.testing import FlaskClient
+
 from tests import tear_files, init, endpoint
 from tests.seeders import seed_admin
 

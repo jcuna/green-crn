@@ -131,6 +131,7 @@ const getInitialState = (state) => {
         roles: state.roles.roles,
         company: state.company,
         meta: state.meta,
+        customer: state.customer,
     };
 };
 

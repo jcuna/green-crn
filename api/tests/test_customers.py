@@ -5,7 +5,6 @@ from tests import endpoint, front_end_date
 
 def test_new_customer(client: FlaskClient, admin_login):
 
-
     data = {
         'first_name': 'James',
         'last_name': 'Smith',
@@ -14,7 +13,8 @@ def test_new_customer(client: FlaskClient, admin_login):
         'primary_phone': '1236589785',
         'secondary_phone': '6345642356',
         'address': 'Calle 1 #245 Barrio Nuevo Santiago',
-        'source_project_id': 1, # ENESTAR
+        'source_project_id': 1,
+        'province_id': 1,
     }
     error = client.post(endpoint('/customers'), json=data)
     assert error.status_code == 401

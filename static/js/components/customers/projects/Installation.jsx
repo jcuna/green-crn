@@ -5,7 +5,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export default class CustomersInstallation extends React.Component {
+export default class Installation extends React.Component {
     constructor(props) {
         super(props);
     }

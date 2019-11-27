@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-if [[ "$1" != "" && "$1" != "stop" && "$1" != "ssh" && "$1" != "build" && "$1" != "test" && "$1" != "run" ]]; then
+if [[ "$1" != "" && "$1" != "stop" && "$1" != "ssh" && "$1" != "build" && "$1" != "test" && "$1" != "run" \
+  && "$1" != "test-cov" ]]; then
 
     printf "Bad argument ${1}.\n"
     printf "Options:\n"
@@ -9,6 +10,7 @@ if [[ "$1" != "" && "$1" != "stop" && "$1" != "ssh" && "$1" != "build" && "$1" !
     printf "\t<ssh>              -- Logs into containers bash console\n"
     printf "\t<build>            -- Builds a prod ready docker image\n"
     printf "\t<test>             -- Runs pytest on the api\n"
+    printf "\t<test-cov>         -- Runs pytest on the api with coverage\n"
     printf "\t<run>              -- Runs an arbitrary command in the api container\n"
     exit 1;
 fi
@@ -25,12 +27,7 @@ get_container_id() {
     echo $(docker ps -a -q --filter name="$IMAGE_NAME" --format="{{.ID}}")
 }
 
-if [[ ! -f "./docker/docker-compose.yml" ]]; then
-    printf "Call me from isc-api's root directory.\n"
-    exit 1
-fi
-
-if [[ "$1" == "test" ]]; then
+run_tests() {
     CONTAINER_ID=$(get_container_id ${API_CONTAINER_NAME})
     FLAGS="-ra"
     APPEND="${@:2}"
@@ -38,12 +35,25 @@ if [[ "$1" == "test" ]]; then
       FLAGS="$FLAGS $3"
       APPEND="${@:4}"
     fi
-    COMMAND="pytest --cov=. --cov-config=tests/.coveragerc $FLAGS tests/$APPEND"
+    COMMAND="pytest $FLAGS tests/$APPEND"
     printf "%s\n" "$COMMAND"
 
     docker exec -ti "$CONTAINER_ID" bash -c \
         "PYTHONDONTWRITEBYTECODE=1 APP_SETTINGS_PATH='/tmp/settings.py' $COMMAND"
     exit $?
+}
+
+if [[ ! -f "./docker/docker-compose.yml" ]]; then
+    printf "Call me from isc-api's root directory.\n"
+    exit 1
+fi
+
+if [[ "$1" == "test" ]]; then
+    run_tests "${@:0}"
+fi
+
+if [[ "$1" == "test-cov" ]]; then
+    run_tests "${@:0}" " --cov=. --cov-config=tests/.coveragerc"
 fi
 
 if [[ "$1" == "run" ]]; then

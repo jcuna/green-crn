@@ -1,8 +1,9 @@
 import sys
-import logging
 from importlib import import_module
+import logging
 from apscheduler.executors.pool import ProcessPoolExecutor
 from apscheduler.schedulers.background import BlockingScheduler
+
 from core.utils import create_file_log_handler
 
 # schedule is UTC time so assume +4 hours while daylight savings

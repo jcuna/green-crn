@@ -5,12 +5,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export default class CustomersProject extends React.Component {
+export default class Project extends React.Component {
     constructor(props) {
         super(props);
     }
 
     render() {
+        console.log(this.props);
+
         return (
             <div>
                 <section className='widget'>
@@ -22,5 +24,6 @@ export default class CustomersProject extends React.Component {
 
     static propTypes = {
         dispatch: PropTypes.func,
+        match: PropTypes.object,
     };
 }

@@ -5,25 +5,35 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import FormGenerator from '../../utils/FromGenerator';
-import { STATUS } from '../../constants';
+import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, STATUS } from '../../constants';
 import { fetchCountries, fetchSourceProjects } from '../../actions/metaActions';
+import { createCustomer } from '../../actions/customerAction';
+import { notifications } from '../../actions/appActions';
+import { hasAccess } from '../../utils/config';
 
-export default class CustomersInfo extends React.Component {
+export default class CustomerInfo extends React.Component {
     constructor(props) {
         super(props);
 
+        const obj = this.fields;
+
+        if (typeof props.customer.current.id !== 'undefined') {
+            Object.keys(this.fields).forEach(k => {
+                if (typeof props.customer.current[k] === 'object') {
+                    Object.keys(props.customer.current[k]).forEach(o => {
+                        if (o === k) {
+                            obj[k] = props.customer.current[k][o];
+                        }
+                    });
+                } else {
+                    obj[k] = props.customer.current[k];
+                }
+            });
+        }
+
         this.state = {
-            editing: true,
-            first_name: '',
-            last_name: '',
-            primary_email: '',
-            secondary_email: '',
-            primary_phone: '',
-            secondary_phone: '',
-            identification_number: '',
-            address: '',
-            country: 1,
-            province: 0,
+            editing: hasAccess(`${ ENDPOINTS.CUSTOMERS_URL }`, ACCESS_TYPES.WRITE),
+            ...obj,
             button: {
                 disabled: true,
                 className: 'col-6',
@@ -36,6 +46,20 @@ export default class CustomersInfo extends React.Component {
         this.onInputChange = this.onInputChange.bind(this);
 
         this.fetchMeta();
+    }
+
+    fields = {
+        first_name: '',
+        last_name: '',
+        primary_email: '',
+        secondary_email: '',
+        primary_phone: '',
+        secondary_phone: '',
+        identification_number: '',
+        address: '',
+        country: 1,
+        province_id: 1,
+        source_project_id: 1
     }
 
     fetchMeta() {
@@ -51,7 +75,7 @@ export default class CustomersInfo extends React.Component {
         return (
             <div>
                 <section className='widget'>
-                    <h4>Informacion General</h4>
+                    <h4>Información General</h4>
                     { this.props.editing || this.state.editing && this.renderWrite() || this.renderReadOnly() }
                 </section>
             </div>
@@ -125,16 +149,16 @@ export default class CustomersInfo extends React.Component {
                     name: 'secondary_phone',
                     placeholder: 'Telefono secundario',
                     defaultValue: this.state.secondary_phone,
-                    validate: ['required'],
+                    validate: ['phone'],
                     onChange: this.onInputChange,
                     autoComplete: 'off',
                 },
                 {
                     className: 'col-6',
                     name: 'identification_number',
-                    placeholder: 'Cedula (000-0000000-1)',
+                    placeholder: 'Cedula/RNC (000-0000000-1)/(0-00-00000-0)',
                     defaultValue: this.state.identification_number,
-                    validate: ['required', 'regex:^[0-9]{3}-[0-9]{7}-[0-9]'],
+                    validate: ['required', 'regex:^(([0-9]{3}-[0-9]{7}-[0-9]{1})|([0-9]{1}-[0-9]{2}-[0-9]{5}-[0-9]{1}))$'],
                     onChange: this.onInputChange,
                     autoComplete: 'off',
                 },
@@ -160,7 +184,7 @@ export default class CustomersInfo extends React.Component {
                 {
                     formElement: 'select',
                     className: 'col-6',
-                    name: 'province',
+                    name: 'province_id',
                     label: 'Provincia',
                     defaultValue: 1,
                     validate: ['required'],
@@ -172,7 +196,7 @@ export default class CustomersInfo extends React.Component {
                 {
                     formElement: 'select',
                     className: 'col-12',
-                    name: 'source',
+                    name: 'source_project_id',
                     label: 'Fuente de projecto',
                     defaultValue: 1,
                     validate: ['required'],
@@ -184,19 +208,38 @@ export default class CustomersInfo extends React.Component {
         />;
     }
 
-    formSubmit() {
-
+    formSubmit(e, data) {
+        const customer_data = {};
+        Object.keys(this.fields).forEach(field => customer_data[field] = data[field].value);
+        this.props.dispatch(createCustomer(customer_data, (id) => {
+            this.props.dispatch(notifications(
+                { type: ALERTS.SUCCESS, message: 'Cliente creado satisfactoriamente' })
+            );
+            this.props.history.push(`${ENDPOINTS.CUSTOMERS_URL}/${id}`);
+        }, () => {
+            this.props.dispatch(notifications({ type: ALERTS.DANGER, message: GENERIC_ERROR }));
+        }));
     }
 
     onInputChange({ target }, validate) {
+        const state = {};
         if (validate[target.name].isValid) {
-            this.setState({ [target.name]: validate[target.name].value });
+            state[target.name] = validate[target.name].value;
         }
+        let valid = true;
+        Object.keys(this.fields).forEach(key => valid = valid && validate[key].isValid);
+
+        this.setState({
+            ...state,
+            button: { ...this.state.button, disabled: !valid }
+        });
     }
 
     static propTypes = {
         dispatch: PropTypes.func,
         editing: PropTypes.bool,
         meta: PropTypes.object,
+        history: PropTypes.object,
+        customer: PropTypes.object,
     };
 }

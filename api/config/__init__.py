@@ -1,15 +1,15 @@
+import os
 from subprocess import PIPE, STDOUT, Popen
-from flask import Flask
-from flask_mail import Mail
-from email.mime.text import MIMEText
 import sys
+from email.mime.text import MIMEText
 import hashlib
 import uuid
 from datetime import datetime
 from random import random
-import os
 from importlib.machinery import SourceFileLoader
 
+from flask import Flask
+from flask_mail import Mail
 
 configs = SourceFileLoader('settings', os.environ.get('APP_SETTINGS_PATH')).load_module()
 

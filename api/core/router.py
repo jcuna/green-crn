@@ -1,10 +1,12 @@
 import importlib
+
 from sqlalchemy.exc import ProgrammingError, OperationalError
 from flask import Flask, url_for, render_template, redirect, request, Blueprint
 from flask_restful import Api
 import json
-from config.routes import register, no_permissions
 import re
+
+from config.routes import register, no_permissions
 from dal import db
 from dal.user import User, Role, UserAttributes, admin_access, admin_preferences, CompanyProfile
 from dal.shared import get_fillable

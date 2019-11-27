@@ -1,4 +1,5 @@
 from flask import Flask
+
 from core.utils import configure_loggers
 from config import get_mail, configs
 from dal.shared import db

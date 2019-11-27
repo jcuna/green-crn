@@ -5,10 +5,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Breadcrumbs from '../../utils/Breadcrumbs';
-import CustomersInfo from './CustomersInfo';
-import CustomersProject from './CustomersProject';
-import CustomersInstallation from './CustomersInstallation';
-import CustomersDocs from './CustomersDocs';
+import CustomerInfo from './CustomerInfo';
+import Projects from './projects/Projects';
 import Link from 'react-router-dom/Link';
 import { ENDPOINTS } from '../../constants';
 
@@ -39,26 +37,10 @@ export default class Customers extends React.Component {
                         </li>
                         <li className='nav-item'>
                             <Link
-                                className={ this.getClassName('proyecto') }
-                                data-func='project'
-                                to={ `${ ENDPOINTS.CUSTOMERS_URL }/proyecto${ path_id }` }>
-                                Proyecto
-                            </Link>
-                        </li>
-                        <li className='nav-item'>
-                            <Link
-                                className={ this.getClassName('instalacion') }
-                                data-func='install'
-                                to={ `${ ENDPOINTS.CUSTOMERS_URL }/instalacion${ path_id }` }>
-                                Instalacion
-                            </Link>
-                        </li>
-                        <li className='nav-item'>
-                            <Link
-                                className={ this.getClassName('docs') }
-                                data-func='docs'
-                                to={ `${ ENDPOINTS.CUSTOMERS_URL }/docs${ path_id }` }>
-                                Documentos
+                                className={ this.getClassName('proyectos') }
+                                data-func='projects'
+                                to={ `${ ENDPOINTS.CUSTOMERS_URL }/proyectos${ path_id }` }>
+                                Proyectos
                             </Link>
                         </li>
                     </ul>
@@ -89,16 +71,10 @@ export default class Customers extends React.Component {
     }
 
     getRenderComponent(action) {
-        switch (action) {
-            case 'proyecto':
-                return CustomersProject;
-            case 'instalacion':
-                return CustomersInstallation;
-            case 'docs':
-                return CustomersDocs;
-            default:
-                return CustomersInfo;
+        if (action === 'proyectos') {
+            return Projects;
         }
+        return CustomerInfo;
     }
 
     static propTypes = {

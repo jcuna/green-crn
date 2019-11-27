@@ -1,4 +1,3 @@
-import io
 from flask.testing import FlaskClient
 
 
@@ -14,5 +13,4 @@ install_sample = {
 
 
 def seed_admin(client: FlaskClient):
-
     return client.post('/install', data=install_sample, content_type='multipart/form-data')

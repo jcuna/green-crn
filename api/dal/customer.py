@@ -14,6 +14,7 @@ BigInteger = db.BigInteger().with_variant(sqlite.INTEGER(), 'sqlite')
 SmallInteger = db.SmallInteger().with_variant(sqlite.INTEGER(), 'sqlite')
 MacAddress = MACADDR().with_variant(db.String, 'sqlite')
 
+
 # many to many associations
 class InstallationPanelModel(db.Model, ModelIter):
     __tablename__ = 'installations_panel_models'
@@ -93,6 +94,7 @@ class InverterModel(db.Model, ModelIter):
         primaryjoin=id == InstallationInverterModel.inverter_model_id,
     )
 
+
 class Distributor(db.Model, ModelIter):
     __tablename__ = 'distributors'
 
@@ -165,6 +167,7 @@ class Customer(db.Model, ModelIter):
         'secondary_phone',
         'address',
         'source_project_id',
+        'province_id',
     ]
 
     id = db.Column(db.Integer, primary_key=True)
@@ -181,6 +184,7 @@ class Customer(db.Model, ModelIter):
     secondary_phone = db.Column(db.String(10, collation=configs.DB_COLLATION), nullable=True)
     address = db.Column(db.Text(collation=configs.DB_COLLATION), nullable=False)
     source_project = relationship(SourceProject, uselist=False, lazy='joined')
+    province = relationship(Province, uselist=False, lazy='joined')
     created_on = db.Column(db.DateTime(), nullable=False, default=datetime.utcnow)
     updated_on = db.Column(
         db.DateTime(),
@@ -188,6 +192,7 @@ class Customer(db.Model, ModelIter):
         default=datetime.utcnow,
         onupdate=datetime.utcnow
     )
+    province_id = deferred(db.Column(db.Integer, db.ForeignKey('provinces.id'), nullable=False))
     source_project_id = db.Column(db.Integer, db.ForeignKey('source_projects.id'))
 
 
@@ -308,3 +313,22 @@ class InstallationDocument(db.Model, ModelIter):
     @name.setter
     def name(self, name: str):
         self._name = name.upper().strip()
+
+
+class Note(db.Model, ModelIter):
+    __tablename__ = 'notes'
+    id = db.Column(db.Integer, primary_key=True)
+    comment = db.Column(db.String)
+
+    customer_id = deferred(db.Column(
+        db.Integer,
+        db.ForeignKey('customers.id'),
+        index=True,
+        nullable=True
+    ))
+    customer_project_id = deferred(db.Column(
+        db.Integer,
+        db.ForeignKey('customer_projects.id'),
+        index=True,
+        nullable=True
+    ))
