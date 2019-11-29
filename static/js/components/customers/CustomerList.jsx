@@ -12,7 +12,7 @@ import { fetchCustomers } from '../../actions/customerAction';
 import Table from '../../utils/Table';
 import FontAwesome from '../../utils/FontAwesome';
 
-export default class CustomersList extends React.Component {
+export default class CustomerList extends React.Component {
     constructor(props) {
         super(props);
         this.search = this.search.bind(this);

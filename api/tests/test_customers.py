@@ -1,5 +1,6 @@
 import io
 from flask.testing import FlaskClient
+
 from tests import endpoint, front_end_date
 
 
@@ -23,6 +24,24 @@ def test_new_customer(client: FlaskClient, admin_login):
     resp = client.post(endpoint('/customers'), json=data, headers=admin_login)
     assert resp.status_code == 200
     assert 'id' in resp.json
+
+
+def test_update_customer_info(client: FlaskClient, admin_login):
+    from dal.customer import Customer
+
+    c_id = Customer.query.first().id
+    assert c_id is not None
+    data = {
+        'id': c_id,
+        'first_name': 'Jon',
+        'secondary_email': 'email@place.com'
+    }
+
+    resp = client.put(endpoint('/customers/%s' % c_id), json=data, headers=admin_login)
+    assert resp.status_code == 201
+    customer = Customer.query.first()
+    assert customer.first_name == 'Jon'
+    assert customer.secondary_email == 'email@place.com'
 
 
 def test_customer_add_project(client: FlaskClient, admin_login):
@@ -67,12 +86,10 @@ def test_customer_add_project(client: FlaskClient, admin_login):
     assert 'id' in resp.json
 
 
-
 def test_customer_add_installation(client: FlaskClient, admin_login):
     customer = client.get(endpoint('/customers'), headers=admin_login)
 
     _id = customer.json['list'][0]['id']
-
 
     data = {
         'installed_capacity': 1325.362,
@@ -130,7 +147,7 @@ def test_customer_data(client: FlaskClient, admin_login):
     customer = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
 
     assert customer.status_code == 200
-    assert customer.json['first_name'] == 'James'
+    assert customer.json['first_name'] == 'Jon'
     assert customer.json['primary_phone'] == '1236589785'
     assert customer.json['source_project']['label'] == 'ENESTAR'
 

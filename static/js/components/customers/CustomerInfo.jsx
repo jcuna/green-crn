@@ -7,33 +7,20 @@ import PropTypes from 'prop-types';
 import FormGenerator from '../../utils/FromGenerator';
 import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, STATUS } from '../../constants';
 import { fetchCountries, fetchSourceProjects } from '../../actions/metaActions';
-import { createCustomer } from '../../actions/customerAction';
+import { updateCustomer, createCustomer, fetchCustomer, clearCurrentCustomer } from '../../actions/customerAction';
 import { notifications } from '../../actions/appActions';
 import { hasAccess } from '../../utils/config';
+import Spinner from '../../utils/Spinner';
 
 export default class CustomerInfo extends React.Component {
     constructor(props) {
         super(props);
 
-        const obj = this.fields;
-
-        if (typeof props.customer.current.id !== 'undefined') {
-            Object.keys(this.fields).forEach(k => {
-                if (typeof props.customer.current[k] === 'object') {
-                    Object.keys(props.customer.current[k]).forEach(o => {
-                        if (o === k) {
-                            obj[k] = props.customer.current[k][o];
-                        }
-                    });
-                } else {
-                    obj[k] = props.customer.current[k];
-                }
-            });
-        }
+        const { match, customer, dispatch, history } = this.props;
 
         this.state = {
             editing: hasAccess(`${ ENDPOINTS.CUSTOMERS_URL }`, ACCESS_TYPES.WRITE),
-            ...obj,
+            ...this.fields,
             button: {
                 disabled: true,
                 className: 'col-6',
@@ -42,41 +29,62 @@ export default class CustomerInfo extends React.Component {
             },
         };
 
+        if (typeof match.params.id !== 'undefined' && customer.id !== Number(match.params.id)) {
+            dispatch(fetchCustomer(match.params.id, Function, () => {
+                history.push(ENDPOINTS.NOT_FOUND);
+            }));
+        } else if (typeof match.params.id === 'undefined') {
+            dispatch(clearCurrentCustomer());
+        }
+        this.fetchMeta();
+
         this.formSubmit = this.formSubmit.bind(this);
         this.onInputChange = this.onInputChange.bind(this);
-
-        this.fetchMeta();
     }
 
-    fields = {
-        first_name: '',
-        last_name: '',
-        primary_email: '',
-        secondary_email: '',
-        primary_phone: '',
-        secondary_phone: '',
-        identification_number: '',
-        address: '',
-        country: 1,
-        province_id: 1,
-        source_project_id: 1
+    componentDidUpdate(prevProps) {
+        const { current } = this.props.customer;
+        if (prevProps.customer.current.id !== current.id) {
+            this.setState(this.fields);
+        }
+    }
+
+    get fields() {
+        return {
+            id: this.props.customer.current.id,
+            first_name: this.props.customer.current.first_name,
+            last_name: this.props.customer.current.last_name,
+            primary_email: this.props.customer.current.primary_email,
+            secondary_email: this.props.customer.current.secondary_email,
+            primary_phone: this.props.customer.current.primary_phone,
+            secondary_phone: this.props.customer.current.secondary_phone,
+            identification_number: this.props.customer.current.identification_number,
+            address: this.props.customer.current.address,
+            source_project_id: this.props.customer.current.source_project_id,
+            country: this.props.customer.current.province.country_id || 1,
+            province_id: this.props.customer.current.province.id || 1,
+        };
     }
 
     fetchMeta() {
         if (this.props.meta.countries.status === STATUS.PENDING) {
             this.props.dispatch(fetchCountries());
         }
-        if (this.props.meta.countries.status === STATUS.PENDING) {
+        if (this.props.meta.source_projects.status === STATUS.PENDING) {
             this.props.dispatch(fetchSourceProjects());
         }
     }
 
     render() {
+        const { match } = this.props;
+        if (match.params.id && Number(match.params.id) !== this.state.id) {
+            return <Spinner/>;
+        }
         return (
             <div>
                 <section className='widget'>
                     <h4>Información General</h4>
-                    { this.props.editing || this.state.editing && this.renderWrite() || this.renderReadOnly() }
+                    { this.state.editing && this.renderWrite() || this.renderReadOnly() }
                 </section>
             </div>
         );
@@ -93,6 +101,7 @@ export default class CustomerInfo extends React.Component {
     }
 
     get form() {
+        const { current } = this.props.customer;
         return <FormGenerator
             formName={ 'new-tenant' }
             inlineSubmit={ true }
@@ -103,7 +112,7 @@ export default class CustomerInfo extends React.Component {
                     className: 'col-6',
                     name: 'first_name',
                     placeholder: 'Nombre',
-                    defaultValue: this.state.first_name,
+                    defaultValue: current.first_name,
                     validate: 'required',
                     onChange: this.onInputChange,
                     autoComplete: 'off',
@@ -112,7 +121,7 @@ export default class CustomerInfo extends React.Component {
                     className: 'col-6',
                     name: 'last_name',
                     placeholder: 'Apellidos',
-                    defaultValue: this.state.last_name,
+                    defaultValue: current.last_name,
                     validate: 'required',
                     onChange: this.onInputChange,
                     autoComplete: 'off',
@@ -121,7 +130,7 @@ export default class CustomerInfo extends React.Component {
                     className: 'col-6',
                     name: 'primary_email',
                     placeholder: 'Email',
-                    defaultValue: this.state.primary_email,
+                    defaultValue: current.primary_email,
                     validate: ['required', 'email'],
                     onChange: this.onInputChange,
                     autoComplete: 'off',
@@ -130,7 +139,7 @@ export default class CustomerInfo extends React.Component {
                     className: 'col-6',
                     name: 'secondary_email',
                     placeholder: 'Email secundario',
-                    defaultValue: this.state.secondary_email,
+                    defaultValue: current.secondary_email,
                     validate: 'email',
                     onChange: this.onInputChange,
                     autoComplete: 'off',
@@ -139,7 +148,7 @@ export default class CustomerInfo extends React.Component {
                     className: 'col-6',
                     name: 'primary_phone',
                     placeholder: 'Telefono',
-                    defaultValue: this.state.primary_phone,
+                    defaultValue: current.primary_phone,
                     validate: ['phone', 'required'],
                     onChange: this.onInputChange,
                     autoComplete: 'off',
@@ -148,7 +157,7 @@ export default class CustomerInfo extends React.Component {
                     className: 'col-6',
                     name: 'secondary_phone',
                     placeholder: 'Telefono secundario',
-                    defaultValue: this.state.secondary_phone,
+                    defaultValue: current.secondary_phone,
                     validate: ['phone'],
                     onChange: this.onInputChange,
                     autoComplete: 'off',
@@ -157,7 +166,7 @@ export default class CustomerInfo extends React.Component {
                     className: 'col-6',
                     name: 'identification_number',
                     placeholder: 'Cedula/RNC (000-0000000-1)/(0-00-00000-0)',
-                    defaultValue: this.state.identification_number,
+                    defaultValue: current.identification_number,
                     validate: ['required', 'regex:^(([0-9]{3}-[0-9]{7}-[0-9]{1})|([0-9]{1}-[0-9]{2}-[0-9]{5}-[0-9]{1}))$'],
                     onChange: this.onInputChange,
                     autoComplete: 'off',
@@ -166,7 +175,7 @@ export default class CustomerInfo extends React.Component {
                     className: 'col-6',
                     name: 'address',
                     placeholder: 'Direccion',
-                    defaultValue: this.state.address,
+                    defaultValue: current.address,
                     validate: 'required',
                     onChange: this.onInputChange,
                     autoComplete: 'off',
@@ -176,7 +185,7 @@ export default class CustomerInfo extends React.Component {
                     className: 'col-6',
                     name: 'country',
                     label: 'Pais',
-                    defaultValue: 1,
+                    defaultValue: current.province.country_id || 1,
                     validate: ['required'],
                     options: this.props.meta.countries.list.map(obj => ({ value: obj.id, label: obj.name })),
                     onChange: this.onInputChange,
@@ -186,10 +195,11 @@ export default class CustomerInfo extends React.Component {
                     className: 'col-6',
                     name: 'province_id',
                     label: 'Provincia',
-                    defaultValue: 1,
+                    defaultValue: current.province.id || 1,
                     validate: ['required'],
                     options: this.props.meta.countries.list.length &&
-                        this.props.meta.countries.list.filter(c => c.id === Number(this.state.country))[0].provinces
+                        this.props.meta.countries.list
+                            .filter(c => c.id === Number(this.state.country))[0].provinces
                             .map(p => ({ value: p.id, label: p.name })),
                     onChange: this.onInputChange,
                 },
@@ -198,7 +208,7 @@ export default class CustomerInfo extends React.Component {
                     className: 'col-12',
                     name: 'source_project_id',
                     label: 'Fuente de projecto',
-                    defaultValue: 1,
+                    defaultValue: current.source_project_id,
                     validate: ['required'],
                     options: this.props.meta.source_projects.list.map(obj => ({ value: obj.id, label: obj.label })),
                     onChange: this.onInputChange,
@@ -210,12 +220,30 @@ export default class CustomerInfo extends React.Component {
 
     formSubmit(e, data) {
         const customer_data = {};
-        Object.keys(this.fields).forEach(field => customer_data[field] = data[field].value);
-        this.props.dispatch(createCustomer(customer_data, (id) => {
+        let action = createCustomer;
+        let verb = 'creado';
+        if (typeof this.props.customer.current.id !== 'undefined') {
+            action = updateCustomer;
+            verb = 'actualizado';
+            customer_data.id = this.state.id;
+        }
+        Object.keys(this.fields).forEach(field => {
+            if (typeof data[field] !== 'undefined') {
+                customer_data[field] = data[field].value;
+            }
+        });
+        this.props.dispatch(action(customer_data, ({ id }) => {
             this.props.dispatch(notifications(
-                { type: ALERTS.SUCCESS, message: 'Cliente creado satisfactoriamente' })
+                { type: ALERTS.SUCCESS, message: `Cliente ${verb} satisfactoriamente` })
             );
-            this.props.history.push(`${ENDPOINTS.CUSTOMERS_URL}/${id}`);
+            if (id) {
+                this.props.history.push(`${ ENDPOINTS.CUSTOMERS_URL }/${ id }`);
+            } else {
+                this.props.history.push(`${ ENDPOINTS.CUSTOMERS_URL }/info/${ customer_data.id }#`);
+                this.setState({
+                    button: { ...this.state.button, disabled: true }
+                });
+            }
         }, () => {
             this.props.dispatch(notifications({ type: ALERTS.DANGER, message: GENERIC_ERROR }));
         }));
@@ -227,8 +255,8 @@ export default class CustomerInfo extends React.Component {
             state[target.name] = validate[target.name].value;
         }
         let valid = true;
-        Object.keys(this.fields).forEach(key => valid = valid && validate[key].isValid);
-
+        Object.keys(this.fields).forEach(key =>
+            valid = typeof validate[key] === 'undefined' || valid && validate[key].isValid);
         this.setState({
             ...state,
             button: { ...this.state.button, disabled: !valid }
@@ -241,5 +269,6 @@ export default class CustomerInfo extends React.Component {
         meta: PropTypes.object,
         history: PropTypes.object,
         customer: PropTypes.object,
+        match: PropTypes.object,
     };
 }

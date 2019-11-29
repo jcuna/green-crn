@@ -7,6 +7,7 @@ from config import configs
 from config.constants import DOCUMENT_UPLOAD_BUCKET
 from core import API
 from core.AWS import Storage
+from core.middleware import HttpException
 from core.utils import local_to_utc
 from dal.customer import Customer, CustomerProject, CustomerInstallation, InstallationPanelModel, \
     InstallationInverterModel, InstallationDocument
@@ -63,6 +64,19 @@ class Customers(API):
         db.session.commit()
         return Result.id(c.id)
 
+    @token_required
+    @access_required
+    def put(self, customer_id):
+        c = Customer.query.filter_by(id=customer_id).first()
+        if not c:
+            raise HttpException('Not found', 404)
+
+        json = get_fillable(Customer, **request.get_json())
+        for field, value in json.items():
+            setattr(c, field, value)
+
+        db.session.commit()
+        return Result.success('Success', 201)
 
 
 class CustomerProjects(API):
@@ -102,6 +116,7 @@ class CustomerInstallations(API):
         db.session.add(c)
         db.session.commit()
         return Result.id(c.id)
+
 
 class CustomerDocuments(API):
 

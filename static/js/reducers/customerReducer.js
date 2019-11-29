@@ -1,5 +1,12 @@
 import { STATUS } from '../constants';
-import { CUSTOMERS_FETCH_FAILED, CUSTOMERS_FETCHED, CUSTOMERS_FETCHING } from '../actions/customerAction';
+import {
+    CUSTOMER_FETCH_FAILED,
+    CUSTOMER_FETCHED,
+    CUSTOMERS_FETCH_FAILED,
+    CUSTOMERS_FETCHED,
+    CUSTOMERS_FETCHING,
+    CUSTOMER_CURRENT_CLEAR,
+} from '../actions/customerAction';
 
 const initState = {
     status: STATUS.PENDING,
@@ -11,7 +18,17 @@ const initState = {
         searching: false,
     },
     current: {
-
+        id: null,
+        first_name: '',
+        last_name: '',
+        primary_email: '',
+        secondary_email: '',
+        primary_phone: '',
+        secondary_phone: '',
+        identification_number: '',
+        address: '',
+        province: {},
+        source_project_id: 1,
     }
 };
 
@@ -32,6 +49,11 @@ export default function customerReducer(state = initState, action) {
             };
         case CUSTOMERS_FETCH_FAILED:
             return { ...state, status: STATUS.FAILED };
+        case CUSTOMER_FETCHED:
+            return { ...state, current: action.payload };
+        case CUSTOMER_FETCH_FAILED:
+        case CUSTOMER_CURRENT_CLEAR:
+            return { ...state, current: initState.current };
         default:
             return state;
     }

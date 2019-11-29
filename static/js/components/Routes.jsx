@@ -15,7 +15,7 @@ import Company from './company/Company';
 import Account from './user/Account';
 import { ACCESS_TYPES, ENDPOINTS } from '../constants';
 import Customers from './customers/Customers';
-import CustomersList from './customers/CustomersList';
+import CustomerList from './customers/CustomerList';
 
 export default class Routes extends React.Component {
     render() {
@@ -41,14 +41,14 @@ export default class Routes extends React.Component {
                 ) }/>
 
                 <Route exact path={ `${ ep.CUSTOMERS_URL }` }
-                    render={ props => this.getComponent(CustomersList, props, false, ep.CUSTOMERS_URL) }
+                    render={ props => this.getComponent(CustomerList, props, false, ep.CUSTOMERS_URL) }
                 />
                 <Route
                     exact path={ `${ ep.CUSTOMERS_URL }/:action(info|proyectos)?/:id([0-9]+)?` }
                     render={ props => this.getComponent(Customers, props, false, ep.CUSTOMERS_URL) }
                 />
                 <Route
-                    exact path={ `${ ep.CUSTOMER_PROJECTS_URL }/:id([0-9]+)?/:action(nuevo|docs|instalación)?` }
+                    exact path={ `${ ep.CUSTOMER_PROJECTS_URL }/:id([0-9]+)?/:action(nuevo|docs|instalacion)?` }
                     render={ props => this.getComponent(Customers, props, false, ep.CUSTOMERS_URL) }
                 />
 
