@@ -47,6 +47,9 @@ export default class CustomerInfo extends React.Component {
         if (prevProps.customer.current.id !== current.id) {
             this.setState(this.fields);
         }
+        if (!prevProps.customer.current.id && this.props.match.params.id && !current.id) {
+            this.props.dispatch(fetchCustomer(this.props.match.params.id));
+        }
     }
 
     get fields() {
@@ -222,7 +225,7 @@ export default class CustomerInfo extends React.Component {
         const customer_data = {};
         let action = createCustomer;
         let verb = 'creado';
-        if (typeof this.props.customer.current.id !== 'undefined') {
+        if (this.props.customer.current.id) {
             action = updateCustomer;
             verb = 'actualizado';
             customer_data.id = this.state.id;
