@@ -9,7 +9,7 @@ from core import API
 from core.AWS import Storage
 from core.middleware import HttpException
 from core.utils import local_to_utc
-from dal.customer import Customer, CustomerProject, CustomerInstallation, InstallationPanelModel, \
+from dal.customer import Customer, CustomerProject, Installations, InstallationPanelModel, \
     InstallationInverterModel, InstallationDocument
 from dal.shared import Paginator, token_required, access_required, get_fillable, db
 from views import Result
@@ -23,10 +23,10 @@ class Customers(API):
         if customer_id:
             customer = Customer.query.options(
                 joinedload('customer_projects'),
-                joinedload('customer_installations'),
-                joinedload('customer_installations.panels.panel_model'),
-                joinedload('customer_installations.inverters.inverter_model'),
-                joinedload('customer_installations.installation_documents')
+                joinedload('customer_projects.installations'),
+                joinedload('customer_projects.installations.panels.panel_model'),
+                joinedload('customer_projects.installations.inverters.inverter_model'),
+                joinedload('customer_projects.installations.installation_documents')
             ).filter_by(id=customer_id)
 
             return Result.model(customer.first())
@@ -100,7 +100,7 @@ class CustomerInstallations(API):
         data = request.get_json().copy()
         data['start_date'] = local_to_utc(data['start_date'])
 
-        c = CustomerInstallation(**get_fillable(CustomerInstallation, **data))
+        c = Installations(**get_fillable(Installations, **data))
         if 'panels' in data:
             for panel in data['panels']:
                 c.panels.append(
@@ -126,7 +126,7 @@ class CustomerDocuments(API):
     @access_required
     def post(self):
         name = request.form.get('name')
-        installation_id = request.form.get('customer_installation_id')
+        installation_id = request.form.get('installation_id')
         file = request.files.get('file')
 
         extension = guess_extension(file.content_type)
@@ -139,7 +139,7 @@ class CustomerDocuments(API):
 
         inst_doc = InstallationDocument(
             name=name,
-            customer_installation_id=installation_id,
+            installation_id=installation_id,
             file_extension=extension,
             object_key=key_name
         )

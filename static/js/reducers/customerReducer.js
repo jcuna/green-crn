@@ -5,7 +5,7 @@ import {
     CUSTOMERS_FETCH_FAILED,
     CUSTOMERS_FETCHED,
     CUSTOMERS_FETCHING,
-    CUSTOMER_CURRENT_CLEAR,
+    CUSTOMER_CURRENT_CLEAR, CUSTOMERS_CLEAR,
 } from '../actions/customerAction';
 
 const initState = {
@@ -29,6 +29,8 @@ const initState = {
         address: '',
         province: {},
         source_project_id: 1,
+        customer_installations: [],
+        customer_projects: [],
     }
 };
 
@@ -53,7 +55,9 @@ export default function customerReducer(state = initState, action) {
             return { ...state, current: action.payload };
         case CUSTOMER_FETCH_FAILED:
         case CUSTOMER_CURRENT_CLEAR:
-            return { ...state, current: initState.current };
+            return { ...state, current: { ...initState.current }};
+        case CUSTOMERS_CLEAR:
+            return { ...state, list: { ...initState.list }};
         default:
             return state;
     }

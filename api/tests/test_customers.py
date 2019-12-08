@@ -86,10 +86,12 @@ def test_customer_add_project(client: FlaskClient, admin_login):
     assert 'id' in resp.json
 
 
-def test_customer_add_installation(client: FlaskClient, admin_login):
+def test_project_add_installation(client: FlaskClient, admin_login):
     customer = client.get(endpoint('/customers'), headers=admin_login)
 
-    _id = customer.json['list'][0]['id']
+    customer_id = customer.json['list'][0]['id']
+    customer = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    project_id = customer.json['customer_projects'][0]['id']
 
     data = {
         'installed_capacity': 1325.362,
@@ -98,10 +100,9 @@ def test_customer_add_installation(client: FlaskClient, admin_login):
         'egauge_mac': 'ec:35:86:2e:8c:0c',
         'start_date': front_end_date(),
         'detailed_performance': 135,
-        'customer_id': _id,
+        'project_id': project_id,
         'panels': [{'id': 1, 'quantity': 100}, {'id': 2, 'quantity': 100}],
         'inverters': [{'id': 2, 'quantity': 2}, {'id': 2, 'quantity': 1}],
-
     }
 
     error = client.post(endpoint('/customers/installations'), json=data)
@@ -115,15 +116,11 @@ def test_customer_add_installation(client: FlaskClient, admin_login):
 
 
 def test_add_installation_documents(client: FlaskClient, admin_login):
-    from dal.customer import CustomerInstallation
-
-    customer = client.get(endpoint('/customers'), headers=admin_login)
-
-    _id = customer.json['list'][0]['id']
+    from dal.customer import Installations
 
     data = {
         'name': 'something',
-        'customer_installation_id': CustomerInstallation.query.first().id,
+        'installation_id': Installations.query.first().id,
         'file': (io.BytesIO(b'12345asdfg'), 'file.pdf'),
     }
 
@@ -131,7 +128,9 @@ def test_add_installation_documents(client: FlaskClient, admin_login):
     assert error.status_code == 401
     assert 'error' in error.json
 
-    resp = client.post(endpoint('/customers/documents'), data=data, content_type='multipart/form-data', headers=admin_login)
+    resp = client.post(
+        endpoint('/customers/documents'), data=data, content_type='multipart/form-data', headers=admin_login
+    )
     assert resp.status_code == 200
     assert resp.json['message'] == 'Success'
 
@@ -159,11 +158,13 @@ def test_customer_data(client: FlaskClient, admin_login):
     assert isinstance(customer.json['customer_projects'][0]['capacity'], dict)
     assert isinstance(customer.json['customer_projects'][0]['phase'], dict)
     assert isinstance(customer.json['customer_projects'][0]['tension'], dict)
-    assert isinstance(customer.json['customer_installations'], list)
-    assert isinstance(customer.json['customer_installations'][0]['panels'], list)
-    assert isinstance(customer.json['customer_installations'][0]['inverters'], list)
-    assert isinstance(customer.json['customer_installations'][0]['installation_documents'], list)
-    assert len(customer.json['customer_installations'][0]['installation_documents']) == 1
-    assert customer.json['customer_installations'][0]['installation_documents'][0]['name'] == 'SOMETHING'
-    assert customer.json['customer_installations'][0]['installation_documents'][0]['file_extension'] == '.pdf'
-    assert 'something-' in customer.json['customer_installations'][0]['installation_documents'][0]['object_key']
+    assert isinstance(customer.json['customer_projects'][0]['installations'], list)
+    assert isinstance(customer.json['customer_projects'][0]['installations'][0]['panels'], list)
+    assert isinstance(customer.json['customer_projects'][0]['installations'][0]['inverters'], list)
+    assert isinstance(customer.json['customer_projects'][0]['installations'][0]['installation_documents'], list)
+    assert len(customer.json['customer_projects'][0]['installations'][0]['installation_documents']) == 1
+    assert customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['name'] == 'SOMETHING'
+    assert customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['file_extension'] \
+        == '.pdf'
+    assert 'something-' in \
+        customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['object_key']

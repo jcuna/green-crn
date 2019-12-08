@@ -4,6 +4,7 @@ import token from '../utils/token';
 export const CUSTOMERS_FETCHED = 'CUSTOMERS_FETCHED';
 export const CUSTOMERS_FETCHING = 'CUSTOMERS_FETCHING';
 export const CUSTOMERS_FETCH_FAILED = 'CUSTOMERS_FETCH_FAILED';
+export const CUSTOMERS_CLEAR = 'CUSTOMERS_CLEAR';
 export const CUSTOMER_CREATED = 'CUSTOMER_CREATED';
 export const CUSTOMER_CREATING = 'CUSTOMER_CREATING';
 export const CUSTOMER_CREATION_FAILED = 'CUSTOMER_CREATION_FAILED';
@@ -79,5 +80,8 @@ export const fetchCustomer = (id, success, fail) =>
         }));
     };
 
-export const clearCurrentCustomer = (data) =>
-    (dispatch) => dispatch({ type: CUSTOMER_CURRENT_CLEAR, payload: data });
+export const clearCurrentCustomer = () =>
+    (dispatch) => dispatch({ type: CUSTOMER_CURRENT_CLEAR });
+
+export const clearCustomers = () =>
+    (dispatch) => dispatch({ type: CUSTOMERS_CLEAR });

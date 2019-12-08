@@ -7,7 +7,13 @@ import PropTypes from 'prop-types';
 import FormGenerator from '../../utils/FromGenerator';
 import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, STATUS } from '../../constants';
 import { fetchCountries, fetchSourceProjects } from '../../actions/metaActions';
-import { updateCustomer, createCustomer, fetchCustomer, clearCurrentCustomer } from '../../actions/customerAction';
+import {
+    updateCustomer,
+    createCustomer,
+    fetchCustomer,
+    clearCurrentCustomer,
+    clearCustomers
+} from '../../actions/customerAction';
 import { notifications } from '../../actions/appActions';
 import { hasAccess } from '../../utils/config';
 import Spinner from '../../utils/Spinner';
@@ -43,12 +49,14 @@ export default class CustomerInfo extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        const { current } = this.props.customer;
-        if (prevProps.customer.current.id !== current.id) {
+        const { customer, match, dispatch } = this.props;
+        if (prevProps.customer.current.id !== customer.current.id) {
             this.setState(this.fields);
         }
-        if (!prevProps.customer.current.id && this.props.match.params.id && !current.id) {
+        if (!prevProps.customer.current.id && this.props.match.params.id && !customer.current.id) {
             this.props.dispatch(fetchCustomer(this.props.match.params.id));
+        } else if (typeof match.params.id === 'undefined' && customer.current.id) {
+            dispatch(clearCurrentCustomer());
         }
     }
 
@@ -79,8 +87,8 @@ export default class CustomerInfo extends React.Component {
     }
 
     render() {
-        const { match } = this.props;
-        if (match.params.id && Number(match.params.id) !== this.state.id) {
+        const { match, customer } = this.props;
+        if (match.params.id && Number(match.params.id) !== this.state.id || !match.params.id && customer.current.id) {
             return <Spinner/>;
         }
         return (
@@ -236,17 +244,14 @@ export default class CustomerInfo extends React.Component {
             }
         });
         this.props.dispatch(action(customer_data, ({ id }) => {
+            this.props.dispatch(clearCustomers());
             this.props.dispatch(notifications(
                 { type: ALERTS.SUCCESS, message: `Cliente ${verb} satisfactoriamente` })
             );
-            if (id) {
-                this.props.history.push(`${ ENDPOINTS.CUSTOMERS_URL }/${ id }`);
-            } else {
-                this.props.history.push(`${ ENDPOINTS.CUSTOMERS_URL }/info/${ customer_data.id }#`);
-                this.setState({
-                    button: { ...this.state.button, disabled: true }
-                });
-            }
+            this.props.history.push(`${ ENDPOINTS.CUSTOMERS_URL }/info/${ id || customer_data.id }#`);
+            this.setState({
+                button: { ...this.state.button, disabled: true }
+            });
         }, () => {
             this.props.dispatch(notifications({ type: ALERTS.DANGER, message: GENERIC_ERROR }));
         }));

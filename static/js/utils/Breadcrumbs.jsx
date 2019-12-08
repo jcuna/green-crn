@@ -38,11 +38,11 @@ export default class Breadcrumbs extends React.Component {
         });
 
         return (
-            <nav aria-label="breadcrumb">
-                <ol className="breadcrumb">
-                    <li className="breadcrumb-item"><Link to='/'><FontAwesome type='home'/></Link></li>
+            <nav aria-label='breadcrumb'>
+                <ol className='breadcrumb'>
+                    <li className='breadcrumb-item'><Link to='/'><FontAwesome type='home'/></Link></li>
                     { items.map((item, key) =>
-                        <li key={ item.key } className="breadcrumb-item">
+                        <li key={ item.key } className='breadcrumb-item'>
                             { itemsLast === key && item.name }
                             { itemsLast !== key && <Link
                                 onClick={ () => dispatch(clearNotifications()) }
@@ -50,7 +50,7 @@ export default class Breadcrumbs extends React.Component {
                             }
                         </li>
                     )}
-                    { title && <li className="breadcrumb-item active" aria-current="page">{ title }</li>}
+                    { title && <li className='breadcrumb-item active' aria-current='page'>{ title }</li>}
                 </ol>
             </nav>
         );

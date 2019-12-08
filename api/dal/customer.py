@@ -20,7 +20,7 @@ class InstallationPanelModel(db.Model, ModelIter):
     __tablename__ = 'installations_panel_models'
 
     id = db.Column(db.Integer, primary_key=True)
-    installation_id = deferred(db.Column(db.Integer, db.ForeignKey('customer_installations.id'), index=True))
+    installation_id = deferred(db.Column(db.Integer, db.ForeignKey('installations.id'), index=True))
     panel_model_id = deferred(db.Column(db.Integer, db.ForeignKey('panel_models.id'), index=True))
     panel_quantity = db.Column(db.Integer, nullable=False)
 
@@ -29,7 +29,7 @@ class InstallationInverterModel(db.Model, ModelIter):
     __tablename__ = 'installations_inverter_models'
 
     id = db.Column(db.Integer, primary_key=True)
-    installation_id = deferred(db.Column(db.Integer, db.ForeignKey('customer_installations.id'), index=True))
+    installation_id = deferred(db.Column(db.Integer, db.ForeignKey('installations.id'), index=True))
     inverter_model_id = deferred(db.Column(db.Integer, db.ForeignKey('inverter_models.id'), index=True))
     inverter_quantity = db.Column(db.Integer, nullable=False)
 
@@ -251,8 +251,8 @@ class CustomerProject(db.Model, ModelIter):
     tension_id = deferred(db.Column(db.Integer, db.ForeignKey('tensions.id')))
 
 
-class CustomerInstallation(db.Model, ModelIter):
-    __tablename__ = 'customer_installations'
+class Installations(db.Model, ModelIter):
+    __tablename__ = 'installations'
 
     fillable = [
         'installed_capacity',
@@ -261,21 +261,21 @@ class CustomerInstallation(db.Model, ModelIter):
         'egauge_mac',
         'start_date',
         'detailed_performance',
-        'customer_id',
+        'project_id',
     ]
 
     id = db.Column(db.Integer, primary_key=True)
-    customer = relationship(Customer, uselist=False, backref='customer_installations', cascade='all, delete')
+    project = relationship(CustomerProject, uselist=False, backref='installations', cascade='all, delete')
     installed_capacity = db.Column(db.Numeric(8, 3))
     panels = relationship(
         InstallationPanelModel,
-        backref='customer_installations',
+        backref='installations',
         primaryjoin=id == InstallationPanelModel.installation_id,
         lazy='joined'
     )
     inverters = relationship(
         InstallationInverterModel,
-        backref='customer_installations',
+        backref='installations',
         primaryjoin=id == InstallationInverterModel.installation_id,
         lazy='joined'
     )
@@ -285,7 +285,7 @@ class CustomerInstallation(db.Model, ModelIter):
     start_date = db.Column(db.DateTime)
     detailed_performance = db.Column(db.SmallInteger)
 
-    customer_id = deferred(db.Column(db.Integer, db.ForeignKey('customers.id'), index=True, nullable=False))
+    project_id = deferred(db.Column(db.Integer, db.ForeignKey('customer_projects.id'), index=True, nullable=False))
 
 
 class InstallationDocument(db.Model, ModelIter):
@@ -295,16 +295,16 @@ class InstallationDocument(db.Model, ModelIter):
         'name',
         'file_extension',
         'object_key',
-        'customer_installation_id',
+        'installation_id',
     ]
 
     id = db.Column(db.Integer, primary_key=True)
-    customer_installation = relationship(CustomerInstallation, backref='installation_documents')
+    installation = relationship(Installations, backref='installation_documents')
     _name = db.Column('name', db.String(96, collation=configs.DB_COLLATION))
     file_extension = db.Column(db.String(5, collation=configs.DB_COLLATION))
     object_key = db.Column(db.String(512, collation=configs.DB_COLLATION))
 
-    customer_installation_id = deferred(db.Column(db.Integer, db.ForeignKey('customer_installations.id'), index=True))
+    installation_id = deferred(db.Column(db.Integer, db.ForeignKey('installations.id'), index=True))
 
     @hybrid_property
     def name(self):
