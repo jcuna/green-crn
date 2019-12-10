@@ -6,7 +6,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { hasAccess } from '../../../utils/config';
 import { ACCESS_TYPES, ENDPOINTS } from '../../../constants';
-import Link from 'react-router-dom/Link';
+import { Link } from 'react-router-dom';
 import Table from '../../../utils/Table';
 import { fetchCustomer } from '../../../actions/customerAction';
 

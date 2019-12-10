@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import Breadcrumbs from '../../utils/Breadcrumbs';
 import CustomerInfo from './CustomerInfo';
 import Projects from './projects/Projects';
-import Link from 'react-router-dom/Link';
+import { Link } from 'react-router-dom';
 import { ENDPOINTS } from '../../constants';
 
 export default class Customers extends React.Component {

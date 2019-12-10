@@ -5,7 +5,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Breadcrumbs from '../../utils/Breadcrumbs';
-import Link from 'react-router-dom/Link';
+import { Link } from 'react-router-dom';
 import { ACCESS_TYPES, ENDPOINTS, STATUS } from '../../constants';
 import { hasAccess } from '../../utils/config';
 import { fetchCustomers } from '../../actions/customerAction';

@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import { clearUserToken, updatePassword, validateUserToken } from '../../actions/userActions';
 import { ALERTS, ENDPOINTS, STATUS } from '../../constants';
 import Spinner from '../../utils/Spinner';
-import Redirect from 'react-router-dom/es/Redirect';
+import { Redirect } from 'react-router-dom';
 import { notifications } from '../../actions/appActions';
 import FormGenerator from '../../utils/FromGenerator';
 

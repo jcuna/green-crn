@@ -210,7 +210,7 @@ class FormGenerator extends React.Component {
             element.options && this.getSecondParam(element)
         ));
         if (element.label && !labelBefore) {
-            children.push(React.createElement('label', { htmlFor: element.name, key }, element.label));
+            children.push(React.createElement('label', { htmlFor: element.name, key: key + 1 }, element.label));
         }
         return <div key={ key } className={ FormGenerator.getParentClassName(element, isMultiCol) }>{ children }</div>;
     }
