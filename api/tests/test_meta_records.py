@@ -66,7 +66,7 @@ def test_tr_capacities(client: FlaskClient, admin_login):
 
     assert resp.status_code == 200
     assert len(resp.json) == 4
-    assert 37.5 == resp.json[0]['label']
+    assert '37.50' == resp.json[0]['label']
 
 
 def test_phases(client: FlaskClient, admin_login):

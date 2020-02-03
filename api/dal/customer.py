@@ -1,13 +1,15 @@
+from datetime import datetime
+
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.dialects.postgresql import MACADDR
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.mutable import MutableList
-from dal import db
 from sqlalchemy.orm import relationship, composite, deferred
-from datetime import datetime
+from sqlalchemy.dialects import sqlite
+
+from dal import db
 from dal.shared import ModelIter, Point
 from config import configs
-from sqlalchemy.dialects import sqlite
 
 # sqlite is used for testing. this adds compatibility
 BigInteger = db.BigInteger().with_variant(sqlite.INTEGER(), 'sqlite')

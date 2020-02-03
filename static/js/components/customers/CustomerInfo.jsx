@@ -95,7 +95,7 @@ export default class CustomerInfo extends React.Component {
             <div>
                 <section className='widget'>
                     <h4>Información General</h4>
-                    { this.state.editing && this.renderWrite() || this.renderReadOnly() }
+                    { this.state.editing && this.form || this.renderReadOnly() }
                 </section>
             </div>
         );
@@ -105,10 +105,6 @@ export default class CustomerInfo extends React.Component {
         return (
             <h1>read only</h1>
         );
-    }
-
-    renderWrite() {
-        return this.form;
     }
 
     get form() {

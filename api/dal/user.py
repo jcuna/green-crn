@@ -1,14 +1,15 @@
 import json
-from config import random_token, configs
-from dal import db
+from datetime import datetime, timedelta
+
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timedelta
 import jwt
-from config.routes import default_access
-from dal.shared import ModelIter
-from config import configs
 from sqlalchemy.dialects import sqlite
+
+from dal import db
+from dal.shared import ModelIter
+from config import random_token, configs
+from config.routes import default_access
 
 # sqlite is used for testing and it does not auto increment Big Int since there's no support
 BigInteger = db.BigInteger().with_variant(sqlite.INTEGER(), 'sqlite')
