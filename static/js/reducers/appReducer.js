@@ -28,6 +28,7 @@ export default function appReducer(state = {
         title: '',
         closeButton: false,
         actionButton: null,
+        onClose: null,
     },
 }, action) {
     switch (action.type) {
@@ -57,7 +58,8 @@ export default function appReducer(state = {
                     component: action.payload.component,
                     title: action.payload.title,
                     closeButton: action.payload.closeButton || false,
-                    actionButton: action.payload.actionButton || null,
+                    actionButton: action.payload.actionButton,
+                    onClose: action.payload.onClose
                 },
             };
         case OVERLAY_HIDE:
@@ -72,6 +74,7 @@ export default function appReducer(state = {
                         title: '',
                         closeButton: false,
                         actionButton: null,
+                        onClose: null,
                     },
                 };
             }

@@ -28,7 +28,7 @@ def get_mail(app_instance: Flask):
     # needed so it can parse config
     smtp_mail = Mail(app_instance)
 
-    if app_instance.debug:
+    if 'MAIL_WITH_OS' in app_instance.config:
         sendmail = Sendmail(app_instance)
         return sendmail.sendmail
 

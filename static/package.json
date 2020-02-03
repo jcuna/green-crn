@@ -74,7 +74,7 @@
     "qrcode.react": "^0.9.3",
     "query-string": "^6.9.0",
     "react": "^16.12.0",
-    "react-addons-css-transition-group": "^15.6.2",
+    "react-transition-group": "^4.3.0",
     "react-dom": "^16.12.0",
     "react-paginate": "^6.3.2",
     "react-redux": "^5.1.2",

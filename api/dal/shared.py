@@ -1,34 +1,18 @@
 from base64 import b64encode
 from datetime import datetime
-from decimal import Decimal, getcontext
+from decimal import Decimal
 from math import ceil
+
 from sqlalchemy import orm
 from flask_sqlalchemy import SQLAlchemy, BaseQuery
 from sqlalchemy.orm import joinedload
 from functools import wraps
 import jwt
+from sqlalchemy.orm.state import InstanceState
+
 from views import Result
 
 db = SQLAlchemy()
-
-
-def row2dict(row):
-    d = {}
-
-    if row:
-        for column in row.__table__.columns:
-            attr = getattr(row, column.name)
-            if isinstance(attr, Decimal):
-                getcontext().prec = 2
-                d[column.name] = str(attr)
-            elif isinstance(attr, datetime):
-                d[column.name] = str(attr)
-            elif not isinstance(attr, str):
-                d[column.name] = str(attr) if attr is not None else ''
-            else:
-                d[column.name] = attr
-
-    return d
 
 
 def get_fillable(model: db.Model, get_attr_object=False, **kwargs):
@@ -138,30 +122,32 @@ class Paginator:
 
 
 class ModelIter(object):
-
     def __init__(self, *args, **kwargs):
         super(self, *args, **kwargs)
 
     def __iter__(self):
         if isinstance(self, db.Model):
-            for column in self.__table__.columns:
-                if hasattr(self.__mapper__.attrs, column.name) and getattr(self.__mapper__.attrs, column.name).deferred:
+            for column in self.__dict__.keys():
+                attr = getattr(self, column)
+
+                if isinstance(attr, InstanceState) or hasattr(self.__mapper__.attrs, column) and \
+                        hasattr(getattr(self.__mapper__.attrs, column), 'deferred') and \
+                        getattr(self.__mapper__.attrs, column).deferred:
                     continue
 
-                attr = getattr(self, column.name)
-                if isinstance(attr, bool) or isinstance(attr, int) or isinstance(attr, float) or attr is None:
-                    yield column.name, attr
+                if isinstance(attr, bool) or isinstance(attr, int) or isinstance(attr, float) or isinstance(attr, dict) \
+                        or attr is None:
+                    yield column, attr
                 elif isinstance(attr, Decimal):
-                    getcontext().prec = 2
-                    yield column.name, float(attr)
+                    yield column, '{0:.2f}'.format(attr)
                 elif isinstance(attr, datetime):
-                    yield column.name, str(attr.isoformat())
+                    yield column, str(attr.isoformat())
                 elif isinstance(attr, bytes):
-                    yield column.name, b64encode(attr).decode()
+                    yield column, b64encode(attr).decode()
                 elif not isinstance(attr, str):
-                    yield column.name, str(attr)
+                    yield column, str(attr)
                 else:
-                    yield column.name, attr
+                    yield column, attr
         if hasattr(self, '__mapper__'):
             # models that have not been loaded
             unloaded = orm.attributes.instance_state(self).unloaded
@@ -170,7 +156,9 @@ class ModelIter(object):
                     value = getattr(self, relationship.key)
                     if isinstance(value, list):
                         yield relationship.key, list(map(dict, value))
-                    else: yield relationship.key, dict(value) if value else value
+                    else:
+                        yield relationship.key, dict(value) if value else value
+
 
 
 class Point(object):

@@ -15,7 +15,7 @@ if [[ "$1" != "" && "$1" != "stop" && "$1" != "ssh" && "$1" != "build" && "$1" !
     exit 1;
 fi
 
-LATEST_API=1.2
+LATEST_API=1.3
 APP_NAME="green-crn"
 API_IMG_NAME="$APP_NAME-api"
 API_CONTAINER_NAME="docker_api_"

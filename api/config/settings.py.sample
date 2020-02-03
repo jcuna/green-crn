@@ -9,10 +9,6 @@ DB_COLLATION = 'und-x-icu'
 APP_ENV = 'production'
 DEBUG = False
 
-# for dev, we use sendmail so use config like
-MAIL_MAILER = '/usr/sbin/ssmtp'
-MAIL_MAILER_FLAGS = '-t'
-
 # for prod we use smtp:
 MAIL_SERVER = 'localhost'
 MAIL_PORT = 25

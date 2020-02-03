@@ -113,6 +113,24 @@ html {
       }
     }
 
+    .modal-enter > .modal-dialog {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    .modal-enter-active > .modal-dialog {
+      opacity: 1;
+      transform: translateX(0);
+      transition: opacity 300ms, transform 300ms;
+    }
+    .modal-exit > .modal-dialog {
+      opacity: 1;
+    }
+    .modal-exit-active > .modal-dialog {
+      opacity: 0;
+      transform: scale(0.9);
+      transition: opacity 300ms, transform 300ms;
+    }
+
     @media screen and (max-width: 1280px) {
       .menu-short {
         width: 80%;
