@@ -22,13 +22,14 @@ import {
     fetchRates,
     fetchSourceProjects, fetchTensions, fetchTransformers, fetchTrCapacities
 } from '../../../actions/metaActions';
-import {notifications, updateOnlineStatus} from '../../../actions/appActions';
+import { notifications } from '../../../actions/appActions';
+import { Link } from 'react-router-dom';
 
 export default class Project extends React.Component {
     constructor(props) {
         super(props);
 
-        const { customer, match, project, dispatch, history, meta } = props;
+        const { customer, match, dispatch, history } = props;
 
         this.state = {
             editing: hasAccess(`${ ENDPOINTS.CUSTOMER_PROJECTS_URL }`, ACCESS_TYPES.WRITE),
@@ -57,27 +58,26 @@ export default class Project extends React.Component {
     componentDidMount() {
         // TODO check that the current exist else, fetch it
         const { customer, dispatch, match } = this.props;
-        if (!customer.current) dispatch(fetchCustomer(match.params.customer_id, () => {
-            console.log(this.props)
-        }))
+        if (!customer.current) {
+            dispatch(fetchCustomer(match.params.customer_id));
+        }
     }
 
-
-    componentDidUpdate( prevProps, prevState, snapshot) {
+    componentDidUpdate(prevProps, prevState) {
         const { meta: { project_types }} = prevProps;
-        const { meta, match, customer, dispatch } =  this.props;
-        if (project_types.length !== meta.project_types.length){
-            this.setState({project_type_id: meta.project_types.pop().id });
+        const { meta, customer } = this.props;
+        if (project_types.length !== meta.project_types.length) {
+            this.setState({ project_type_id: meta.project_types.pop().id });
         }
-        if (prevProps.customer.current.customer_projects.length !== customer.current.customer_projects.length){
+        if (prevProps.customer.current.customer_projects.length !== customer.current.customer_projects.length) {
             this.setState(this.getCurrentProject());
         }
     }
 
-    getCurrentProject(){
-        const { match, customer } =  this.props;
+    getCurrentProject() {
+        const { match, customer } = this.props;
         if (typeof match.params.project_id !== 'undefined' && customer.current.customer_projects.length) {
-            return customer.current.customer_projects.filter( project => project.id === Number(match.params.project_id))[0];
+            return customer.current.customer_projects.filter(project => project.id === Number(match.params.project_id))[0];
         }
         return {
             id: undefined,
@@ -89,7 +89,7 @@ export default class Project extends React.Component {
             nic_title: '',
             circuit: '',
             ct: '',
-            project_type: { id : 1 },
+            project_type: { id: 1 },
             country: 1,
             province: { id: 1 },
             distributor_id: 1,
@@ -97,13 +97,13 @@ export default class Project extends React.Component {
             transformer_id: 1,
             tr_capacity_id: 1,
             phase_id: 1,
-            tension: { id : 1 },
+            tension: { id: 1 },
         };
-
     }
 
     render() {
         const { match, customer } = this.props;
+        const path_id = this.getIdPath();
 
         return (
             <div>
@@ -111,6 +111,23 @@ export default class Project extends React.Component {
                     match.params.action.charAt(0).toUpperCase() + match.params.action.slice(1)
                 }/>
                 <section className='widget'>
+                    <ul className='nav nav-tabs'>
+                        <li className='nav-item'>
+                            <Link
+                                className={ this.getClassName('info') }
+                                data-func='projects'
+                                to={ `${ ENDPOINTS.CUSTOMER_PROJECTS_URL }/${ customer.current.id }/info${ path_id }` }>
+                                Información
+                            </Link>
+                        </li>
+                        <li className='nav-item'>
+                            <Link
+                                className={ this.getClassName('info') }
+                                to={ `${ ENDPOINTS.CUSTOMER_PROJECT_INSTALLATIONS_URL }${ path_id }` }>
+                                Instalaciones
+                            </Link>
+                        </li>
+                    </ul>
                     <h4>Detalles de proyectos</h4>
                     { this.state.editing && this.form || this.renderReadOnly() }
                 </section>
@@ -125,13 +142,11 @@ export default class Project extends React.Component {
     }
 
     get form() {
-
-        const { meta  } = this.props;
+        const { meta } = this.props;
         const proj = this.getCurrentProject();
-        if(proj.id ===  undefined) {
+        if (proj.id === undefined) {
             return null;
         }
-debugger;
         return <FormGenerator
             formName={ 'new-tenant' }
             inlineSubmit={ true }
@@ -226,7 +241,7 @@ debugger;
                     className: 'col-6',
                     name: 'country',
                     label: 'País',
-                    defaultValue: proj.province.country_id|| 1,
+                    defaultValue: proj.province.country_id || 1,
                     validate: ['required'],
                     options: meta.countries.list.map(obj => ({ value: obj.id, label: obj.name })),
                     onChange: this.onInputChange,
@@ -401,5 +416,19 @@ debugger;
         if (this.props.meta.transformers.status === STATUS.PENDING) {
             this.props.dispatch(fetchTransformers());
         }
+    }
+
+    getIdPath() {
+        if (this.state.editing) {
+            return `/${ this.state.id }`;
+        }
+        return '';
+    }
+
+    getClassName(action) {
+        if (action === this.props.match.params.action) {
+            return 'nav-link active';
+        }
+        return this.state.id ? 'nav-link' : 'nav-link disabled';
     }
 }

@@ -5,11 +5,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { hasAccess } from '../../../utils/config';
-import {ACCESS_TYPES, ENDPOINTS, STATUS} from '../../../constants';
+import { ACCESS_TYPES, ENDPOINTS } from '../../../constants';
 import { Link } from 'react-router-dom';
 import Table from '../../../utils/Table';
-import {fetchCustomer, fetchCustomerProject, fetchCustomers} from '../../../actions/customerAction';
-import FontAwesome from "../../../utils/FontAwesome";
+import { fetchCustomer } from '../../../actions/customerAction';
+import FontAwesome from '../../../utils/FontAwesome';
 
 export default class Projects extends React.Component {
     constructor(props) {
@@ -27,7 +27,7 @@ export default class Projects extends React.Component {
     }
 
     render() {
-        const { list, current } = this.props.customer;
+        const { current } = this.props.customer;
         const { customer_projects } = this.props.customer.current;
         return (
             <div>

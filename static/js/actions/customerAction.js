@@ -16,7 +16,6 @@ export const CUSTOMER_UPDATED = 'CUSTOMER_UPDATED';
 export const CUSTOMER_UPDATING = 'CUSTOMER_UPDATING';
 export const CUSTOMER_UPDATE_FAILED = 'CUSTOMER_UPDATE_FAILED';
 
-
 export const CUSTOMER_PROJECT_FETCHED = 'CUSTOMER_PROJECT_FETCHED';
 export const CUSTOMER_PROJECT_FETCHING = 'CUSTOMER_PROJECT_FETCHING';
 export const CUSTOMER_PROJECT_FETCH_FAILED = 'CUSTOMER_PROJECT_FETCH_FAILED';
@@ -99,7 +98,6 @@ export const clearCurrentCustomer = () =>
 export const clearCustomers = () =>
     (dispatch) => dispatch({ type: CUSTOMERS_CLEAR });
 
-
 export const fetchCustomerProject = (id, success, fail) =>
     (dispatch) => {
         dispatch({ type: CUSTOMER_PROJECT_FETCHING });
@@ -139,7 +137,6 @@ export const updateCustomerProject = (data, success, fail) =>
             fail && fail(err);
         });
     };
-
 
 export const clearCurrentCustomerProject = () =>
     (dispatch) => dispatch({ type: CUSTOMER_PROJECT_CURRENT_CLEAR });

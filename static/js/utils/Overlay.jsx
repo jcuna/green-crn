@@ -29,8 +29,8 @@ export default class Overlay extends React.Component {
             // onExited={ this.props.overlay.onClose } does not seem to work
             unmountOnExit>
             <div className='modal'
-                 tabIndex='-1' role='dialog'
-                 aria-hidden='true'>
+                tabIndex='-1' role='dialog'
+                aria-hidden='true'>
                 <div className='modal-dialog' role='document'>
                     <div className={ `modal-content${ this.getContentExtraClass() }` }>
                         <div className='modal-header'>

@@ -20,6 +20,7 @@ export default class Installation extends React.Component {
         );
     }
 
+
     static propTypes = {
         dispatch: PropTypes.func,
     };
