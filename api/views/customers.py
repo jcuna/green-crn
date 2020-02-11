@@ -90,6 +90,20 @@ class CustomerProjects(API):
         db.session.commit()
         return Result.id(c.id)
 
+    @token_required
+    @access_required
+    def put(self, project_id):
+        c = CustomerProject.query.filter_by(id=project_id).first()
+        if not c:
+            raise HttpException('Not found', 404)
+
+        json = get_fillable(CustomerProject, **request.get_json())
+        for field, value in json.items():
+            setattr(c, field, value)
+
+        db.session.commit()
+        return Result.success('Success', 201)
+
 
 class CustomerInstallations(API):
 

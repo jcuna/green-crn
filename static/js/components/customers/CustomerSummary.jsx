@@ -7,10 +7,10 @@ import PropTypes from 'prop-types';
 import Breadcrumbs from '../../utils/Breadcrumbs';
 import CustomerInfo from './CustomerInfo';
 import Projects from './projects/Projects';
-import { Link } from 'react-router-dom';
-import { ENDPOINTS } from '../../constants';
+import {Link} from 'react-router-dom';
+import {ENDPOINTS} from '../../constants';
 
-export default class Customers extends React.Component {
+export default class CustomerSummary extends React.Component {
     constructor(props) {
         super(props);
 
@@ -26,7 +26,6 @@ export default class Customers extends React.Component {
             <div>
                 <Breadcrumbs { ...this.props }/>
                 <section className='widget'>
-                    <h2>Clientes</h2>
                     <ul className='nav nav-tabs'>
                         <li className='nav-item'>
                             <Link
@@ -39,7 +38,7 @@ export default class Customers extends React.Component {
                             <Link
                                 className={ this.getClassName('proyectos') }
                                 data-func='projects'
-                                to={ `${ ENDPOINTS.CUSTOMERS_URL }/proyectos${ path_id }` }>
+                                to={ `${ ENDPOINTS.CUSTOMER_PROJECTS_URL }${ path_id }` }>
                                 Proyectos
                             </Link>
                         </li>

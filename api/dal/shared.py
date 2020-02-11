@@ -144,6 +144,8 @@ class ModelIter(object):
                     yield column, str(attr.isoformat())
                 elif isinstance(attr, bytes):
                     yield column, b64encode(attr).decode()
+                elif isinstance(attr, Point):
+                    yield column, attr.get_dict()
                 elif not isinstance(attr, str):
                     yield column, str(attr)
                 else:
@@ -185,3 +187,6 @@ class Point(object):
 
     def get_list(self):
         return [self.x, self.y]
+
+    def get_dict(self):
+        return {'long': self.x, 'lat': self.y}

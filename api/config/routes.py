@@ -27,7 +27,7 @@ def register():
         'meta.InverterModels@inverter_models_url': '/meta/inverter-models',
 
         'customers.Customers@customers_url': '/customers|/customers/<int:customer_id>',
-        'customers.CustomerProjects@customer_projects_url': '/customers/projects',
+        'customers.CustomerProjects@customer_projects_url': '/customers/projects|/customers/projects/<int:project_id>',
         'customers.CustomerInstallations@customer_installations_url': '/customers/installations',
         'customers.CustomerDocuments@customer_documents_url': '/customers/documents',
     }

@@ -243,7 +243,7 @@ class CustomerProject(db.Model, ModelIter):
     tension = relationship(Tension, uselist=False, lazy='joined')
 
     project_type_id = deferred(db.Column(db.Integer, db.ForeignKey('project_types.id')))
-    customer_id = deferred(db.Column(db.Integer, db.ForeignKey('customers.id'), index=True))
+    customer_id = deferred(db.Column(db.Integer, db.ForeignKey('customers.id'), index=True, nullable=False))
     province_id = deferred(db.Column(db.Integer, db.ForeignKey('provinces.id'), nullable=False))
     distributor_id = deferred(db.Column(db.Integer, db.ForeignKey('distributors.id')))
     rate_id = deferred(db.Column(db.Integer, db.ForeignKey('rates.id')))
