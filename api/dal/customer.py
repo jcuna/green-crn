@@ -267,6 +267,7 @@ class Installations(db.Model, ModelIter):
     ]
 
     id = db.Column(db.Integer, primary_key=True)
+    # project can have multiple installations because customers may ask to add more equipment after project is done
     project = relationship(CustomerProject, uselist=False, backref='installations', cascade='all, delete')
     installed_capacity = db.Column(db.Numeric(8, 3))
     panels = relationship(

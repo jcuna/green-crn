@@ -24,13 +24,15 @@ import {
 } from '../../../actions/metaActions';
 import { notifications } from '../../../actions/appActions';
 import { Link } from 'react-router-dom';
+import installationList from "./installationList";
+import CustomerInfo from "../CustomerInfo";
 
 export default class Project extends React.Component {
     constructor(props) {
         super(props);
 
         const { customer, match, dispatch, history } = props;
-
+        const { action } = match.params;
         this.state = {
             editing: hasAccess(`${ ENDPOINTS.CUSTOMER_PROJECTS_URL }`, ACCESS_TYPES.WRITE),
             ...this.getCurrentProject(),
@@ -41,6 +43,8 @@ export default class Project extends React.Component {
                 value: this.props.editing ? 'Actualizar' : 'Crear',
                 style: { width: '100%' },
             },
+            render: this.getRenderComponent(action),
+            action,
         };
         if (typeof match.params.customer_id !== 'undefined' && customer.current.id !== Number(match.params.customer_id)) {
             dispatch(fetchCustomer(match.params.customer_id, Function, () => {
@@ -104,13 +108,14 @@ export default class Project extends React.Component {
     render() {
         const { match, customer } = this.props;
         const path_id = this.getIdPath();
-
+        const x = hasAccess(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }`, ACCESS_TYPES.WRITE);
         return (
             <div>
                 <Breadcrumbs { ...this.props } title={
                     match.params.action.charAt(0).toUpperCase() + match.params.action.slice(1)
                 }/>
                 <section className='widget'>
+                    <h4>Detalles de proyectos</h4>
                     <ul className='nav nav-tabs'>
                         <li className='nav-item'>
                             <Link
@@ -123,13 +128,13 @@ export default class Project extends React.Component {
                         <li className='nav-item'>
                             <Link
                                 className={ this.getClassName('info') }
-                                to={ `${ ENDPOINTS.CUSTOMER_PROJECT_INSTALLATIONS_URL }${ path_id }` }>
+                                to={ `${ ENDPOINTS.CUSTOMER_PROJECTS_URL }/instalacion${ path_id }` }>
                                 Instalaciones
                             </Link>
                         </li>
                     </ul>
-                    <h4>Detalles de proyectos</h4>
-                    { this.state.editing && this.form || this.renderReadOnly() }
+                    { <this.state.render { ...this.props } { ...this.state }/> }
+                    {/*{ this.state.editing && this.form || this.renderReadOnly() }*/}
                 </section>
             </div>
         );
@@ -430,5 +435,12 @@ export default class Project extends React.Component {
             return 'nav-link active';
         }
         return this.state.id ? 'nav-link' : 'nav-link disabled';
+    }
+
+    getRenderComponent(action) {
+        if (action === 'instalations') {
+            return installationList;
+        }
+        return Project;
     }
 }

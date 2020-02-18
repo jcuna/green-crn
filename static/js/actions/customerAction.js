@@ -28,6 +28,11 @@ export const CUSTOMER_PROJECT_UPDATE_FAILED = 'CUSTOMER_PROJECT_UPDATE_FAILED';
 export const CUSTOMERS_PROJECT_CLEAR = 'CUSTOMERS_PROJECT_CLEAR';
 export const CUSTOMER_PROJECT_CURRENT_CLEAR = 'CUSTOMER_PROJECT_CURRENT_CLEAR';
 
+export const CUSTOMER_INSTALLATION_CREATED = 'CUSTOMER_INSTALLATION_CREATED';
+export const CUSTOMER_INSTALLATION_CREATING = 'CUSTOMER_INSTALLATION_CREATING';
+export const CUSTOMER_INSTALLATION_CREATION_FAILED = 'CUSTOMER_INSTALLATION_CREATION_FAILED';
+export const CUSTOMER_INSTALLATION_CLEAR = 'CUSTOMERS_INSTALLATION_CLEAR';
+
 const writeCustomer = (method, data, url) => {
     return token.through().then(header => api({
         url,
@@ -143,3 +148,19 @@ export const clearCurrentCustomerProject = () =>
 
 export const clearCustomersProject = () =>
     (dispatch) => dispatch({ type: CUSTOMERS_PROJECT_CLEAR });
+
+export const createCustomerInstallation = (data, success, fail) =>
+    (dispatch) => {
+        dispatch({ type: CUSTOMER_INSTALLATION_CREATING });
+        writeCustomer('POST', data, '/customers/installations').then(resp => {
+            dispatch({ type: CUSTOMER_INSTALLATION_CREATED, payload: resp.data });
+            success && success(resp.data);
+        }, err => {
+            dispatch({ type: CUSTOMER_INSTALLATION_CREATION_FAILED, payload: err });
+            fail && fail(err);
+        });
+    };
+
+
+export const clearCustomersInstallation = () =>
+    (dispatch) => dispatch({ type: CUSTOMER_INSTALLATION_CLEAR });

@@ -53,7 +53,7 @@ export default class Projects extends React.Component {
                                 o.nic_title,
                                 <Link
                                     key={ o.id }
-                                    to={ `${ENDPOINTS.INSTALLATIONS_URL}/proyectos/${o.id}` }>
+                                    to={ `${ENDPOINTS.CUSTOMER_INSTALLATIONS_URL}/${o.id}` }>
                                     { <FontAwesome type='fas fa-solar-panel'/> }
                                 </Link>])
                         }

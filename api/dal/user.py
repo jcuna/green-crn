@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timedelta
 
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
@@ -166,3 +167,9 @@ class CompanyProfile(db.Model, ModelIter):
     address = db.Column(db.Text(collation=configs.DB_COLLATION), nullable=False)
     contact = db.Column(db.String(10, collation=configs.DB_COLLATION), nullable=False)
     logo = db.Column(db.LargeBinary)
+    settings = db.Column(
+        MutableDict.as_mutable(
+            db.JSON),
+        comment='A JSON schema for global settings',
+        nullable=False,
+        server_default='{}')
