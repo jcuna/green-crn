@@ -3,8 +3,7 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
-import Breadcrumbs from '../../../utils/Breadcrumbs';
+import PropTypes from 'prop-types';;
 import FormGenerator from '../../../utils/FromGenerator';
 import { hasAccess } from '../../../utils/config';
 import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, STATUS } from '../../../constants';
@@ -23,9 +22,8 @@ import {
     fetchSourceProjects, fetchTensions, fetchTransformers, fetchTrCapacities
 } from '../../../actions/metaActions';
 import { notifications } from '../../../actions/appActions';
-import { Link } from 'react-router-dom';
-import installationList from "./installationList";
-import CustomerInfo from "../CustomerInfo";
+import InstallationList from "./InstallationList";
+
 
 export default class Project extends React.Component {
     constructor(props) {
@@ -33,6 +31,7 @@ export default class Project extends React.Component {
 
         const { customer, match, dispatch, history } = props;
         const { action } = match.params;
+        // debugger;
         this.state = {
             editing: hasAccess(`${ ENDPOINTS.CUSTOMER_PROJECTS_URL }`, ACCESS_TYPES.WRITE),
             ...this.getCurrentProject(),
@@ -95,12 +94,12 @@ export default class Project extends React.Component {
             ct: '',
             project_type: { id: 1 },
             country: 1,
-            province: { id: 1 },
-            distributor_id: 1,
-            rate_id: 1,
-            transformer_id: 1,
-            tr_capacity_id: 1,
-            phase_id: 1,
+            province: { id: 1, country_id: 1 },
+            distributor: { id: 1 },
+            rate: { id: 1 },
+            transformer: { id: 1 },
+            capacity: { id: 1 },
+            phase: { id: 1 },
             tension: { id: 1 },
         };
     }
@@ -111,30 +110,9 @@ export default class Project extends React.Component {
         const x = hasAccess(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }`, ACCESS_TYPES.WRITE);
         return (
             <div>
-                <Breadcrumbs { ...this.props } title={
-                    match.params.action.charAt(0).toUpperCase() + match.params.action.slice(1)
-                }/>
                 <section className='widget'>
-                    <h4>Detalles de proyectos</h4>
-                    <ul className='nav nav-tabs'>
-                        <li className='nav-item'>
-                            <Link
-                                className={ this.getClassName('info') }
-                                data-func='projects'
-                                to={ `${ ENDPOINTS.CUSTOMER_PROJECTS_URL }/${ customer.current.id }/info${ path_id }` }>
-                                Información
-                            </Link>
-                        </li>
-                        <li className='nav-item'>
-                            <Link
-                                className={ this.getClassName('info') }
-                                to={ `${ ENDPOINTS.CUSTOMER_PROJECTS_URL }/instalacion${ path_id }` }>
-                                Instalaciones
-                            </Link>
-                        </li>
-                    </ul>
-                    { <this.state.render { ...this.props } { ...this.state }/> }
-                    {/*{ this.state.editing && this.form || this.renderReadOnly() }*/}
+                    { this.state.editing && this.form || this.renderReadOnly() }
+
                 </section>
             </div>
         );
@@ -147,9 +125,9 @@ export default class Project extends React.Component {
     }
 
     get form() {
-        const { meta } = this.props;
+        const { meta, match } = this.props;
         const proj = this.getCurrentProject();
-        if (proj.id === undefined) {
+        if (proj.id === undefined && typeof match.params.project_id !== 'undefined') {
             return null;
         }
         return <FormGenerator
@@ -438,9 +416,11 @@ export default class Project extends React.Component {
     }
 
     getRenderComponent(action) {
-        if (action === 'instalations') {
-            return installationList;
+        console.log(action);
+        if (action === 'instalacion') {
+            return InstallationList;
         }
-        return Project;
+        return null;
     }
+
 }

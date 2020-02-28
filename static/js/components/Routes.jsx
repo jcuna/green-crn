@@ -19,6 +19,8 @@ import CustomerList from './customers/CustomerList';
 import Project from './customers/projects/Project';
 import Installation from './customers/projects/Installation';
 import InstallationList from './customers/projects/InstallationList';
+import ProjectSumary from "./customers/projects/ProjectSumary";
+import InstallationSumary from "./customers/projects/InstallationSumary";
 
 export default class Routes extends React.Component {
     render() {
@@ -52,15 +54,11 @@ export default class Routes extends React.Component {
                 />
                 <Route
                     exact path={ `${ ep.CUSTOMER_PROJECTS_URL }/:customer_id([0-9]+)?/:action(info|nuevo|docs|instalacion)?/:project_id([0-9]+)?` }
-                    render={ props => this.getComponent(Project, props, false, ep.CUSTOMER_PROJECTS_URL) }
-                />
-                <Route
-                    exact path={ `${ ep.CUSTOMER_INSTALLATIONS_URL }/:project_id([0-9]+)?` }
-                    render={ props => this.getComponent(InstallationList, props, false, ep.CUSTOMER_INSTALLATIONS_URL) }
+                    render={ props => this.getComponent(ProjectSumary, props, false, ep.CUSTOMER_PROJECTS_URL) }
                 />
                 <Route
                     exact path={ `${ ep.CUSTOMER_INSTALLATIONS_URL }/:project_id([0-9]+)?/:action(info|nuevo|docs|instalacion)?/:installation_id([0-9]+)?` }
-                    render={ props => this.getComponent(Installation, props, false, ep.CUSTOMER_INSTALLATIONS_URL) }
+                    render={ props => this.getComponent(InstallationSumary, props, false, ep.CUSTOMER_INSTALLATIONS_URL) }
                 />
 
                 <Route exact path={ ep.ACCOUNT_PROFILE } render={ props =>

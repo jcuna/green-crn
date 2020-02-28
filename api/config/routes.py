@@ -25,6 +25,8 @@ def register():
         'meta.Tensions@tensions_url': '/meta/tensions',
         'meta.PanelModels@panel_models_url': '/meta/panel-models',
         'meta.InverterModels@inverter_models_url': '/meta/inverter-models',
+        'meta.DocumentCategories@document_categories_url': '/meta/document-categories',
+        'meta.DocumentTypes@document_types_url': '/meta/document-types',
 
         'customers.Customers@customers_url': '/customers|/customers/<int:customer_id>',
         'customers.CustomerProjects@customer_projects_url': '/customers/projects|/customers/projects/<int:project_id>',
@@ -53,4 +55,6 @@ default_access = {
     'views.meta.Tensions': ['read'],
     'views.meta.PanelModels': ['read'],
     'views.meta.InverterModels': ['read'],
+    'views.meta.DocumentCategories': ['read'],
+    'views.meta.DocumentTypes': ['read'],
 }

@@ -46,6 +46,7 @@ export default class Projects extends React.Component {
                                 <Link
                                     key={ o.id }
                                     to={ `${ENDPOINTS.CUSTOMER_PROJECTS_URL}/${current.id}/info/${o.id}` }>
+                                    {/*to={ `${ENDPOINTS.CUSTOMER_PROJECTS_URL}/${current.id}/info/${o.id}` }>*/}
                                     { `${o.name}` }
                                 </Link>,
                                 o.address,
@@ -53,11 +54,11 @@ export default class Projects extends React.Component {
                                 o.nic_title,
                                 <Link
                                     key={ o.id }
-                                    to={ `${ENDPOINTS.CUSTOMER_INSTALLATIONS_URL}/${o.id}` }>
-                                    { <FontAwesome type='fas fa-solar-panel'/> }
+                                    to={ `${ENDPOINTS.CUSTOMER_PROJECTS_URL}/instalacion/${o.id}` }>
+                                    { <FontAwesome type='fas fa-plug'/> }
                                 </Link>])
                         }
-                        headers={ ['Nombre', 'Direccion', 'NIC', 'Título'] }
+                        headers={ ['Nombre', 'Direccion', 'NIC', 'Título', 'Installaciones'] }
                     />
                 </section>
             </div>

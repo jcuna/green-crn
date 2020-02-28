@@ -4,26 +4,26 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import FormGenerator from "../../../utils/FromGenerator";
-import {hasAccess} from "../../../utils/config";
-import {ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, STATUS} from "../../../constants";
+import FormGenerator from '../../../utils/FromGenerator';
+import { hasAccess } from '../../../utils/config';
+import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, STATUS } from '../../../constants';
 import {
     createCustomerInstallation,
     clearCustomersInstallation,
-} from "../../../actions/customerAction";
-import {notifications} from "../../../actions/appActions";
+} from '../../../actions/customerAction';
+import { notifications } from '../../../actions/appActions';
 import {
     fetchCountries,
     fetchDistributors, fetchInverterModels, fetchPanelModels, fetchPhases,
     fetchProjectTypes,
     fetchRates,
     fetchSourceProjects, fetchTensions, fetchTransformers, fetchTrCapacities
-} from "../../../actions/metaActions";
-import { formatDateEs } from '../../../utils/helpers';
-import Autocomplete from "../../../utils/Autocomplete";
-import {Link} from "react-router-dom";
-import FontAwesome from "../../../utils/FontAwesome";
+} from '../../../actions/metaActions';
+import { toDatePicker } from '../../../utils/helpers';
+import Autocomplete from '../../../utils/Autocomplete';
+import FontAwesome from '../../../utils/FontAwesome';
 import '../../../../css/installation.scss';
+
 export default class Installation extends React.Component {
     constructor(props) {
         super(props);
@@ -37,7 +37,7 @@ export default class Installation extends React.Component {
                 style: { width: '100%' },
             },
             inverters: [],
-            inverter: { key: '', label: '', amount: 0 },
+            inverter: { id: '', Descripcion: '', Cantidad: 0, Eliminar: 0 },
             panels: [],
             panel: { key: '', label: '', amount: 0 },
         };
@@ -106,7 +106,6 @@ export default class Installation extends React.Component {
         //     return null;
         // }
         const inst = this.getCurrentInstallation(proj);
-        // debugger;
         return <div>
             <FormGenerator
                 formName={ 'new-tenant' }
@@ -155,7 +154,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'start_date',
                         placeholder: 'Fecha de Inicio',
-                        defaultValue: inst.start_date,
+                        defaultValue: toDatePicker(new Date(inst.start_date)),
                         validate: ['required'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
@@ -163,8 +162,8 @@ export default class Installation extends React.Component {
                     {
                         className: 'col-6',
                         name: 'detailed_performance',
-                        placeholder: 'Detalla de desempeño',
-                        defaultValue: proj.detailed_performance,
+                        placeholder: 'Detalle de desempeño',
+                        defaultValue: inst.detailed_performance,
                         validate: ['required'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
@@ -272,8 +271,8 @@ export default class Installation extends React.Component {
     }
 
     getCurrentInstallation(proj) {
-        const { match, customer } = this.props;
-        if (typeof match.params.installation_id !== 'undefined' && proj !== undefined) {
+        const { match } = this.props;
+        if (typeof match.params.installation_id !== 'undefined' && proj.id !== undefined) {
             const installation = proj.installations.filter(installation => installation.id === Number(match.params.installation_id))[0];
             installation.inverters.forEach(inverter => this.addInverter({key: inverter.inverter_model.id, quantity: inverter.quantity, id: inverter.inverter_model.id, label: inverter.inverter_model.label}));
             installation.panels.forEach(panel => this.addPanel({key: panel.panel_model.id, quantity: panel.quantity, id: panel.panel_model.id, label: panel.panel_model.label}));
@@ -306,7 +305,7 @@ export default class Installation extends React.Component {
         return this.state.id ? 'nav-link' : 'nav-link disabled';
     }
 
-    get fields(){
+    get fields() {
         return {
             id: undefined,
             panel_models: { id: 1},
@@ -320,7 +319,7 @@ export default class Installation extends React.Component {
         };
     }
 
-    addInverter(target){
+    addInverter(target) {
         const { inverters } = this.state;
         console.log(target);
         if (target.key === 0 && target.label === '' || inverters.some(inverter => inverter.key === target.key)) {
@@ -329,7 +328,7 @@ export default class Installation extends React.Component {
         target.quantity = 1;
         target.id = target.key;
         inverters.push( target);
-        this.setState({ inverters:  inverters });
+        this.setState({ inverters: inverters });
         console.log(this.state.inverters);
     }
 
@@ -339,7 +338,7 @@ export default class Installation extends React.Component {
             return;
         }
         inverters.splice(inverters.indexOf(target), 1);
-        this.setState({ inverters:  inverters });
+        this.setState({ inverters: inverters });
     }
 
     renderInverterTable() {

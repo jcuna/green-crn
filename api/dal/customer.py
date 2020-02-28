@@ -296,7 +296,7 @@ class InstallationDocument(db.Model, ModelIter):
 
     fillable = [
         'name',
-        'file_extension',
+        'category',
         'object_key',
         'installation_id',
     ]
@@ -304,7 +304,7 @@ class InstallationDocument(db.Model, ModelIter):
     id = db.Column(db.Integer, primary_key=True)
     installation = relationship(Installations, backref='installation_documents')
     _name = db.Column('name', db.String(96, collation=configs.DB_COLLATION))
-    file_extension = db.Column(db.String(5, collation=configs.DB_COLLATION))
+    category = db.Column(db.String(96, collation=configs.DB_COLLATION))
     object_key = db.Column(db.String(512, collation=configs.DB_COLLATION))
 
     installation_id = deferred(db.Column(db.Integer, db.ForeignKey('installations.id'), index=True))

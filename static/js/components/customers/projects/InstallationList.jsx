@@ -8,16 +8,22 @@ import Table from '../../../utils/Table';
 import FontAwesome from '../../../utils/FontAwesome';
 import PropTypes from 'prop-types';
 
-export default class Installations extends React.Component {
+export default class InstallationList extends React.Component {
     constructor(props) {
         super(props);
 
         const { match, history, dispatch, customer } = props;
+        const { action, id, project_id } = this.props.match.params;
+        const editing = typeof project_id !== 'undefined';
+
+        this.state = { editing, project_id,action };
+
     }
 
     render() {
         const { current } = this.props.customer;
         const proj = this.getCurrentProject();
+
         return (
             <div>
                 <section className='widget'>
@@ -42,11 +48,11 @@ export default class Installations extends React.Component {
                                 o.start_date,
                                 <Link
                                     key={ o.id }
-                                    to={ `${ENDPOINTS.CUSTOMER_INSTALLATIONS_URL}/documentos/${o.id}` }>
-                                    {<FontAwesome type='fas fa-solar-panel'/>}
+                                    to={ `${ENDPOINTS.CUSTOMER_INSTALLATIONS_URL}/docs/${o.id}` }>
+                                    {<FontAwesome type='fas fa-folder'/>}
                                 </Link>])
                         }
-                        headers={['Nombre', 'Direccion', 'NIC', 'Título']}
+                        headers={['Nombre', 'Direccion', 'NIC', 'Título', 'Docs']}
                     />
                 </section>
             </div>
@@ -78,6 +84,13 @@ export default class Installations extends React.Component {
             phase_id: 1,
             tension: { id: 1 },
         };
+    }
+
+    getClassName(action) {
+        if (action === this.props.match.params.action) {
+            return 'nav-link active';
+        }
+        return this.state.id ? 'nav-link' : 'nav-link disabled';
     }
 
     static propTypes = {

@@ -1,10 +1,9 @@
 import hashlib
 from datetime import datetime
-from mimetypes import guess_extension
+from mimetypes import guess_extension, guess_all_extensions
 from flask import request
 from sqlalchemy.orm import joinedload
 from config import configs
-from config.constants import DOCUMENT_UPLOAD_BUCKET
 from core import API
 from core.AWS import Storage
 from core.middleware import HttpException
@@ -134,27 +133,26 @@ class CustomerInstallations(API):
 
 class CustomerDocuments(API):
 
-    bucket = configs.BUCKETS_PREFIX + DOCUMENT_UPLOAD_BUCKET
-
     @token_required
     @access_required
     def post(self):
         name = request.form.get('name')
+        category = request.form.get('category')
         installation_id = request.form.get('installation_id')
         file = request.files.get('file')
 
-        extension = guess_extension(file.content_type)
+        extension = max(guess_all_extensions(file.content_type),key=len)
 
-        key_name = 'documents/%s/%s-%s' % (installation_id, name, hashlib.sha256(
+        key_name = 'documents/{}/{}'.format(installation_id, hashlib.sha256(
             (str(datetime.utcnow().timestamp()) + name + extension + installation_id).encode('utf8')
         ).hexdigest() + extension)
 
-        s3 = Storage(self.bucket)
+        s3 = Storage(configs.UPLOAD_FILE_BUCKET)
 
         inst_doc = InstallationDocument(
             name=name,
             installation_id=installation_id,
-            file_extension=extension,
+            category=category,
             object_key=key_name
         )
         s3.put_new(file.read(), key_name, file.content_type)

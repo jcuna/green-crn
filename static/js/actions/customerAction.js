@@ -33,12 +33,26 @@ export const CUSTOMER_INSTALLATION_CREATING = 'CUSTOMER_INSTALLATION_CREATING';
 export const CUSTOMER_INSTALLATION_CREATION_FAILED = 'CUSTOMER_INSTALLATION_CREATION_FAILED';
 export const CUSTOMER_INSTALLATION_CLEAR = 'CUSTOMERS_INSTALLATION_CLEAR';
 
+export const CUSTOMER_DOCUMENT_CREATED = 'CUSTOMER_DOCUMENT_CREATED';
+export const CUSTOMER_DOCUMENT_CREATING = 'CUSTOMER_DOCUMENT_CREATING';
+export const CUSTOMER_DOCUMENT_CREATION_FAILED = 'CUSTOMER_DOCUMENT_CREATION_FAILED';
+export const CUSTOMER_DOCUMENT_CLEAR = 'CUSTOMERS_DOCUMENT_CLEAR';
+
 const writeCustomer = (method, data, url) => {
     return token.through().then(header => api({
         url,
         method,
         headers: header,
     }, data));
+};
+
+
+const writeDocument = (method, data, url) => {
+    return token.through().then(header => api({
+        url,
+        method,
+        headers: header,
+    }, data, true));
 };
 
 export const createCustomer = (data, success, fail) =>
@@ -161,6 +175,20 @@ export const createCustomerInstallation = (data, success, fail) =>
         });
     };
 
-
 export const clearCustomersInstallation = () =>
     (dispatch) => dispatch({ type: CUSTOMER_INSTALLATION_CLEAR });
+
+export const createCustomerDocument = (data, success, fail) =>
+    (dispatch) => {
+        dispatch({ type: CUSTOMER_DOCUMENT_CREATING });
+        writeDocument('POST', data, '/customers/documents').then(resp => {
+            dispatch({ type: CUSTOMER_DOCUMENT_CREATED, payload: resp.data });
+            success && success(resp.data);
+        }, err => {
+            dispatch({ type: CUSTOMER_DOCUMENT_CREATION_FAILED, payload: err });
+            fail && fail(err);
+        });
+    };
+
+export const clearCustomerDocument = () =>
+    (dispatch) => dispatch({ type: CUSTOMER_DOCUMENT_CLEAR });

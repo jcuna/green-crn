@@ -25,6 +25,10 @@ export const TENSIONS_FETCHED = 'TENSIONS_FETCHED';
 export const TENSIONS_FAILED = 'TENSIONS_FAILED';
 export const INTEGRATIONS_FETCHED = 'INTEGRATIONS_FETCHED';
 export const INTEGRATIONS_FAILED = 'INTEGRATIONS_FAILED';
+export const DOCUMENT_CATEGORIES_FETCHED = 'DOCUMENT_CATEGORIES_FETCHED';
+export const DOCUMENT_CATEGORIES_FAILED = 'DOCUMENT_CATEGORIES_FAILED';
+export const DOCUMENT_TYPES_FETCHED = 'DOCUMENT_TYPES_FETCHED';
+export const DOCUMENT_TYPES_FAILED = 'DOCUMENT_TYPES_FAILED';
 
 export const fetchCountries = () =>
     (dispatch) => token.through().then(auth => api({ url: '/meta/countries', headers: auth }).then(resp =>
@@ -62,3 +66,9 @@ export const fetchTensions = () =>
 export const fetchIntegrations = () =>
     (dispatch) => token.through().then(auth => api({ url: '/meta/integrations', headers: auth }).then(resp =>
         dispatch({ type: INTEGRATIONS_FETCHED, payload: resp.data }), dispatch({ type: INTEGRATIONS_FAILED })));
+export const fetchDocumentCategories = () =>
+    (dispatch) => token.through().then(auth => api({ url: '/meta/document-categories', headers: auth }).then(resp =>
+        dispatch({ type: DOCUMENT_CATEGORIES_FETCHED, payload: resp.data }), dispatch({ type: DOCUMENT_CATEGORIES_FAILED })));
+export const fetchDocumentTypes = () =>
+    (dispatch) => token.through().then(auth => api({ url: '/meta/document-types', headers: auth }).then(resp =>
+        dispatch({ type: DOCUMENT_TYPES_FETCHED, payload: resp.data }), dispatch({ type: DOCUMENT_TYPES_FAILED })));
