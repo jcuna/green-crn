@@ -9,30 +9,28 @@ import { hasAccess } from '../../../utils/config';
 import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, STATUS } from '../../../constants';
 import {
     createCustomerInstallation,
-    clearCustomersInstallation,
+    clearCustomersInstallation, fetchCustomer, clearCurrentCustomer, updateCustomerInstallation,
 } from '../../../actions/customerAction';
 import { notifications } from '../../../actions/appActions';
 import {
-    fetchCountries,
-    fetchDistributors, fetchInverterModels, fetchPanelModels, fetchPhases,
-    fetchProjectTypes,
-    fetchRates,
-    fetchSourceProjects, fetchTensions, fetchTransformers, fetchTrCapacities
+    fetchInverterModels, fetchPanelModels,
 } from '../../../actions/metaActions';
-import { toDatePicker } from '../../../utils/helpers';
+import { dateToDatetimeString, friendlyDateEs, toDatePicker } from '../../../utils/helpers';
 import Autocomplete from '../../../utils/Autocomplete';
 import FontAwesome from '../../../utils/FontAwesome';
 import '../../../../css/installation.scss';
+import Table from '../../../utils/Table';
 
 export default class Installation extends React.Component {
     constructor(props) {
         super(props);
 
+        const { customer, match, dispatch } = props;
         this.state = {
             editing: hasAccess(`${ENDPOINTS.CUSTOMER_PROJECTS_URL}`, ACCESS_TYPES.WRITE),
             button: {
                 disabled: false,
-                className: 'col-6',
+                className: 'col-12',
                 value: this.props.editing ? 'Actualizar' : 'Crear',
                 style: { width: '100%' },
             },
@@ -40,7 +38,16 @@ export default class Installation extends React.Component {
             inverter: { id: '', Descripcion: '', Cantidad: 0, Eliminar: 0 },
             panels: [],
             panel: { key: '', label: '', amount: 0 },
+            inst: {},
         };
+
+        if (typeof match.params.customer_id !== 'undefined' && customer.current.id !== Number(match.params.customer_id)) {
+            dispatch(fetchCustomer(match.params.customer_id, Function, () => {
+                // history.push(ENDPOINTS.NOT_FOUND);
+            }));
+        } else if (typeof match.params.customer_id === 'undefined') {
+            dispatch(clearCurrentCustomer());
+        }
 
         this.fetchMeta();
         this.formSubmit = this.formSubmit.bind(this);
@@ -49,37 +56,58 @@ export default class Installation extends React.Component {
         this.handlePanelChange = this.handlePanelChange.bind(this);
         this.removeInverter = this.removeInverter.bind(this);
         this.addPanel = this.addPanel.bind(this);
+        this.onInputChange = this.onInputChange.bind(this);
+    }
 
+    componentDidUpdate(prevProps, prevState) {
+        const proj = this.getCurrentProject();
+        const { inst } = this.getCurrentInstallation(proj);
+        if (typeof inst.id !== 'undefined' && prevState.inst.id !== inst.id) {
+            if (inst.inverters.length > 0) {
+                inst.inverters.forEach(inverter => this.addInverter({
+                    key: inverter.inverter_model.id,
+                    quantity: inverter.inverter_quantity,
+                    id: inverter.inverter_model.id,
+                    label: inverter.inverter_model.label
+                }));
+            }
+            if (inst.panels.length > 0) {
+                inst.panels.forEach(panel => this.addPanel({
+                    key: panel.panel_model.id,
+                    quantity: panel.panel_quantity,
+                    id: panel.panel_model.id,
+                    label: panel.panel_model.label
+                }));
+            }
+            this.setState({ inst });
+        }
+    }
+
+    componentDidMount() {
+        const proj = this.getCurrentProject();
+        const { inst } = this.getCurrentInstallation(proj);
+        if (typeof inst.id !== 'undefined') {
+            if (inst.inverters.length > 0) {
+                inst.inverters.forEach(inverter => this.addInverter({
+                    key: inverter.inverter_model.id,
+                    quantity: inverter.inverter_quantity,
+                    id: inverter.inverter_model.id,
+                    label: inverter.inverter_model.label
+                }));
+            }
+            if (inst.panels.length > 0) {
+                inst.panels.forEach(panel => this.addPanel({
+                    key: panel.panel_model.id,
+                    quantity: panel.panel_quantity,
+                    id: panel.panel_model.id,
+                    label: panel.panel_model.label
+                }));
+            }
+            this.setState({ inst });
+        }
     }
 
     fetchMeta() {
-        if (this.props.meta.countries.status === STATUS.PENDING) {
-            this.props.dispatch(fetchCountries());
-        }
-        if (this.props.meta.source_projects.status === STATUS.PENDING) {
-            this.props.dispatch(fetchSourceProjects());
-        }
-        if (this.props.meta.project_types.status === STATUS.PENDING) {
-            this.props.dispatch(fetchProjectTypes());
-        }
-        if (this.props.meta.distributors.status === STATUS.PENDING) {
-            this.props.dispatch(fetchDistributors());
-        }
-        if (this.props.meta.rates.status === STATUS.PENDING) {
-            this.props.dispatch(fetchRates());
-        }
-        if (this.props.meta.tr_capacities.status === STATUS.PENDING) {
-            this.props.dispatch(fetchTrCapacities());
-        }
-        if (this.props.meta.phases.status === STATUS.PENDING) {
-            this.props.dispatch(fetchPhases());
-        }
-        if (this.props.meta.tensions.status === STATUS.PENDING) {
-            this.props.dispatch(fetchTensions());
-        }
-        if (this.props.meta.transformers.status === STATUS.PENDING) {
-            this.props.dispatch(fetchTransformers());
-        }
         if (this.props.meta.inverter_models.status === STATUS.PENDING) {
             this.props.dispatch(fetchInverterModels());
         }
@@ -99,13 +127,57 @@ export default class Installation extends React.Component {
         );
     }
 
-    get form() {
-        const { meta } = this.props;
+    renderReadOnly() {
+        const { match } = this.props;
+
         const proj = this.getCurrentProject();
-        // if (proj.id === undefined) {
-        //     return null;
-        // }
-        const inst = this.getCurrentInstallation(proj);
+        const { inst } = this.getCurrentInstallation(proj);
+
+        if (typeof proj.id === 'undefined' && typeof match.params.project_id !== 'undefined') {
+            return (
+                <h1>read only</h1>
+            );
+        }
+
+        return <div>
+            <Table
+                rows={ [['Installed Capacity', inst.installed_capacity], ['Egauge', inst.egauge_url], ['Egauge Serial', inst.egauge_serial], ['Detalle', inst.detailed_performance], ['Fecha de Inicio', friendlyDateEs(new Date(inst.start_date))]
+                ] }
+            />
+            <div>
+                <div className='row'>
+                    <div className='col-6'>
+                        <h4 id='title'>Inversores</h4>
+                        <table className='inverters' id='invertersTable'>
+                            <tbody>
+                                <tr>{this.renderTableHeader(true)}</tr>
+                                {this.renderInverterTable(true)}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className='col-6'>
+                        <h4 id='title'>Paneles</h4>
+                        <table className='inverters' id='panesTable'>
+                            <tbody>
+                                <tr>{this.renderTableHeader(true)}</tr>
+                                {this.renderPanelTable(true)}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>;
+    }
+
+    get form() {
+        const { meta, match } = this.props;
+
+        const proj = this.getCurrentProject();
+        const { inst } = this.getCurrentInstallation(proj);
+        if (typeof proj.id === 'undefined' && typeof match.params.project_id !== 'undefined') {
+            return null;
+        }
+
         return <div>
             <FormGenerator
                 formName={ 'new-tenant' }
@@ -118,7 +190,7 @@ export default class Installation extends React.Component {
                         name: 'installed_capacity',
                         placeholder: 'Capacidad Instalada',
                         defaultValue: inst.installed_capacity,
-                        validate: 'required',
+                        validate: ['required', 'number'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
                     },
@@ -127,7 +199,7 @@ export default class Installation extends React.Component {
                         name: 'egauge_url',
                         placeholder: 'Egauge',
                         defaultValue: inst.egauge_url,
-                        validate: ['required'],
+                        validate: ['required', 'regex:^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&\'\\(\\)\\*\\+,;=.]+$'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
                     },
@@ -145,7 +217,7 @@ export default class Installation extends React.Component {
                         name: 'egauge_mac',
                         placeholder: 'Egauge MAC',
                         defaultValue: inst.egauge_mac,
-                        validate: ['required'],
+                        validate: ['required', 'regex:^([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F])$'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
                     },
@@ -164,7 +236,7 @@ export default class Installation extends React.Component {
                         name: 'detailed_performance',
                         placeholder: 'Detalle de desempeño',
                         defaultValue: inst.detailed_performance,
-                        validate: ['required'],
+                        validate: ['required', 'number'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
                     },
@@ -184,48 +256,58 @@ export default class Installation extends React.Component {
                             onSelect= { this.addPanel }
                         />
                     </div>,
+                    <div className='col-12' key={ 300 }>
+                        <div className='row'>
+                            <div className='col-6' key={ 400 }>
+                                <h4 id='title'>Inversores</h4>
+                                <div className='table table-responsive'>
+                                    <table className='inverters' id='invertersTable'>
+                                        <tbody>
+                                            <tr>{this.renderTableHeader()}</tr>
+                                            {this.renderInverterTable()}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div className='col-6' key={ 500 }>
+                                <h4 id='title'>Paneles</h4>
+                                <table className='inverters' id='panesTable'>
+                                    <tbody>
+                                        <tr>{this.renderTableHeader()}</tr>
+                                        {this.renderPanelTable()}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 ] }
                 button={ this.state.button }
             />
-            <div>
-                <div className='row'>
-                    <div className='col-6'>
-                        <h4 id='title'>Inversores</h4>
-                        <table className='inverters' id='invertersTable'>
-                            <tbody>
-                                <tr>{this.renderTableHeader()}</tr>
-                                {this.renderInverterTable()}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div className='col-6'>
-                        <h4 id='title'>Paneles</h4>
-                        <table className='inverters' id='panesTable'>
-                            <tbody>
-                                <tr>{this.renderTableHeader()}</tr>
-                                {this.renderPanelTable()}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+
         </div>;
     }
 
     formSubmit(e, data) {
+        const { match } = this.props;
         const installation_data = {};
-        const action = createCustomerInstallation;
+        const proj = this.getCurrentProject();
+        const { inst } = this.getCurrentInstallation(proj);
+
+        let action = createCustomerInstallation;
         let verb = 'creado';
-        // if (this.state.id) {
-        //     action = updateCustomerProject;
-        //     verb = 'actualizado';
-        //     installation_data.id = this.state.id;
-        // }
+        if (match.params.installation_id) {
+            action = updateCustomerInstallation;
+            verb = 'actualizado';
+            installation_data.id = match.params.installation_id;
+        }
         Object.keys(this.fields).forEach(field => {
             if (typeof data[field] !== 'undefined') {
                 installation_data[field] = data[field].value;
             }
         });
+        if (typeof inst.id !== 'undefined') {
+            installation_data.start_date = dateToDatetimeString(installation_data.start_date);
+        }
         installation_data.project_id = this.props.match.params.project_id;
         installation_data.inverters = this.state.inverters;
         installation_data.panels = this.state.panels;
@@ -234,7 +316,7 @@ export default class Installation extends React.Component {
             this.props.dispatch(notifications(
                 { type: ALERTS.SUCCESS, message: `Instalación ${verb} satisfactoriamente` })
             );
-            this.props.history.push(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/info/${ id || installation_data.id }#`);
+            this.props.history.push(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${match.params.customer_id}/${match.params.project_id}/info/${ id || installation_data.id }#`);
             this.setState({
                 button: { ...this.state.button, disabled: true }
             });
@@ -243,13 +325,26 @@ export default class Installation extends React.Component {
         }));
     }
 
+    onInputChange({ target }, validate) {
+        const state = {};
+        if (validate[target.name].isValid) {
+            state[target.name] = validate[target.name].value;
+        }
+        let valid = true;
+        Object.keys(this.fields).forEach(key => valid = typeof validate[key] === 'undefined' || valid && validate[key].isValid);
+
+        this.setState({
+            ...state,
+            button: { ...this.state.button, disabled: !valid }
+        });
+    }
+
     getCurrentProject() {
         const { match, customer } = this.props;
         if (typeof match.params.project_id !== 'undefined' && customer.current.customer_projects.length) {
             return customer.current.customer_projects.filter(project => project.id === Number(match.params.project_id))[0];
         }
         return {
-            id: undefined,
             name: '',
             address: '',
             lat: '',
@@ -272,23 +367,21 @@ export default class Installation extends React.Component {
 
     getCurrentInstallation(proj) {
         const { match } = this.props;
-        if (typeof match.params.installation_id !== 'undefined' && proj.id !== undefined) {
-            const installation = proj.installations.filter(installation => installation.id === Number(match.params.installation_id))[0];
-            installation.inverters.forEach(inverter => this.addInverter({key: inverter.inverter_model.id, quantity: inverter.quantity, id: inverter.inverter_model.id, label: inverter.inverter_model.label}));
-            installation.panels.forEach(panel => this.addPanel({key: panel.panel_model.id, quantity: panel.quantity, id: panel.panel_model.id, label: panel.panel_model.label}));
-            return installation;
+        if (typeof match.params.installation_id !== 'undefined' && typeof proj.id !== 'undefined') {
+            const result = proj.installations.filter(installation => installation.id === Number(match.params.installation_id))[0];
+            return { inst: result };
         }
-        return {
-            id: undefined,
-            panel_models: { id: 1 },
+        return { inst: {
+            // panel_models: { id: 1 },
             egauge_url: '',
             egauge_serial: '',
             egauge_mac: '',
             start_date: '',
             detailed_performance: '',
             project_id: '',
-            inverter_models: { id: 1 },
-        };
+            installed_capacity: '',
+            // inverter_models: { id: 1 },
+        }};
     }
 
     getIdPath() {
@@ -307,58 +400,62 @@ export default class Installation extends React.Component {
 
     get fields() {
         return {
-            id: undefined,
-            panel_models: { id: 1},
+            panel_models: { id: 1 },
             egauge_url: '',
             egauge_serial: '',
             egauge_mac: '',
             start_date: '',
             detailed_performance: '',
-            project_id: '',
-            inverter_models: { id: 1},
         };
     }
 
     addInverter(target) {
         const { inverters } = this.state;
-        console.log(target);
         if (target.key === 0 && target.label === '' || inverters.some(inverter => inverter.key === target.key)) {
             return;
         }
         target.quantity = 1;
         target.id = target.key;
-        inverters.push( target);
-        this.setState({ inverters: inverters });
-        console.log(this.state.inverters);
+        inverters.push(target);
+        this.setState({ inverters });
     }
 
     removeInverter(target) {
         const { inverters } = this.state;
-        if (target === 0 || inverters.length <= 0) {
-            return;
-        }
         inverters.splice(inverters.indexOf(target), 1);
-        this.setState({ inverters: inverters });
+        this.setState({ inverters });
     }
 
-    renderInverterTable() {
+    renderInverterTable(readOnly) {
         return this.state.inverters.map((inverter, index) => {
             const { id, label } = inverter; //destructuring
+            if (!readOnly) {
+                return (
+                    <tr key={ index }>
+                        <td >{id}</td>
+                        <td>{label}</td>
+                        <td><input data-id={ id } type='number' defaultValue='1' onChange={ this.handleInverterChange }/> </td>
+                        <td onClick={ () => this.removeInverter(id) }>
+                            { <FontAwesome className='delete-icon' type='fas fa-times'/> }
+                        </td>
+                    </tr>
+                );
+            }
             return (
                 <tr key={ index }>
-                    <td >{id}</td>
+                    <td>{id}</td>
                     <td>{label}</td>
-                    <td><input data-id={ id } type='number' defaultValue='1' onChange={ this.handleInverterChange }/> </td>
-                    <td className='deleteicon' onClick={ () => this.removeInverter(id) }>
-                        { <FontAwesome type='fas fa-times'/> }
-                    </td>
+                    <td><input data-id={ id } disabled={ true } type='number' defaultValue='1'/></td>
                 </tr>
             );
         });
     }
 
-    renderTableHeader() {
+    renderTableHeader(readOnly) {
         const header = Object.keys(this.state.inverter);
+        if (readOnly) {
+            header.pop();
+        }
         return header.map((key, index) => {
             return <th key={ index }>{key.toUpperCase()}</th>;
         });
@@ -366,37 +463,41 @@ export default class Installation extends React.Component {
 
     addPanel(target) {
         const { panels } = this.state;
-        console.log(target);
         if (target.key === 0 && target.label === '' || panels.some(panel => panel.key === target.key)) {
             return;
         }
         target.quantity = 1;
         target.id = target.key;
         panels.push(target);
-        this.setState({ panels: panels });
-        console.log(this.state.panels);
+        this.setState({ panels });
     }
 
-    removePanel(target) {
+    removePanel({ target: { parentElement: { parentElement }}}) {
         const { panels } = this.state;
-        if (target === 0 || panels.length <= 0) {
-            return;
-        }
-        panels.splice(panels.indexOf(target), 1);
-        this.setState({ panels: panels });
+        panels.splice(panels.indexOf(parentElement.getAttribute('data-id')), 1);
+        this.setState({ panels });
     }
 
-    renderPanelTable() {
+    renderPanelTable(readOnly) {
         return this.state.panels.map((panel, index) => {
             const { id, label } = panel; //destructuring
+            if (!readOnly) {
+                return (
+                    <tr key={ index }>
+                        <td>{id}</td>
+                        <td>{label}</td>
+                        <td><input data-id={ id } type='number' defaultValue='1' onChange={ this.handlePanelChange }/></td>
+                        <td data-id={ index } onClick={ this.removePanel }>
+                            {<FontAwesome className='delete-icon' type='fas fa-times'/>}
+                        </td>
+                    </tr>
+                );
+            }
             return (
                 <tr key={ index }>
                     <td>{id}</td>
                     <td>{label}</td>
-                    <td><input data-id={ id } type='number' defaultValue='1' onChange={ this.handlePanelChange }/> </td>
-                    <td onClick={ () => this.removePanel(key) }>
-                        { <FontAwesome type='fas fa-times'/> }
-                    </td>
+                    <td><input data-id={ id } disabled={ true } type='number' defaultValue='1' /></td>
                 </tr>
             );
         });
@@ -411,7 +512,7 @@ export default class Installation extends React.Component {
         }
         let i = 0;
         for (i = 0; i < result.length; i++) {
-            if (result[i].key === target.getAttribute('data-id')) {
+            if (result[i].key === Number(target.getAttribute('data-id'))) {
                 result[i].quantity = target.value;
             }
         }
@@ -427,7 +528,7 @@ export default class Installation extends React.Component {
         }
         let i = 0;
         for (i = 0; i < result.length; i++) {
-            if (result[i].key === target.getAttribute('data-id')) {
+            if (result[i].key === Number(target.getAttribute('data-id'))) {
                 result[i].quantity = target.value;
             }
         }

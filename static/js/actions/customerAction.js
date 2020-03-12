@@ -29,14 +29,23 @@ export const CUSTOMERS_PROJECT_CLEAR = 'CUSTOMERS_PROJECT_CLEAR';
 export const CUSTOMER_PROJECT_CURRENT_CLEAR = 'CUSTOMER_PROJECT_CURRENT_CLEAR';
 
 export const CUSTOMER_INSTALLATION_CREATED = 'CUSTOMER_INSTALLATION_CREATED';
+export const CUSTOMER_INSTALLATION_UPDATING = 'CUSTOMER_INSTALLATION_UPDATING';
+export const CUSTOMER_INSTALLATION_UPDATED = 'CUSTOMER_INSTALLATION_UPDATED';
+export const CUSTOMER_INSTALLATION_UPDATE_FAILED = 'CUSTOMER_INSTALLATION_UPDATE_FAILED';
 export const CUSTOMER_INSTALLATION_CREATING = 'CUSTOMER_INSTALLATION_CREATING';
 export const CUSTOMER_INSTALLATION_CREATION_FAILED = 'CUSTOMER_INSTALLATION_CREATION_FAILED';
 export const CUSTOMER_INSTALLATION_CLEAR = 'CUSTOMERS_INSTALLATION_CLEAR';
 
+export const CUSTOMER_DOCUMENT_FETCHED = 'CUSTOMER_DOCUMENT_FETCHED';
+export const CUSTOMER_DOCUMENT_FETCHING = 'CUSTOMER_DOCUMENT_FETCHING';
+export const CUSTOMER_DOCUMENT_FETCH_FAILED = 'CUSTOMER_DOCUMENT_FETCH_FAILED';
 export const CUSTOMER_DOCUMENT_CREATED = 'CUSTOMER_DOCUMENT_CREATED';
 export const CUSTOMER_DOCUMENT_CREATING = 'CUSTOMER_DOCUMENT_CREATING';
 export const CUSTOMER_DOCUMENT_CREATION_FAILED = 'CUSTOMER_DOCUMENT_CREATION_FAILED';
 export const CUSTOMER_DOCUMENT_CLEAR = 'CUSTOMERS_DOCUMENT_CLEAR';
+export const CUSTOMER_DOCUMENT_DELETED = 'CUSTOMER_DOCUMENT_DELETED';
+export const CUSTOMER_DOCUMENT_DELETING = 'CUSTOMER_DOCUMENT_DELETING';
+export const CUSTOMER_DOCUMENT_DELETE_FAILED = 'CUSTOMER_DOCUMENT_DELETE_FAILED';
 
 const writeCustomer = (method, data, url) => {
     return token.through().then(header => api({
@@ -45,7 +54,6 @@ const writeCustomer = (method, data, url) => {
         headers: header,
     }, data));
 };
-
 
 const writeDocument = (method, data, url) => {
     return token.through().then(header => api({
@@ -175,6 +183,18 @@ export const createCustomerInstallation = (data, success, fail) =>
         });
     };
 
+export const updateCustomerInstallation = (data, success, fail) =>
+    (dispatch) => {
+        dispatch({ type: CUSTOMER_INSTALLATION_UPDATING });
+        writeCustomer('PUT', data, `/customers/installations/${data.id}`).then(resp => {
+            dispatch({ type: CUSTOMER_INSTALLATION_UPDATED, payload: resp.data });
+            success && success(resp.data);
+        }, err => {
+            dispatch({ type: CUSTOMER_INSTALLATION_UPDATE_FAILED, payload: err });
+            fail && fail(err);
+        });
+    };
+
 export const clearCustomersInstallation = () =>
     (dispatch) => dispatch({ type: CUSTOMER_INSTALLATION_CLEAR });
 
@@ -192,3 +212,35 @@ export const createCustomerDocument = (data, success, fail) =>
 
 export const clearCustomerDocument = () =>
     (dispatch) => dispatch({ type: CUSTOMER_DOCUMENT_CLEAR });
+
+export const fetchCustomerDocument = (id, success, fail) =>
+    (dispatch) => {
+        dispatch({ type: CUSTOMER_DOCUMENT_FETCHING });
+        token.through().then(header => api({
+            url: `/customers/documents/${ id }`,
+            method: 'GET',
+            headers: header,
+        }).then(resp => {
+            dispatch({ type: CUSTOMER_DOCUMENT_FETCHED, payload: resp.data });
+            success && success(resp);
+        }, err => {
+            dispatch({ type: CUSTOMER_DOCUMENT_FETCH_FAILED, payload: err });
+            fail && fail(err);
+        }));
+    };
+
+export const deleteCustomerDocument = (id, object_key, success, fail) =>
+    (dispatch) => {
+        dispatch({ type: CUSTOMER_DOCUMENT_DELETING });
+        token.through().then(header => api({
+            url: `/customers/documents/${ id }`,
+            method: 'DELETE',
+            headers: header,
+        }, { object_key }).then(resp => {
+            dispatch({ type: CUSTOMER_DOCUMENT_DELETED, payload: resp.data });
+            success && success(resp);
+        }, err => {
+            dispatch({ type: CUSTOMER_DOCUMENT_DELETE_FAILED, payload: err });
+            fail && fail(err);
+        }));
+    };

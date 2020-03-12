@@ -8,7 +8,7 @@ import Breadcrumbs from '../../utils/Breadcrumbs';
 import CustomerInfo from './CustomerInfo';
 import Projects from './projects/Projects';
 import { Link } from 'react-router-dom';
-import { ENDPOINTS} from '../../constants';
+import { ENDPOINTS } from '../../constants';
 
 export default class CustomerSummary extends React.Component {
     constructor(props) {

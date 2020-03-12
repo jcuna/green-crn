@@ -12,16 +12,19 @@ import FontAwesome from '../../../utils/FontAwesome';
 import { fetchDocumentCategories } from '../../../actions/metaActions';
 import {
     clearCustomerDocument,
-    createCustomerDocument
+    createCustomerDocument,
+    fetchCustomerDocument,
+    deleteCustomerDocument, fetchCustomer, clearCurrentCustomer,
 } from '../../../actions/customerAction';
 import '../../../../css/installation.scss';
 
 import { notifications } from '../../../actions/appActions';
-import { Link } from 'react-router-dom';
 
 export default class Documents extends React.Component {
     constructor(props) {
         super(props);
+
+        const { customer, match, dispatch, history } = props;
 
         this.file = React.createRef();
         this.name = React.createRef();
@@ -35,22 +38,55 @@ export default class Documents extends React.Component {
             documents: [],
             button: {
                 disabled: false,
-                className: 'col-6',
-                value: this.props.editing ? 'Actualizar' : 'Crear',
+                className: 'col-12',
+                value: 'Registrar',
                 style: { width: '100%' },
             },
             document_types: { list: [] },
         };
 
+        if (typeof match.params.customer_id !== 'undefined' && customer.current.id !== Number(match.params.customer_id)) {
+            dispatch(fetchCustomer(match.params.customer_id, Function, () => {
+                history.push(ENDPOINTS.NOT_FOUND);
+            }));
+        } else if (typeof match.params.customer_id === 'undefined') {
+            dispatch(clearCurrentCustomer());
+        }
+
         this.fetchMeta();
         this.handleCategoryChange = this.handleCategoryChange.bind(this);
+        this.removeDocument = this.removeDocument.bind(this);
         this.setCurrentDocName = this.setCurrentDocName.bind(this);
         this.formSubmit = this.formSubmit.bind(this);
+        this.renderDocumentTable = this.renderDocumentTable.bind(this);
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        const proj = this.getCurrentProject();
+        const { inst } = this.getCurrentInstallation(proj);
+        if (typeof inst.id !== 'undefined' && prevState.documents.length !== inst.installation_documents.length) {
+            if (inst.installation_documents.length > 0) {
+                this.loadDocuments(inst);
+            }
+        }
+    }
+    componentDidMount() {
+        const proj = this.getCurrentProject();
+        const { inst } = this.getCurrentInstallation(proj);
+        if (typeof inst.id !== 'undefined') {
+            if (inst.installation_documents.length > 0) {
+                this.loadDocuments(inst);
+            }
+        }
     }
 
     fetchMeta() {
+        const { match } = this.props;
         if (this.props.meta.document_categories.status === STATUS.PENDING) {
             this.props.dispatch(fetchDocumentCategories());
+        }
+        if (this.props.customer.document_list.status === STATUS.PENDING) {
+            this.props.dispatch(fetchCustomerDocument(match.params.installation_id));
         }
     }
 
@@ -68,9 +104,9 @@ export default class Documents extends React.Component {
     get form() {
         const { meta } = this.props;
         const document_types = this.state.document_types;
-        const proj = this.getCurrentProject();
-        const inst = this.getCurrentInstallation(proj);
-        this.loadDocuments(inst);
+        // const proj = this.getCurrentProject();
+        // const inst = this.getCurrentInstallation(proj);
+        // this.loadDocuments(inst);
         return <div>
             <FormGenerator
                 formName={ 'new-tenant' }
@@ -84,61 +120,65 @@ export default class Documents extends React.Component {
                         name: 'document_categories',
                         label: 'Categoria de Documento',
                         validate: ['required'],
-                        options: meta.document_categories.list.map((obj) => ({ value: obj.id, label: obj.category })),
+                        defaultvalue: 1,
+                        options: meta.document_categories.list.map((obj, index) => ({ value: index, label: obj.category })),
                         onChange: this.handleCategoryChange,
                     },
                     <div ref={ this.name } className='col-4 row-item' key={ 100 }>
                         <label>Tipo de documento</label>
                         <Autocomplete
                             name='name'
-                            className='form-control'
+                            className='form-control row-item'
                             placeholder='Tipo de documento'
                             items={ document_types.list.map(obj => ({ key: obj.key, label: obj.label })) }
-                            onChange = { this.setCurrentDocName }
-                            onSelect= { () => {} }
+                            onChange= { this.setCurrentDocName }
+                            onSelect= { this.setCurrentDocName }
                         />
                     </div>,
-                    <div className='col-1 upload-btn-wrapper' key={ 103 }>
+                    <div className='col-1 upload-btn-wrapper row-item' key={ 200 }>
                         <button className='btn-w'>{<FontAwesome type='fas fa-upload'/>}</button>
                         <input name='file' ref={ this.file } type='file'/>
                     </div>,
+                    <div className='col-12' key={ 300 }>
+                        <div className='row'>
+                            <div className='col-12'>
+                                <h4 id='title'>Archivos</h4>
+                                <div className='table table-responsive'>
+                                    <table className='inverters' id='filesTable'>
+                                        <tbody>
+                                            <tr>{this.renderTableHeader()}</tr>
+                                            {this.renderDocumentTable()}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 ] }
                 button={ this.state.button }
             />
             <div>
-                <div className='row'>
-                    <div className='col-6'>
-                        <h4 id='title'>Archivos</h4>
-                        <table className='inverters' id='filesTable'>
-                            <tbody>
-                                <tr>{this.renderTableHeader()}</tr>
-                                {this.renderDocumentTable()}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+
             </div>
         </div>;
     }
 
-    formSubmit(e, data) {
+    formSubmit() {
+        const { params } = this.props.match;
         const documents_data = new FormData();
         const action = createCustomerDocument;
-        let verb = 'creado';
-        debugger;
-        documents_data.append('installation_id', this.props.match.params.installation_id);
+        // const verb = 'creado';
+        documents_data.append('installation_id', params.installation_id);
         documents_data.append('category', this.state.currentCategory);
         documents_data.append('name', this.state.currentDocName.trim());
         documents_data.append('file', this.file.current.files[0]);
-        this.props.dispatch(action(documents_data, ({ id }) => {
-            this.props.dispatch(clearCustomerDocument());
+        this.props.dispatch(action(documents_data, () => {
+            this.props.dispatch(clearCurrentCustomer());
             this.props.dispatch(notifications(
-                { type: ALERTS.SUCCESS, message: `Documento ${verb} satisfactoriamente` })
+                { type: ALERTS.SUCCESS, message: `Documento creado satisfactoriamente` })
             );
-            this.props.history.push(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/info/${ id || installation_data.id }#`);
-            this.setState({
-                button: { ...this.state.button, disabled: true }
-            });
+            this.props.history.push(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${ params.customer_id }/${ params.project_id }/docs/${ params.installation_id }`);
+            this.updateDocuments(params.installation_id);
         }, () => {
             this.props.dispatch(notifications({ type: ALERTS.DANGER, message: GENERIC_ERROR }));
         }));
@@ -146,67 +186,98 @@ export default class Documents extends React.Component {
 
     get fields() {
         return {
-            id: undefined,
             file: '',
             project_id: '',
             name: '',
         };
     }
 
-    setFiledata(target) {
-        if (target.target.files.length > 0) {
-            const file = target.target.files[0];
-            this.setState({ file: file });
-            // this.sendFileToServer(file);
-        }
-    }
-
     setCurrentDocName(target) {
-        debugger;
+        if (typeof target.label !== 'undefined') {
+            this.setState({ currentDocName: target.label });
+            return;
+        }
         this.setState({ currentDocName: target.target.value });
-        console.log(this.state.currentDocName);
     }
 
     addDocument(target) {
         const { documents } = this.state;
-        console.log(target);
         if (documents.some(document => document.key === target.key)) {
             return;
         }
-        documents.push( target);
-        this.setState({ documents: documents });
-        console.log(this.state.documents);
+        documents.push(target);
+        this.setState({ documents });
     }
 
-    removeDocument(target) {
+    removeDocument({ target: { parentElement: { parentElement }}}) {
+        const { match: { params }} = this.props;
         const { documents } = this.state;
-        if (target === 0 || documents.length <= 0) {
-            return;
+        this.props.dispatch(deleteCustomerDocument(params.installation_id, parentElement.getAttribute('data-id'), this.updateDocuments(params.installation_id)));
+        documents.splice(documents.findIndex(document => document.object_key = parentElement.getAttribute('data-id')), 1);
+        this.setState({ documents });
+    }
+
+    updateDocuments(installation_id) {
+        const { customer, match, dispatch, history } = this.props;
+        // let proj;
+        // let inst;
+        if (typeof match.params.customer_id !== 'undefined' && customer.current.id !== Number(match.params.customer_id)) {
+            dispatch(fetchCustomer(match.params.customer_id, () => {
+                // proj = this.getCurrentProject();
+                // inst = this.getCurrentInstallation(proj);
+            }, () => {
+                history.push(ENDPOINTS.NOT_FOUND);
+            }));
+        } else if (typeof match.params.customer_id === 'undefined') {
+            dispatch(clearCurrentCustomer());
         }
-        documents.splice(documents.indexOf(target), 1);
-        this.setState({ documents: documents });
+        this.props.dispatch(clearCustomerDocument());
+        this.props.dispatch(fetchCustomerDocument(installation_id));
     }
 
-    renderDocumentTable() {
-        return this.state.documents.map((document, index) => {
-            const { id, category, name, object_key } = document; //destructuring
-            return (
-                <tr key={ index }>
-                    <td>{category}</td>
-                    <td><Link
-                        to={ `${object_key}` }>
-                        {name}
-                    </Link>,</td>
-                    <td className='deleteicon' onClick={ () => this.removeDocument(id) }>
-                        { <FontAwesome type='fas fa-times'/> }
-                    </td>
-                </tr>
-            );
-        });
+    renderDocumentTable(readOnly) {
+        const { list } = this.props.customer.document_list;
+        if (list.status !== STATUS.PENDING && list.length !== 0) {
+            if (!readOnly) {
+                return list.signed_urls.map((document, index) => {
+                    const { category, name, object } = document; //destructuring
+                    return (
+                        <tr key={ index }>
+                            <td>{category}</td>
+                            <td><a
+                                href={ list.signed_urls.find(url => url.name === name).url }
+                                target='_blank' rel="noopener noreferrer">
+                                {name}
+                            </a></td>
+                            <td data-id={ object } onClick={ this.removeDocument }>
+                                {<FontAwesome className='delete-icon' type='fas fa-times'/>}
+                            </td>
+                        </tr>
+                    );
+                });
+            }
+            return list.signed_urls.map((document, index) => {
+                const { category, name } = document; //destructuring
+                return (
+                    <tr key={ index }>
+                        <td>{category}</td>
+                        <td><a
+                            href={ list.signed_urls.find(url => url.name === name).url }
+                            target='_blank' rel="noopener noreferrer">
+                            {name}
+                        </a></td>
+                    </tr>
+                );
+            });
+        }
+        return null;
     }
 
-    renderTableHeader() {
+    renderTableHeader(readOnly) {
         const header = Object.keys(this.state.filea);
+        if (readOnly) {
+            header.pop();
+        }
         return header.map((key, index) => {
             return <th key={ index }>{key.toUpperCase()}</th>;
         });
@@ -221,16 +292,18 @@ export default class Documents extends React.Component {
         const result = document_categories.list.filter(document_category => document_category.category === target.value).pop().name;
         this.setState(
             {
-                document_types: {list: result.map((element, index) => {return { key: index+1, label: element };})},
+                document_types: { list: result.map((element, index) => {
+                    return { key: index + 1, label: element };
+                }) },
                 currentCategory: target.value,
+                currentDocName: '',
             }
         );
     }
 
     loadDocuments(installation) {
-        const { match } = this.props;
         if (installation.installation_documents.length > 0) {
-            installation.installation_documents.forEach(document => this.addDocument({key: document.id, name: document._name, category: document.category, object_key: document.object_key }));
+            installation.installation_documents.forEach(document => this.addDocument({ key: document.id, name: document._name, category: document.category, object_key: document.object_key }));
         }
     }
 
@@ -240,7 +313,6 @@ export default class Documents extends React.Component {
             return customer.current.customer_projects.filter(project => project.id === Number(project_id))[0];
         }
         return {
-            id: undefined,
             name: '',
             address: '',
             lat: '',
@@ -263,12 +335,11 @@ export default class Documents extends React.Component {
 
     getCurrentInstallation(proj) {
         const { match } = this.props;
-        if (typeof match.params.installation_id !== 'undefined' && proj.id !== undefined) {
-            const installation = proj.installations.filter(installation => installation.id === Number(match.params.installation_id))[0];
-            return installation;
+        if (typeof match.params.installation_id !== 'undefined' && typeof proj.id !== 'undefined') {
+            const result = proj.installations.filter(installation => installation.id === Number(match.params.installation_id))[0];
+            return { inst: result };
         }
-        return {
-            id: undefined,
+        return { inst: {
             panel_models: { id: 1 },
             egauge_url: '',
             egauge_serial: '',
@@ -278,13 +349,27 @@ export default class Documents extends React.Component {
             project_id: '',
             inverter_models: { id: 1 },
             installation_documents: [],
+        }
         };
     }
 
     renderReadOnly() {
-        return (
-            <h1>read only</h1>
-        );
+        return <div>
+            <div className='row'>
+                <div className='col-12'>
+                    <h4 id='title'>Archivos</h4>
+                    <table className='inverters' id='filesTable'>
+                        <tbody>
+                            <tr>{this.renderTableHeader(true)}</tr>
+                            {this.renderDocumentTable(true)}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>;
+        // return (
+        //     <h1>read only</h1>
+        // );
     }
 
     static propTypes = {
@@ -294,6 +379,7 @@ export default class Documents extends React.Component {
         match: PropTypes.object,
         customer: PropTypes.object,
         history: PropTypes.object,
-        project_id: PropTypes.object,
+        project_id: PropTypes.string,
+        installation_documents: PropTypes.object,
     };
 }

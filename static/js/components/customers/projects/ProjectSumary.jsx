@@ -8,8 +8,7 @@ import Breadcrumbs from '../../../utils/Breadcrumbs';
 import Project from './Project';
 import InstallationList from './InstallationList';
 import { Link } from 'react-router-dom';
-import {ACCESS_TYPES, ENDPOINTS} from '../../../constants';
-import {hasAccess} from "../../../utils/config";
+import { ENDPOINTS } from '../../../constants';
 
 export default class ProjectSumary extends React.Component {
     constructor(props) {
@@ -22,10 +21,9 @@ export default class ProjectSumary extends React.Component {
     }
 
     render() {
-        const { match, customer } = this.props;
+        const { customer } = this.props;
         const { project_id } = this.state;
         const path_id = this.getIdPath();
-        const x = hasAccess(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }`, ACCESS_TYPES.WRITE);
         return (
             <div>
                 <Breadcrumbs { ...this.props }/>
@@ -34,7 +32,7 @@ export default class ProjectSumary extends React.Component {
                     <ul className='nav nav-tabs'>
                         <li className='nav-item'>
                             <Link
-                                className={ this.getClassName( project_id === undefined ? 'nuevo' : 'info') }
+                                className={ this.getClassName(typeof project_id === 'undefined' ? 'nuevo' : 'info') }
                                 data-func='projects'
                                 to={ `${ ENDPOINTS.CUSTOMER_PROJECTS_URL }/${ customer.current.id }/info${ path_id }` }>
                                 Información
@@ -43,7 +41,7 @@ export default class ProjectSumary extends React.Component {
                         <li className='nav-item'>
                             <Link
                                 className={ this.getClassName('instalacion') }
-                                to={ `${ ENDPOINTS.CUSTOMER_PROJECTS_URL }/instalacion${ path_id }` }>
+                                to={ `${ ENDPOINTS.CUSTOMER_PROJECTS_URL }/${ customer.current.id }/instalacion${ path_id }` }>
                                 Instalaciones
                             </Link>
                         </li>

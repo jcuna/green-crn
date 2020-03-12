@@ -5,13 +5,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Breadcrumbs from '../../../utils/Breadcrumbs';
-import Project from './Project';
-import InstallationList from './InstallationList';
 import { Link } from 'react-router-dom';
-import {ACCESS_TYPES, ENDPOINTS} from '../../../constants';
-import {hasAccess} from "../../../utils/config";
-import Installation from "./Installation";
-import Documents from "./Documents";
+import { ENDPOINTS } from '../../../constants';
+import Installation from './Installation';
+import Documents from './Documents';
 
 export default class InstallationSumary extends React.Component {
     constructor(props) {
@@ -24,9 +21,8 @@ export default class InstallationSumary extends React.Component {
     }
 
     render() {
-        const { match, customer } = this.props;
+        const { customer } = this.props;
         const path_id = this.getIdPath();
-        const x = hasAccess(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }`, ACCESS_TYPES.WRITE);
         return (
             <div>
                 <Breadcrumbs { ...this.props }/>
@@ -37,14 +33,14 @@ export default class InstallationSumary extends React.Component {
                             <Link
                                 className={ this.getClassName('info') }
                                 data-func='projects'
-                                to={ `${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${ this.state.project_id }/info${ path_id }` }>
+                                to={ `${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${customer.current.id}/${ this.state.project_id }/info${ path_id }` }>
                                 Información
                             </Link>
                         </li>
                         <li className='nav-item'>
                             <Link
                                 className={ this.getClassName('docs') }
-                                to={ `${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/docs${ path_id }` }>
+                                to={ `${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${ customer.current.id }/${ this.state.project_id }/docs${ path_id }` }>
                                 Documentos
                             </Link>
                         </li>

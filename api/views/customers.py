@@ -4,7 +4,7 @@ from mimetypes import guess_extension, guess_all_extensions
 from flask import request
 from sqlalchemy.orm import joinedload
 from config import configs
-from core import API
+from core import API, Cache
 from core.AWS import Storage
 from core.middleware import HttpException
 from core.utils import local_to_utc
@@ -131,6 +131,21 @@ class CustomerInstallations(API):
         return Result.id(c.id)
 
 
+    @token_required
+    @access_required
+    def put(self, installation_id):
+        c = Installations.query.filter_by(id=installation_id).first()
+        if not c:
+            raise HttpException('Not found', 404)
+
+        json = get_fillable(Installations, **request.get_json())
+        for field, value in json.items():
+            setattr(c, field, value)
+
+        db.session.commit()
+        return Result.success('Success', 201)
+
+
 class CustomerDocuments(API):
 
     @token_required
@@ -160,5 +175,57 @@ class CustomerDocuments(API):
 
         db.session.add(inst_doc)
         db.session.commit()
+
+        return Result.success()
+
+    @token_required
+    @access_required
+    def get(self, installation_id=None):
+        page = int(request.args.get('page', 1))
+
+        if installation_id:
+            docs = Installations.query.filter_by(id=installation_id).first()
+            if docs:
+                s3 = Storage(configs.UPLOAD_FILE_BUCKET)
+                row = dict(docs)
+                row['signed_urls'] = []
+                if docs:
+                    [row['signed_urls'].append({
+                        'category': installation_document.category,
+                        'name': installation_document.name,
+                        'object': installation_document.object_key,
+                        'url': Cache.remember(
+                            'f_%s' % installation_document.object_key,
+                            lambda: s3.sign_url(installation_document.object_key),
+                            14400
+                        )
+                    }
+                    ) for installation_document in docs.installation_documents]
+
+                return row
+            else:
+                raise HttpException('Not found')
+
+        else:
+            paginator = Paginator(InstallationDocument.query, page, request.args.get('orderBy'), request.args.get('orderDir'))
+            total_pages = paginator.total_pages
+            result = paginator.get_items()
+
+        return Result.paginate(result, page, total_pages)
+
+    @token_required
+    @access_required
+    def delete(self, installation_id):
+        object_key = request.get_json()['object_key']
+        doc = InstallationDocument.query.filter_by(object_key=object_key, installation_id=installation_id).first()
+
+        if not doc:
+            raise HttpException('Invalid id')
+
+        db.session.delete(doc)
+        db.session.commit()
+
+        s3 = Storage(configs.UPLOAD_FILE_BUCKET)
+        s3.remove(object_key)
 
         return Result.success()

@@ -17,6 +17,7 @@ import {
 import { notifications } from '../../actions/appActions';
 import { hasAccess } from '../../utils/config';
 import Spinner from '../../utils/Spinner';
+import Table from '../../utils/Table';
 
 export default class CustomerInfo extends React.Component {
     constructor(props) {
@@ -102,8 +103,15 @@ export default class CustomerInfo extends React.Component {
     }
 
     renderReadOnly() {
+        const { current } = this.props.customer;
+
         return (
-            <h1>read only</h1>
+            <div>
+                <Table
+                    rows={ [['Nombre', current.first_name], ['Apellido', current.last_name], ['Email', current.primary_email], ['Email Secundario', current.secondary_email], ['Telefono', current.primary_phone],
+                        ['Telefono Secundario', current.secondary_phone], ['Cedula/RNC', current.identification_number], ['Dirección', current.address], ['Provincia', current.province.name]] }
+                />
+            </div>
         );
     }
 

@@ -72,3 +72,6 @@ export const fetchDocumentCategories = () =>
 export const fetchDocumentTypes = () =>
     (dispatch) => token.through().then(auth => api({ url: '/meta/document-types', headers: auth }).then(resp =>
         dispatch({ type: DOCUMENT_TYPES_FETCHED, payload: resp.data }), dispatch({ type: DOCUMENT_TYPES_FAILED })));
+// export const fetchDocumentList = () =>
+//     (dispatch) => token.through().then(auth => api({ url: '/meta/document-types', headers: auth }).then(resp =>
+//         dispatch({ type: DOCUMENT_LIST_FETCHED, payload: resp.data }), dispatch({ type: DOCUMENT_LIST_FAILED })));

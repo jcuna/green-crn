@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';;
+import PropTypes from 'prop-types';
 import FormGenerator from '../../../utils/FromGenerator';
 import { hasAccess } from '../../../utils/config';
 import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, STATUS } from '../../../constants';
@@ -22,8 +22,8 @@ import {
     fetchSourceProjects, fetchTensions, fetchTransformers, fetchTrCapacities
 } from '../../../actions/metaActions';
 import { notifications } from '../../../actions/appActions';
-import InstallationList from "./InstallationList";
-
+import InstallationList from './InstallationList';
+import Table from '../../../utils/Table';
 
 export default class Project extends React.Component {
     constructor(props) {
@@ -31,20 +31,20 @@ export default class Project extends React.Component {
 
         const { customer, match, dispatch, history } = props;
         const { action } = match.params;
-        // debugger;
         this.state = {
             editing: hasAccess(`${ ENDPOINTS.CUSTOMER_PROJECTS_URL }`, ACCESS_TYPES.WRITE),
             ...this.getCurrentProject(),
             country: 1,
             button: {
                 disabled: false,
-                className: 'col-6',
+                className: 'col-12',
                 value: this.props.editing ? 'Actualizar' : 'Crear',
                 style: { width: '100%' },
             },
             render: this.getRenderComponent(action),
             action,
         };
+
         if (typeof match.params.customer_id !== 'undefined' && customer.current.id !== Number(match.params.customer_id)) {
             dispatch(fetchCustomer(match.params.customer_id, Function, () => {
                 history.push(ENDPOINTS.NOT_FOUND);
@@ -56,17 +56,17 @@ export default class Project extends React.Component {
         this.fetchMeta();
 
         this.formSubmit = this.formSubmit.bind(this);
+        this.onInputChange = this.onInputChange.bind(this);
     }
 
     componentDidMount() {
-        // TODO check that the current exist else, fetch it
         const { customer, dispatch, match } = this.props;
         if (!customer.current) {
             dispatch(fetchCustomer(match.params.customer_id));
         }
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         const { meta: { project_types }} = prevProps;
         const { meta, customer } = this.props;
         if (project_types.length !== meta.project_types.length) {
@@ -83,7 +83,6 @@ export default class Project extends React.Component {
             return customer.current.customer_projects.filter(project => project.id === Number(match.params.project_id))[0];
         }
         return {
-            id: undefined,
             name: '',
             address: '',
             lat: '',
@@ -105,29 +104,45 @@ export default class Project extends React.Component {
     }
 
     render() {
-        const { match, customer } = this.props;
-        const path_id = this.getIdPath();
-        const x = hasAccess(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }`, ACCESS_TYPES.WRITE);
         return (
             <div>
                 <section className='widget'>
                     { this.state.editing && this.form || this.renderReadOnly() }
-
                 </section>
             </div>
         );
     }
 
     renderReadOnly() {
+        const { match, meta } = this.props;
+        const proj = this.getCurrentProject();
+        // debugger;
+        if (typeof proj.id === 'undefined' && typeof match.params.project_id !== 'undefined') {
+            return <h1>read only</h1>;
+        }
+        const project_country = meta.countries.list.filter(country => country.id === proj.province.country_id).pop();
+        let country_name = '';
+        if (typeof project_country === 'undefined') {
+            country_name = 'N/a';
+        } else {
+            country_name = project_country.name;
+        }
         return (
-            <h1>read only</h1>
+            <div>
+                <Table
+                    rows={ [['Nombre', proj.name], ['Dirección', proj.address], ['Latitud', proj.lat], ['Longitud', proj.long], ['NIC', proj.nic], ['Título NIC', proj.nic_title],
+                        ['Circuito', proj.circuit], ['CT', proj.ct], ['Tipo de proyecto', proj.project_type.label], ['País', country_name], ['Provincia', proj.province.name], ['Distribuidor', proj.distributor.label], ['Rango', proj.rate.label],
+                        ['Transformador', proj.transformer.label], ['Capacidad', proj.capacity.label], ['Fase', proj.phase.label], ['Tensión', proj.tension.label]
+                    ] }
+                />
+            </div>
         );
     }
 
     get form() {
         const { meta, match } = this.props;
         const proj = this.getCurrentProject();
-        if (proj.id === undefined && typeof match.params.project_id !== 'undefined') {
+        if (typeof proj.id === 'undefined' && typeof match.params.project_id !== 'undefined') {
             return null;
         }
         return <FormGenerator
@@ -159,7 +174,7 @@ export default class Project extends React.Component {
                     name: 'lat',
                     placeholder: 'Latitud',
                     defaultValue: proj.lat,
-                    validate: ['required'],
+                    validate: ['required', 'number'],
                     onChange: this.onInputChange,
                     autoComplete: 'off',
                 },
@@ -168,7 +183,7 @@ export default class Project extends React.Component {
                     name: 'long',
                     placeholder: 'Longitud',
                     defaultValue: proj.long,
-                    validate: ['required'],
+                    validate: ['required', 'number'],
                     onChange: this.onInputChange,
                     autoComplete: 'off',
                 },
@@ -177,7 +192,7 @@ export default class Project extends React.Component {
                     name: 'nic',
                     placeholder: 'NIC',
                     defaultValue: proj.nic,
-                    validate: ['required'],
+                    validate: ['required', 'number'],
                     onChange: this.onInputChange,
                     autoComplete: 'off',
                 },
@@ -204,7 +219,7 @@ export default class Project extends React.Component {
                     name: 'ct',
                     placeholder: 'CT',
                     defaultValue: proj.ct,
-                    validate: ['required'],
+                    validate: ['required', 'number'],
                     onChange: this.onInputChange,
                     autoComplete: 'off',
                 },
@@ -308,6 +323,7 @@ export default class Project extends React.Component {
     }
 
     formSubmit(e, data) {
+        const { match } = this.props;
         const project_data = {};
         let action = createCustomerProject;
         let verb = 'creado';
@@ -328,7 +344,7 @@ export default class Project extends React.Component {
             this.props.dispatch(notifications(
                 { type: ALERTS.SUCCESS, message: `Proyecto ${verb} satisfactoriamente` })
             );
-            this.props.history.push(`${ ENDPOINTS.CUSTOMER_PROJECTS_URL }/info/${ id || project_data.id }#`);
+            this.props.history.push(`${ ENDPOINTS.CUSTOMER_PROJECTS_URL }/${ match.params.customer_id}/info/${ id || project_data.id }#`);
             this.setState({
                 button: { ...this.state.button, disabled: true }
             });
@@ -359,7 +375,6 @@ export default class Project extends React.Component {
             circuit: this.state.circuit,
             ct: this.state.ct,
             project_type_id: this.state.project_type_id,
-            customer_id: this.state.customer_id,
             country: this.state.country_id || 1,
             province_id: this.state.province_id,
             distributor_id: this.state.distributor_id,
@@ -416,11 +431,22 @@ export default class Project extends React.Component {
     }
 
     getRenderComponent(action) {
-        console.log(action);
         if (action === 'instalacion') {
             return InstallationList;
         }
         return null;
     }
 
+    onInputChange({ target }, validate) {
+        const state = {};
+        if (validate[target.name].isValid) {
+            state[target.name] = validate[target.name].value;
+        }
+        let valid = true;
+        Object.keys(this.fields).forEach(key => valid = typeof validate[key] === 'undefined' || valid && validate[key].isValid);
+        this.setState({
+            ...state,
+            button: { ...this.state.button, disabled: !valid }
+        });
+    }
 }

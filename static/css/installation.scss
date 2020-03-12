@@ -1,3 +1,4 @@
+@import "vars";
 
 #title {
     text-align: center;
@@ -5,8 +6,10 @@
 }
 
 
-.deleteicon {
-    align:center;
+.delete-icon {
+    alignment: center;
+    padding: 8px;
+    cursor: pointer;
 }
 
 .inverters {
@@ -14,17 +17,21 @@
     font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
     border-collapse: collapse;
     border: 3px solid #ddd;
-    width: 100%;
+    width: inherit;
 }
 
 .inverters td, .inverters th {
     border: 1px solid #ddd;
-    padding: 8px;
+    padding:  8px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    //width: inherit;
 }
 
+.inverters td{
+    max-width: 0;
+}
 .inverters tr:nth-child(even){background-color: #f2f2f2;}
 
 .inverters tr:hover {background-color: #ddd;}
@@ -33,7 +40,7 @@
     padding-top: 12px;
     padding-bottom: 12px;
     text-align: center;
-    background-color: #4CAF50;
+    background-color: $theme;
     color: white;
 }
 
@@ -41,9 +48,12 @@
     position: relative;
     overflow: hidden;
     display: inline-block;
+    padding-top: 15px;
+    cursor: pointer;
 }
 
 .btn-w {
+    //cursor: inherit;
     border: 2px solid gray;
     color: gray;
     background-color: white;
@@ -59,4 +69,5 @@
     left: 0;
     top: 0;
     opacity: 0;
+    z-index: -1;
 }

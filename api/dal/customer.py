@@ -305,7 +305,7 @@ class InstallationDocument(db.Model, ModelIter):
     installation = relationship(Installations, backref='installation_documents')
     _name = db.Column('name', db.String(96, collation=configs.DB_COLLATION))
     category = db.Column(db.String(96, collation=configs.DB_COLLATION))
-    object_key = db.Column(db.String(512, collation=configs.DB_COLLATION))
+    object_key = db.Column(db.String(512, collation=configs.DB_COLLATION), index=True)
 
     installation_id = deferred(db.Column(db.Integer, db.ForeignKey('installations.id'), index=True))
 

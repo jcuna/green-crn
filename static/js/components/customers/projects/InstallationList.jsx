@@ -1,35 +1,46 @@
-
 import React from 'react';
-import { fetchCustomer} from '../../../actions/customerAction';
+import { clearCurrentCustomer, fetchCustomer } from '../../../actions/customerAction';
 import { ACCESS_TYPES, ENDPOINTS } from '../../../constants';
 import { hasAccess } from '../../../utils/config';
 import { Link } from 'react-router-dom';
 import Table from '../../../utils/Table';
 import FontAwesome from '../../../utils/FontAwesome';
 import PropTypes from 'prop-types';
+import { friendlyDateEs } from '../../../utils/helpers';
 
 export default class InstallationList extends React.Component {
     constructor(props) {
         super(props);
 
         const { match, history, dispatch, customer } = props;
-        const { action, id, project_id } = this.props.match.params;
+        const { action, project_id } = this.props.match.params;
         const editing = typeof project_id !== 'undefined';
 
-        this.state = { editing, project_id,action };
+        this.state = { editing, project_id, action };
 
+        if (typeof match.params.customer_id !== 'undefined' && customer.current.id !== Number(match.params.customer_id)) {
+            dispatch(fetchCustomer(match.params.customer_id, Function, () => {
+                history.push(ENDPOINTS.NOT_FOUND);
+            }));
+        } else if (typeof match.params.customer_id === 'undefined') {
+            dispatch(clearCurrentCustomer());
+        }
     }
 
     render() {
-        const { current } = this.props.customer;
+        const { match } = this.props;
         const proj = this.getCurrentProject();
+
+        if (typeof proj.id === 'undefined' && typeof match.params.project_id !== 'undefined') {
+            return this.renderReadOnly;
+        }
 
         return (
             <div>
                 <section className='widget'>
                     <div className='table-actions'>
                         {hasAccess(ENDPOINTS.CUSTOMER_INSTALLATIONS_URL, ACCESS_TYPES.WRITE) && <Link
-                            to={ `${ENDPOINTS.CUSTOMER_INSTALLATIONS_URL}/${this.props.match.params.project_id}/nuevo` }
+                            to={ `${ENDPOINTS.CUSTOMER_INSTALLATIONS_URL}/${match.params.customer_id}/${match.params.project_id}/nuevo` }
                             className='btn btn-success'>
                             Crear Instalación
                         </Link>}
@@ -40,32 +51,38 @@ export default class InstallationList extends React.Component {
                             proj.installations.map(o => [
                                 <Link
                                     key={ o.id }
-                                    to={ `${ENDPOINTS.CUSTOMER_INSTALLATIONS_URL}/${proj.id}/info/${o.id}` }>
+                                    to={ `${ENDPOINTS.CUSTOMER_INSTALLATIONS_URL}/${ this.props.match.params.customer_id }/${proj.id}/info/${o.id}` }>
                                     {`${o.id}`}
                                 </Link>,
                                 o.egauge_url,
                                 o.detailed_performance,
-                                o.start_date,
+                                friendlyDateEs(new Date(o.start_date)),
                                 <Link
                                     key={ o.id }
-                                    to={ `${ENDPOINTS.CUSTOMER_INSTALLATIONS_URL}/docs/${o.id}` }>
+                                    to={ `${ENDPOINTS.CUSTOMER_INSTALLATIONS_URL}/${ this.props.match.params.customer_id }/${proj.id}/docs/${o.id}` }>
                                     {<FontAwesome type='fas fa-folder'/>}
                                 </Link>])
                         }
-                        headers={['Nombre', 'Direccion', 'NIC', 'Título', 'Docs']}
+                        headers={ ['ID', 'Egauge', 'NIC', 'Fecha de Inicio', 'Documentos'] }
                     />
                 </section>
             </div>
         );
     }
 
+    renderReadOnly() {
+        return (
+            <h1>read only</h1>
+        );
+    }
+
     getCurrentProject() {
         const { match, customer } = this.props;
+
         if (typeof match.params.project_id !== 'undefined' && customer.current.customer_projects.length) {
             return customer.current.customer_projects.filter(project => project.id === Number(match.params.project_id))[0];
         }
         return {
-            id: undefined,
             name: '',
             address: '',
             lat: '',
@@ -84,13 +101,6 @@ export default class InstallationList extends React.Component {
             phase_id: 1,
             tension: { id: 1 },
         };
-    }
-
-    getClassName(action) {
-        if (action === this.props.match.params.action) {
-            return 'nav-link active';
-        }
-        return this.state.id ? 'nav-link' : 'nav-link disabled';
     }
 
     static propTypes = {
