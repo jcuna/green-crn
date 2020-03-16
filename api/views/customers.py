@@ -146,16 +146,13 @@ class CustomerInstallations(API):
 
         data = request.get_json().copy()
         if 'panels' in data:
+            InstallationPanelModel.query.filter_by(installation_id=installation_id).delete()
             for panel in data['panels']:
-                d =  InstallationPanelModel.query.filter_by(panel_model_id=panel['id'],installation_id=installation_id).first()
-                if d:
-                    setattr(d,'panel_quantity', int(panel['quantity']))
-
+                db.session.add(InstallationPanelModel(installation_id=installation_id, panel_model_id=panel['id'], panel_quantity=int(panel['quantity'])))
         if 'inverters' in data:
+            InstallationInverterModel.query.filter_by(installation_id=installation_id).delete()
             for inverter in data['inverters']:
-                e =  InstallationInverterModel.query.filter_by(inverter_model_id=inverter['id'],installation_id=installation_id).first()
-                if e:
-                    setattr(e,'inverter_quantity', int(inverter['quantity']))
+                db.session.add(InstallationInverterModel(installation_id=installation_id, inverter_model_id=inverter['id'], inverter_quantity=int(inverter['quantity'])))
 
         db.session.commit()
         return Result.success('Success', 201)

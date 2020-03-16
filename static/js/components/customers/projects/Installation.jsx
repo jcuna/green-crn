@@ -529,7 +529,7 @@ export default class Installation extends React.Component {
         }
         let i = 0;
         for (i = 0; i < result.length; i++) {
-            if (result[i].key === Number(target.getAttribute('data-id'))) {
+            if (Number(result[i].key) === Number(target.getAttribute('data-id'))) {
                 result[i].quantity = target.value;
             }
         }
@@ -545,7 +545,7 @@ export default class Installation extends React.Component {
         }
         let i = 0;
         for (i = 0; i < result.length; i++) {
-            if (result[i].key === Number(target.getAttribute('data-id'))) {
+            if (Number(result[i].key) === Number(target.getAttribute('data-id'))) {
                 result[i].quantity = target.value;
             }
         }
