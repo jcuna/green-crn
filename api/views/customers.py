@@ -135,12 +135,27 @@ class CustomerInstallations(API):
     @access_required
     def put(self, installation_id):
         c = Installations.query.filter_by(id=installation_id).first()
+
         if not c:
             raise HttpException('Not found', 404)
 
         json = get_fillable(Installations, **request.get_json())
+
         for field, value in json.items():
             setattr(c, field, value)
+
+        data = request.get_json().copy()
+        if 'panels' in data:
+            for panel in data['panels']:
+                d =  InstallationPanelModel.query.filter_by(panel_model_id=panel['id'],installation_id=installation_id).first()
+                if d:
+                    setattr(d,'panel_quantity', int(panel['quantity']))
+
+        if 'inverters' in data:
+            for inverter in data['inverters']:
+                e =  InstallationInverterModel.query.filter_by(inverter_model_id=inverter['id'],installation_id=installation_id).first()
+                if e:
+                    setattr(e,'inverter_quantity', int(inverter['quantity']))
 
         db.session.commit()
         return Result.success('Success', 201)

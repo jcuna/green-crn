@@ -57,6 +57,8 @@ export default class Installation extends React.Component {
         this.removeInverter = this.removeInverter.bind(this);
         this.addPanel = this.addPanel.bind(this);
         this.onInputChange = this.onInputChange.bind(this);
+        this.removePanel = this.removePanel.bind(this);
+        this.removeInverter = this.removeInverter.bind(this);
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -188,6 +190,7 @@ export default class Installation extends React.Component {
                     {
                         className: 'col-6',
                         name: 'installed_capacity',
+                        title: 'Capacidad Instalada',
                         placeholder: 'Capacidad Instalada',
                         defaultValue: inst.installed_capacity,
                         validate: ['required', 'number'],
@@ -197,6 +200,7 @@ export default class Installation extends React.Component {
                     {
                         className: 'col-6',
                         name: 'egauge_url',
+                        title: 'Egauge',
                         placeholder: 'Egauge',
                         defaultValue: inst.egauge_url,
                         validate: ['required', 'regex:^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&\'\\(\\)\\*\\+,;=.]+$'],
@@ -206,6 +210,7 @@ export default class Installation extends React.Component {
                     {
                         className: 'col-6',
                         name: 'egauge_serial',
+                        title: 'Serial',
                         placeholder: 'Serial',
                         defaultValue: inst.egauge_serial,
                         validate: ['required'],
@@ -215,6 +220,7 @@ export default class Installation extends React.Component {
                     {
                         className: 'col-6',
                         name: 'egauge_mac',
+                        title: 'Egauge MAC',
                         placeholder: 'Egauge MAC',
                         defaultValue: inst.egauge_mac,
                         validate: ['required', 'regex:^([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F])$'],
@@ -225,6 +231,7 @@ export default class Installation extends React.Component {
                         type: 'date',
                         className: 'col-6',
                         name: 'start_date',
+                        title: 'Fecha de Inicio',
                         placeholder: 'Fecha de Inicio',
                         defaultValue: toDatePicker(new Date(inst.start_date)),
                         validate: ['required'],
@@ -234,6 +241,7 @@ export default class Installation extends React.Component {
                     {
                         className: 'col-6',
                         name: 'detailed_performance',
+                        title: 'Detalle de desempeño',
                         placeholder: 'Detalle de desempeño',
                         defaultValue: inst.detailed_performance,
                         validate: ['required', 'number'],
@@ -243,6 +251,7 @@ export default class Installation extends React.Component {
                     <div className='col-6 row-item' key={ 100 }>
                         <Autocomplete
                             className='form-control'
+                            title='Modelo de inversor'
                             placeholder='Modelo de inversor'
                             items={ meta.inverter_models.list.map(obj => ({ key: obj.id, label: obj.label })) }
                             onSelect= { this.addInverter }
@@ -251,6 +260,7 @@ export default class Installation extends React.Component {
                     <div className='col-6 row-item' key={ 200 }>
                         <Autocomplete
                             className='form-control'
+                            title='Panel'
                             placeholder='Panel'
                             items={ meta.panel_models.list.map(obj => ({ key: obj.id, label: obj.label })) }
                             onSelect= { this.addPanel }
@@ -271,12 +281,14 @@ export default class Installation extends React.Component {
                             </div>
                             <div className='col-6' key={ 500 }>
                                 <h4 id='title'>Paneles</h4>
-                                <table className='inverters' id='panesTable'>
-                                    <tbody>
-                                        <tr>{this.renderTableHeader()}</tr>
-                                        {this.renderPanelTable()}
-                                    </tbody>
-                                </table>
+                                <div className='table table-responsive'>
+                                    <table className='inverters' id='panesTable'>
+                                        <tbody>
+                                            <tr>{this.renderTableHeader()}</tr>
+                                            {this.renderPanelTable()}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -400,6 +412,7 @@ export default class Installation extends React.Component {
 
     get fields() {
         return {
+            installed_capacity: '',
             panel_models: { id: 1 },
             egauge_url: '',
             egauge_serial: '',
@@ -414,28 +427,30 @@ export default class Installation extends React.Component {
         if (target.key === 0 && target.label === '' || inverters.some(inverter => inverter.key === target.key)) {
             return;
         }
-        target.quantity = 1;
+        if (typeof target.quantity === 'undefined') {
+            target.quantity = 1;
+        }
         target.id = target.key;
         inverters.push(target);
         this.setState({ inverters });
     }
 
-    removeInverter(target) {
+    removeInverter({ target: { parentElement: { parentElement }}}) {
         const { inverters } = this.state;
-        inverters.splice(inverters.indexOf(target), 1);
+        inverters.splice(inverters.indexOf(parentElement), 1);
         this.setState({ inverters });
     }
 
     renderInverterTable(readOnly) {
         return this.state.inverters.map((inverter, index) => {
-            const { id, label } = inverter; //destructuring
+            const { id, label, quantity } = inverter; //destructuring
             if (!readOnly) {
                 return (
                     <tr key={ index }>
                         <td >{id}</td>
                         <td>{label}</td>
-                        <td><input data-id={ id } type='number' defaultValue='1' onChange={ this.handleInverterChange }/> </td>
-                        <td onClick={ () => this.removeInverter(id) }>
+                        <td><input className='quantity-input' data-id={ id } type='number' defaultValue={ quantity } onChange={ this.handleInverterChange }/> </td>
+                        <td data-id={ index } onClick={ this.removeInverter }>
                             { <FontAwesome className='delete-icon' type='fas fa-times'/> }
                         </td>
                     </tr>
@@ -445,7 +460,7 @@ export default class Installation extends React.Component {
                 <tr key={ index }>
                     <td>{id}</td>
                     <td>{label}</td>
-                    <td><input data-id={ id } disabled={ true } type='number' defaultValue='1'/></td>
+                    <td><input className='quantity-input' data-id={ id } disabled={ true } type='number' defaultValue='1'/></td>
                 </tr>
             );
         });
@@ -466,7 +481,9 @@ export default class Installation extends React.Component {
         if (target.key === 0 && target.label === '' || panels.some(panel => panel.key === target.key)) {
             return;
         }
-        target.quantity = 1;
+        if (typeof target.quantity === 'undefined') {
+            target.quantity = 1;
+        }
         target.id = target.key;
         panels.push(target);
         this.setState({ panels });
@@ -480,13 +497,13 @@ export default class Installation extends React.Component {
 
     renderPanelTable(readOnly) {
         return this.state.panels.map((panel, index) => {
-            const { id, label } = panel; //destructuring
+            const { id, label, quantity } = panel; //destructuring
             if (!readOnly) {
                 return (
                     <tr key={ index }>
                         <td>{id}</td>
                         <td>{label}</td>
-                        <td><input data-id={ id } type='number' defaultValue='1' onChange={ this.handlePanelChange }/></td>
+                        <td><input className='quantity-input' data-id={ id } type='number' defaultValue={ quantity } onChange={ this.handlePanelChange }/></td>
                         <td data-id={ index } onClick={ this.removePanel }>
                             {<FontAwesome className='delete-icon' type='fas fa-times'/>}
                         </td>
@@ -497,7 +514,7 @@ export default class Installation extends React.Component {
                 <tr key={ index }>
                     <td>{id}</td>
                     <td>{label}</td>
-                    <td><input data-id={ id } disabled={ true } type='number' defaultValue='1' /></td>
+                    <td><input className='quantity-input' data-id={ id } disabled={ true } type='number' defaultValue='1' /></td>
                 </tr>
             );
         });

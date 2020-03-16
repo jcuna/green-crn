@@ -237,7 +237,7 @@ export const deleteCustomerDocument = (id, object_key, success, fail) =>
             method: 'DELETE',
             headers: header,
         }, { object_key }).then(resp => {
-            dispatch({ type: CUSTOMER_DOCUMENT_DELETED, payload: resp.data });
+            dispatch({ type: CUSTOMER_DOCUMENT_DELETED });
             success && success(resp);
         }, err => {
             dispatch({ type: CUSTOMER_DOCUMENT_DELETE_FAILED, payload: err });

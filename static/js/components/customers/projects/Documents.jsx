@@ -59,6 +59,7 @@ export default class Documents extends React.Component {
         this.setCurrentDocName = this.setCurrentDocName.bind(this);
         this.formSubmit = this.formSubmit.bind(this);
         this.renderDocumentTable = this.renderDocumentTable.bind(this);
+        this.updateDocuments = this.updateDocuments.bind(this);
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -104,9 +105,7 @@ export default class Documents extends React.Component {
     get form() {
         const { meta } = this.props;
         const document_types = this.state.document_types;
-        // const proj = this.getCurrentProject();
-        // const inst = this.getCurrentInstallation(proj);
-        // this.loadDocuments(inst);
+
         return <div>
             <FormGenerator
                 formName={ 'new-tenant' }
@@ -121,7 +120,7 @@ export default class Documents extends React.Component {
                         label: 'Categoria de Documento',
                         validate: ['required'],
                         defaultvalue: 1,
-                        options: meta.document_categories.list.map((obj, index) => ({ value: index, label: obj.category })),
+                        options: meta.document_categories.list.map((obj) => ({ value: obj.category, label: obj.category })),
                         onChange: this.handleCategoryChange,
                     },
                     <div ref={ this.name } className='col-4 row-item' key={ 100 }>
@@ -130,6 +129,7 @@ export default class Documents extends React.Component {
                             name='name'
                             className='form-control row-item'
                             placeholder='Tipo de documento'
+                            validate='required'
                             items={ document_types.list.map(obj => ({ key: obj.key, label: obj.label })) }
                             onChange= { this.setCurrentDocName }
                             onSelect= { this.setCurrentDocName }
@@ -178,7 +178,7 @@ export default class Documents extends React.Component {
                 { type: ALERTS.SUCCESS, message: `Documento creado satisfactoriamente` })
             );
             this.props.history.push(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${ params.customer_id }/${ params.project_id }/docs/${ params.installation_id }`);
-            this.updateDocuments(params.installation_id);
+            this.updateDocuments();
         }, () => {
             this.props.dispatch(notifications({ type: ALERTS.DANGER, message: GENERIC_ERROR }));
         }));
@@ -211,28 +211,20 @@ export default class Documents extends React.Component {
 
     removeDocument({ target: { parentElement: { parentElement }}}) {
         const { match: { params }} = this.props;
-        const { documents } = this.state;
-        this.props.dispatch(deleteCustomerDocument(params.installation_id, parentElement.getAttribute('data-id'), this.updateDocuments(params.installation_id)));
-        documents.splice(documents.findIndex(document => document.object_key = parentElement.getAttribute('data-id')), 1);
-        this.setState({ documents });
+        this.props.dispatch(deleteCustomerDocument(params.installation_id, parentElement.getAttribute('data-id'), this.updateDocuments));
     }
 
-    updateDocuments(installation_id) {
+    updateDocuments() {
         const { customer, match, dispatch, history } = this.props;
-        // let proj;
-        // let inst;
         if (typeof match.params.customer_id !== 'undefined' && customer.current.id !== Number(match.params.customer_id)) {
-            dispatch(fetchCustomer(match.params.customer_id, () => {
-                // proj = this.getCurrentProject();
-                // inst = this.getCurrentInstallation(proj);
-            }, () => {
+            dispatch(fetchCustomer(match.params.customer_id, Function, () => {
                 history.push(ENDPOINTS.NOT_FOUND);
             }));
         } else if (typeof match.params.customer_id === 'undefined') {
             dispatch(clearCurrentCustomer());
         }
-        this.props.dispatch(clearCustomerDocument());
-        this.props.dispatch(fetchCustomerDocument(installation_id));
+        this.props.dispatch(clearCustomerDocument);
+        this.props.dispatch(fetchCustomerDocument(match.params.installation_id));
     }
 
     renderDocumentTable(readOnly) {
@@ -289,6 +281,7 @@ export default class Documents extends React.Component {
             return;
         }
         this.file.current.form[1].value = '';
+
         const result = document_categories.list.filter(document_category => document_category.category === target.value).pop().name;
         this.setState(
             {
