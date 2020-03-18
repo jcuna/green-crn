@@ -1,13 +1,15 @@
+from datetime import datetime
+
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.dialects.postgresql import MACADDR
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.mutable import MutableList
-from dal import db
 from sqlalchemy.orm import relationship, composite, deferred
-from datetime import datetime
+from sqlalchemy.dialects import sqlite
+
+from dal import db
 from dal.shared import ModelIter, Point
 from config import configs
-from sqlalchemy.dialects import sqlite
 
 # sqlite is used for testing. this adds compatibility
 BigInteger = db.BigInteger().with_variant(sqlite.INTEGER(), 'sqlite')
@@ -241,7 +243,7 @@ class CustomerProject(db.Model, ModelIter):
     tension = relationship(Tension, uselist=False, lazy='joined')
 
     project_type_id = deferred(db.Column(db.Integer, db.ForeignKey('project_types.id')))
-    customer_id = deferred(db.Column(db.Integer, db.ForeignKey('customers.id'), index=True))
+    customer_id = deferred(db.Column(db.Integer, db.ForeignKey('customers.id'), index=True, nullable=False))
     province_id = deferred(db.Column(db.Integer, db.ForeignKey('provinces.id'), nullable=False))
     distributor_id = deferred(db.Column(db.Integer, db.ForeignKey('distributors.id')))
     rate_id = deferred(db.Column(db.Integer, db.ForeignKey('rates.id')))
@@ -265,6 +267,7 @@ class Installations(db.Model, ModelIter):
     ]
 
     id = db.Column(db.Integer, primary_key=True)
+    # project can have multiple installations because customers may ask to add more equipment after project is done
     project = relationship(CustomerProject, uselist=False, backref='installations', cascade='all, delete')
     installed_capacity = db.Column(db.Numeric(8, 3))
     panels = relationship(
@@ -293,7 +296,7 @@ class InstallationDocument(db.Model, ModelIter):
 
     fillable = [
         'name',
-        'file_extension',
+        'category',
         'object_key',
         'installation_id',
     ]
@@ -301,8 +304,8 @@ class InstallationDocument(db.Model, ModelIter):
     id = db.Column(db.Integer, primary_key=True)
     installation = relationship(Installations, backref='installation_documents')
     _name = db.Column('name', db.String(96, collation=configs.DB_COLLATION))
-    file_extension = db.Column(db.String(5, collation=configs.DB_COLLATION))
-    object_key = db.Column(db.String(512, collation=configs.DB_COLLATION))
+    category = db.Column(db.String(96, collation=configs.DB_COLLATION))
+    object_key = db.Column(db.String(512, collation=configs.DB_COLLATION), index=True)
 
     installation_id = deferred(db.Column(db.Integer, db.ForeignKey('installations.id'), index=True))
 

@@ -16,6 +16,8 @@ import {
     PHASES_FETCHED,
     TENSIONS_FETCHED,
     INTEGRATIONS_FETCHED,
+    DOCUMENT_CATEGORIES_FETCHED,
+    DOCUMENT_TYPES_FETCHED,
 } from '../actions/metaActions';
 
 const initState = {
@@ -67,6 +69,14 @@ const initState = {
         status: STATUS.PENDING,
         list: []
     },
+    document_categories: {
+        status: STATUS.PENDING,
+        list: []
+    },
+    document_types: {
+        status: STATUS.PENDING,
+        list: []
+    },
 };
 
 export default function metaReducer(state = initState, action) {
@@ -95,6 +105,10 @@ export default function metaReducer(state = initState, action) {
             return { ...state, tensions: { status: STATUS.COMPLETE, list: action.payload }};
         case INTEGRATIONS_FETCHED:
             return { ...state, integrations: { status: STATUS.COMPLETE, list: action.payload }};
+        case DOCUMENT_CATEGORIES_FETCHED:
+            return { ...state, document_categories: { status: STATUS.COMPLETE, list: action.payload }};
+        case DOCUMENT_TYPES_FETCHED:
+            return { ...state, document_types: { status: STATUS.COMPLETE, list: action.payload }};
         default:
             return state;
     }

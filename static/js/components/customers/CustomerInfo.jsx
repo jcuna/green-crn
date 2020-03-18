@@ -17,6 +17,7 @@ import {
 import { notifications } from '../../actions/appActions';
 import { hasAccess } from '../../utils/config';
 import Spinner from '../../utils/Spinner';
+import Table from '../../utils/Table';
 
 export default class CustomerInfo extends React.Component {
     constructor(props) {
@@ -95,20 +96,23 @@ export default class CustomerInfo extends React.Component {
             <div>
                 <section className='widget'>
                     <h4>Información General</h4>
-                    { this.state.editing && this.renderWrite() || this.renderReadOnly() }
+                    { this.state.editing && this.form || this.renderReadOnly() }
                 </section>
             </div>
         );
     }
 
     renderReadOnly() {
-        return (
-            <h1>read only</h1>
-        );
-    }
+        const { current } = this.props.customer;
 
-    renderWrite() {
-        return this.form;
+        return (
+            <div>
+                <Table
+                    rows={ [['Nombre', current.first_name], ['Apellido', current.last_name], ['Email', current.primary_email], ['Email Secundario', current.secondary_email], ['Telefono', current.primary_phone],
+                        ['Telefono Secundario', current.secondary_phone], ['Cedula/RNC', current.identification_number], ['Dirección', current.address], ['Provincia', current.province.name]] }
+                />
+            </div>
+        );
     }
 
     get form() {
@@ -122,6 +126,7 @@ export default class CustomerInfo extends React.Component {
                 {
                     className: 'col-6',
                     name: 'first_name',
+                    title: 'Nombre',
                     placeholder: 'Nombre',
                     defaultValue: current.first_name,
                     validate: 'required',
@@ -131,6 +136,7 @@ export default class CustomerInfo extends React.Component {
                 {
                     className: 'col-6',
                     name: 'last_name',
+                    title: 'Apellidos',
                     placeholder: 'Apellidos',
                     defaultValue: current.last_name,
                     validate: 'required',
@@ -140,6 +146,7 @@ export default class CustomerInfo extends React.Component {
                 {
                     className: 'col-6',
                     name: 'primary_email',
+                    title: 'Email',
                     placeholder: 'Email',
                     defaultValue: current.primary_email,
                     validate: ['required', 'email'],
@@ -149,6 +156,7 @@ export default class CustomerInfo extends React.Component {
                 {
                     className: 'col-6',
                     name: 'secondary_email',
+                    title: 'Email secundario',
                     placeholder: 'Email secundario',
                     defaultValue: current.secondary_email,
                     validate: 'email',
@@ -158,6 +166,7 @@ export default class CustomerInfo extends React.Component {
                 {
                     className: 'col-6',
                     name: 'primary_phone',
+                    title: 'Telefono',
                     placeholder: 'Telefono',
                     defaultValue: current.primary_phone,
                     validate: ['phone', 'required'],
@@ -167,6 +176,7 @@ export default class CustomerInfo extends React.Component {
                 {
                     className: 'col-6',
                     name: 'secondary_phone',
+                    title: 'Telefono secundario',
                     placeholder: 'Telefono secundario',
                     defaultValue: current.secondary_phone,
                     validate: ['phone'],
@@ -176,6 +186,7 @@ export default class CustomerInfo extends React.Component {
                 {
                     className: 'col-6',
                     name: 'identification_number',
+                    title: 'Cedula/RNC',
                     placeholder: 'Cedula/RNC (000-0000000-1)/(0-00-00000-0)',
                     defaultValue: current.identification_number,
                     validate: ['required', 'regex:^(([0-9]{3}-[0-9]{7}-[0-9]{1})|([0-9]{1}-[0-9]{2}-[0-9]{5}-[0-9]{1}))$'],
@@ -185,6 +196,7 @@ export default class CustomerInfo extends React.Component {
                 {
                     className: 'col-6',
                     name: 'address',
+                    title: 'Direccion',
                     placeholder: 'Direccion',
                     defaultValue: current.address,
                     validate: 'required',
@@ -195,6 +207,7 @@ export default class CustomerInfo extends React.Component {
                     formElement: 'select',
                     className: 'col-6',
                     name: 'country',
+                    title: 'Pais',
                     label: 'Pais',
                     defaultValue: current.province.country_id || 1,
                     validate: ['required'],
@@ -205,6 +218,7 @@ export default class CustomerInfo extends React.Component {
                     formElement: 'select',
                     className: 'col-6',
                     name: 'province_id',
+                    title: 'Provincia',
                     label: 'Provincia',
                     defaultValue: current.province.id || 1,
                     validate: ['required'],
@@ -218,6 +232,7 @@ export default class CustomerInfo extends React.Component {
                     formElement: 'select',
                     className: 'col-12',
                     name: 'source_project_id',
+                    title: 'Fuente de projecto',
                     label: 'Fuente de projecto',
                     defaultValue: current.source_project_id,
                     validate: ['required'],

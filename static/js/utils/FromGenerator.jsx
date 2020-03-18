@@ -205,7 +205,8 @@ class FormGenerator extends React.Component {
                 defaultChecked: element.checked,
                 disabled: element.disabled || false,
                 readOnly: element.readOnly || false,
-                autoComplete: element.autoComplete
+                autoComplete: element.autoComplete,
+                title: element.title,
             },
             element.options && this.getSecondParam(element)
         ));

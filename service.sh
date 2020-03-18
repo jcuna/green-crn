@@ -44,7 +44,7 @@ run_tests() {
 }
 
 if [[ ! -f "./docker/docker-compose.yml" ]]; then
-    printf "Call me from isc-api's root directory.\n"
+    printf "Call me from green-crn's root directory.\n"
     exit 1
 fi
 

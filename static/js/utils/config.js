@@ -68,7 +68,6 @@ export const hasAccess = (path, type) => {
             for (let j = 0; j < state.user.roles.length; j++) {
                 const role = state.user.roles[j];
                 const perm = state.roles.permissions[item.endpoint];
-
                 if (typeof role.permissions[perm] === 'undefined') {
                     access = false;
                     break;

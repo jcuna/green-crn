@@ -6,6 +6,7 @@ import {
     CUSTOMERS_FETCHED,
     CUSTOMERS_FETCHING,
     CUSTOMER_CURRENT_CLEAR, CUSTOMERS_CLEAR,
+    CUSTOMER_DOCUMENT_FETCHED, CUSTOMER_DOCUMENT_CLEAR,
 } from '../actions/customerAction';
 
 const initState = {
@@ -31,7 +32,11 @@ const initState = {
         source_project_id: 1,
         customer_installations: [],
         customer_projects: [],
-    }
+    },
+    document_list: {
+        status: STATUS.PENDING,
+        list: []
+    },
 };
 
 export default function customerReducer(state = initState, action) {
@@ -58,6 +63,10 @@ export default function customerReducer(state = initState, action) {
             return { ...state, current: { ...initState.current }};
         case CUSTOMERS_CLEAR:
             return { ...state, list: { ...initState.list }};
+        case CUSTOMER_DOCUMENT_FETCHED:
+            return { ...state, document_list: { status: STATUS.COMPLETE, list: action.payload }};
+        case CUSTOMER_DOCUMENT_CLEAR:
+            return { ...state, document_list: { ...initState.document_list }};
         default:
             return state;
     }

@@ -1,46 +1,47 @@
 /**
- * Created by Jon on 10/21/19.
+ * Created by Jesus on 19/02/20/.
  */
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import Breadcrumbs from '../../utils/Breadcrumbs';
-import CustomerInfo from './CustomerInfo';
-import Projects from './projects/Projects';
+import Breadcrumbs from '../../../utils/Breadcrumbs';
 import { Link } from 'react-router-dom';
-import { ENDPOINTS } from '../../constants';
+import { ENDPOINTS } from '../../../constants';
+import Installation from './Installation';
+import Documents from './Documents';
 
-export default class Customers extends React.Component {
+export default class InstallationSumary extends React.Component {
     constructor(props) {
         super(props);
 
-        const { action, id } = this.props.match.params;
-        const editing = typeof id !== 'undefined';
+        const { action, id, project_id, installation_id } = this.props.match.params;
+        const editing = typeof project_id !== 'undefined';
 
-        this.state = { editing, id, render: this.getRenderComponent(action), action };
+        this.state = { editing, id, project_id, installation_id, render: this.getRenderComponent(action), action };
     }
 
     render() {
+        const { customer } = this.props;
         const path_id = this.getIdPath();
         return (
             <div>
                 <Breadcrumbs { ...this.props }/>
                 <section className='widget'>
-                    <h2>Clientes</h2>
+                    <h2>Installaciones</h2>
                     <ul className='nav nav-tabs'>
                         <li className='nav-item'>
                             <Link
                                 className={ this.getClassName('info') }
-                                to={ `${ ENDPOINTS.CUSTOMERS_URL }/info${ path_id }` }>
+                                data-func='projects'
+                                to={ `${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${customer.current.id}/${ this.state.project_id }/info${ path_id }` }>
                                 Información
                             </Link>
                         </li>
                         <li className='nav-item'>
                             <Link
-                                className={ this.getClassName('proyectos') }
-                                data-func='projects'
-                                to={ `${ ENDPOINTS.CUSTOMERS_URL }/proyectos${ path_id }` }>
-                                Proyectos
+                                className={ this.getClassName('docs') }
+                                to={ `${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${ customer.current.id }/${ this.state.project_id }/docs${ path_id }` }>
+                                Documentos
                             </Link>
                         </li>
                     </ul>
@@ -58,7 +59,7 @@ export default class Customers extends React.Component {
 
     getIdPath() {
         if (this.state.editing) {
-            return `/${ this.state.id }`;
+            return `/${ this.state.installation_id }`;
         }
         return '';
     }
@@ -67,18 +68,19 @@ export default class Customers extends React.Component {
         if (action === this.props.match.params.action) {
             return 'nav-link active';
         }
-        return this.state.id ? 'nav-link' : 'nav-link disabled';
+        return this.state.project_id ? 'nav-link' : 'nav-link disabled';
     }
 
     getRenderComponent(action) {
-        if (action === 'proyectos') {
-            return Projects;
+        if (action === 'docs') {
+            return Documents;
         }
-        return CustomerInfo;
+        return Installation;
     }
 
     static propTypes = {
         dispatch: PropTypes.func,
         match: PropTypes.object,
+        customer: PropTypes.object,
     };
 }

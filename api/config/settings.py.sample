@@ -37,4 +37,4 @@ EXTERNAL_DEV_URL = 'http://10.0.0.23:8000'
 
 AWS_ACCESS_KEY_ID = '{AccessKeyId}'
 AWS_SECRET_ACCESS_KEY = '{SecretAccessKey}'
-BUCKETS_PREFIX = '{BucketsPrefix}'
+UPLOAD_FILE_BUCKET = '{UploadFileBucket}'

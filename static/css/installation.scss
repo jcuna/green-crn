@@ -1,0 +1,82 @@
+@import "vars";
+
+#title {
+    text-align: center;
+    font-family: arial, sans-serif;
+}
+
+
+.delete-icon {
+    alignment: center;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.inverters {
+    text-align: center;
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    border: 3px solid #ddd;
+    width: inherit;
+}
+
+.inverters td, .inverters th {
+    border: 1px solid #ddd;
+    padding:  8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    //width: inherit;
+}
+
+.inverters td{
+    max-width: 0;
+}
+.inverters tr:nth-child(even){background-color: #f2f2f2;}
+
+.inverters tr:hover {background-color: #ddd;}
+
+.inverters th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: center;
+    background-color: $theme;
+    color: white;
+}
+
+.upload-btn-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    padding-top: 15px;
+    //cursor: pointer;
+}
+
+.btn-w {
+    //cursor: inherit;
+    border: 2px solid gray;
+    color: gray;
+    background-color: white;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.upload-btn-wrapper input[type=file] {
+    font-size: 100px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    //z-index: -1;
+}
+
+.quantity-input{
+    width: 100%;
+}
+
+.table-section {
+    padding: 2px
+}

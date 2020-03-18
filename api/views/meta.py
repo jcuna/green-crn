@@ -1,10 +1,13 @@
 from sqlalchemy.orm import joinedload
+
+from config.constants import DOCUMENTS_SECTION_CLIENT, DOCUMENTS_SECTION_LEGAL, DOCUMENTS_SECTION_DISTRIBUTOR, \
+    DOCUMENTS_SECTION_CNE
 from core import API
 from dal.customer import Country, SourceProject, ProjectType, Distributor, Rate, Transformer, TrCapacity, Phase, \
     Tension, PanelModel, InverterModel
 from dal.shared import token_required, access_required
 from views import Result
-
+from flask import jsonify
 
 class Countries(API):
 
@@ -82,3 +85,17 @@ class InverterModels(API):
     @access_required
     def get(self):
         return Result.model(InverterModel.query.all())
+
+class DocumentCategories(API):
+    @token_required
+    @access_required
+    def get(self):
+
+        return [{ 'category': 'Otro','name': []},DOCUMENTS_SECTION_CLIENT,DOCUMENTS_SECTION_LEGAL,DOCUMENTS_SECTION_DISTRIBUTOR,DOCUMENTS_SECTION_CNE]
+
+class DocumentTypes(API):
+    @token_required
+    @access_required
+    def get(self):
+
+        return 1

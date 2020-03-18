@@ -9,6 +9,7 @@ import { ACCESS_TYPES, ENDPOINTS } from '../../../constants';
 import { Link } from 'react-router-dom';
 import Table from '../../../utils/Table';
 import { fetchCustomer } from '../../../actions/customerAction';
+import FontAwesome from '../../../utils/FontAwesome';
 
 export default class Projects extends React.Component {
     constructor(props) {
@@ -16,7 +17,7 @@ export default class Projects extends React.Component {
 
         const { match, history, dispatch, customer } = props;
 
-        if (typeof match.params.id !== 'undefined' && customer.id !== Number(match.params.id)) {
+        if (typeof match.params.id !== 'undefined' && customer.current.id !== Number(match.params.id)) {
             dispatch(fetchCustomer(match.params.id, Function, () => {
                 history.push(ENDPOINTS.NOT_FOUND);
             }));
@@ -26,6 +27,8 @@ export default class Projects extends React.Component {
     }
 
     render() {
+        const { current } = this.props.customer;
+        const { customer_projects } = this.props.customer.current;
         return (
             <div>
                 <section className='widget'>
@@ -38,8 +41,23 @@ export default class Projects extends React.Component {
                     </div>
                     <h4>Projects</h4>
                     <Table
-                        rows={ this.getRows(this.props.customer.current) }
-                        headers={ ['Nombre'] }
+                        rows={
+                            customer_projects.map(o => [
+                                <Link
+                                    key={ o.id }
+                                    to={ `${ENDPOINTS.CUSTOMER_PROJECTS_URL}/${current.id}/info/${o.id}` }>
+                                    { `${o.name}` }
+                                </Link>,
+                                o.address,
+                                o.nic,
+                                o.nic_title,
+                                <Link
+                                    key={ o.id }
+                                    to={ `${ENDPOINTS.CUSTOMER_PROJECTS_URL}/${current.id}/instalacion/${o.id}` }>
+                                    { <FontAwesome type='fas fa-plug'/> }
+                                </Link>])
+                        }
+                        headers={ ['Nombre', 'Direccion', 'NIC', 'Título', 'Installaciones'] }
                     />
                 </section>
             </div>
