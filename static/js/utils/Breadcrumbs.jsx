@@ -21,28 +21,36 @@ export default class Breadcrumbs extends React.Component {
 
         parts.forEach((item, k) => {
             let isParam = false;
+            let itemName = item;
 
             Object.values(match.params).forEach(param => {
-                if (param === item) {
+                if (this.props.paramValues.includes(item)) {
+                    if (typeof this.props.paramNames[this.props.paramValues.indexOf(item)] === 'string') {
+                        itemName = this.props.paramNames[this.props.paramValues.indexOf(item)];
+                    }
+                } else if (param === item) {
                     isParam = true;
                 }
             });
 
             if (item !== '' && !isParam && match.url.split('/').pop() !== item) {
+                if (itemsLast > 0) {
+                    urlBuild += '/';
+                }
                 urlBuild += item;
                 itemsLast++;
-                items.push({ name: item.charAt(0).toUpperCase() + item.slice(1), link: urlBuild, key: k });
+                items.push({ name: itemName.charAt(0).toUpperCase() + itemName.slice(1), link: urlBuild, key: k });
             } else {
                 itemsLast++;
             }
         });
 
         return (
-            <nav aria-label='breadcrumb'>
-                <ol className='breadcrumb'>
-                    <li className='breadcrumb-item'><Link to='/'><FontAwesome type='home'/></Link></li>
+            <nav aria-label="breadcrumb">
+                <ol className="breadcrumb">
+                    <li className="breadcrumb-item"><Link to='/'><FontAwesome type='home'/></Link></li>
                     { items.map((item, key) =>
-                        <li key={ item.key } className='breadcrumb-item'>
+                        <li key={ item.key } className="breadcrumb-item">
                             { itemsLast === key && item.name }
                             { itemsLast !== key && <Link
                                 onClick={ () => dispatch(clearNotifications()) }
@@ -50,7 +58,7 @@ export default class Breadcrumbs extends React.Component {
                             }
                         </li>
                     )}
-                    { title && <li className='breadcrumb-item active' aria-current='page'>{ title }</li>}
+                    { title && <li className="breadcrumb-item active" aria-current="page">{ title }</li>}
                 </ol>
             </nav>
         );
@@ -61,5 +69,11 @@ export default class Breadcrumbs extends React.Component {
         history: PropTypes.object,
         dispatch: PropTypes.func,
         title: PropTypes.string,
+        paramValues: PropTypes.array,
+        paramNames: PropTypes.array
     };
+    static defaultProps = {
+        paramValues: [],
+        paramNames: [],
+    }
 }
