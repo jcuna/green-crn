@@ -74,6 +74,11 @@ DOCUMENTS_SECTION_CNE = {
     ]
 }
 
+OTHER = {
+    'category': 'Otro',
+    'name': []
+}
+
 updatable_lists = [
     Country,
     Province,

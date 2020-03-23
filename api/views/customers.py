@@ -1,6 +1,6 @@
 import hashlib
 from datetime import datetime
-from mimetypes import guess_extension, guess_all_extensions
+from mimetypes import guess_all_extensions
 from flask import request
 from sqlalchemy.orm import joinedload
 from config import configs
@@ -148,11 +148,15 @@ class CustomerInstallations(API):
         if 'panels' in data:
             InstallationPanelModel.query.filter_by(installation_id=installation_id).delete()
             for panel in data['panels']:
-                db.session.add(InstallationPanelModel(installation_id=installation_id, panel_model_id=panel['id'], panel_quantity=int(panel['quantity'])))
+                db.session.add(
+                    InstallationPanelModel(installation_id=installation_id, panel_model_id=panel['id'], panel_quantity=int(panel['quantity']))
+                )
         if 'inverters' in data:
             InstallationInverterModel.query.filter_by(installation_id=installation_id).delete()
             for inverter in data['inverters']:
-                db.session.add(InstallationInverterModel(installation_id=installation_id, inverter_model_id=inverter['id'], inverter_quantity=int(inverter['quantity'])))
+                db.session.add(
+                    InstallationInverterModel(installation_id=installation_id, inverter_model_id=inverter['id'], inverter_quantity=int(inverter['quantity']))
+                )
 
         db.session.commit()
         return Result.success('Success', 201)

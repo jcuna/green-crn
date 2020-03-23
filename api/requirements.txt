@@ -16,3 +16,4 @@ Pillow==6.2.0
 pytest==5.3.2
 supervisor==4.1.0
 pytest-cov==2.8.1
+requests==2.23.0
