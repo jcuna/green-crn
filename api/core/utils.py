@@ -8,8 +8,8 @@ from flask import Flask
 import queue
 from logging.handlers import QueueHandler, QueueListener, TimedRotatingFileHandler
 
-from pip._vendor import requests
-from pip._vendor.requests.auth import HTTPDigestAuth
+import requests
+from requests.auth import HTTPDigestAuth
 
 from config import configs
 from config.settings import EGAUGE_USER, EGAUGE_PASSWORD
