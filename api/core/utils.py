@@ -7,7 +7,12 @@ import pytz
 from flask import Flask
 import queue
 from logging.handlers import QueueHandler, QueueListener, TimedRotatingFileHandler
+
+from pip._vendor import requests
+from pip._vendor.requests.auth import HTTPDigestAuth
+
 from config import configs
+from config.settings import EGAUGE_USER, EGAUGE_PASSWORD
 
 
 def configure_loggers(app: Flask):
@@ -96,3 +101,8 @@ log_path = app_path + '/log/'
 
 if not Path(log_path).is_dir():
     os.mkdir(log_path)
+
+def get_egauge(realm):
+    url = 'http:///{}.egaug.es'.format(realm)
+    requests.get(url, auth=HTTPDigestAuth(EGAUGE_USER, EGAUGE_PASSWORD))
+    return

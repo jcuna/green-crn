@@ -167,7 +167,6 @@ export default class Documents extends React.Component {
         const { params } = this.props.match;
         const documents_data = new FormData();
         const action = createCustomerDocument;
-        // const verb = 'creado';
         documents_data.append('installation_id', params.installation_id);
         documents_data.append('category', this.state.currentCategory);
         documents_data.append('name', this.state.currentDocName.trim());
@@ -237,7 +236,7 @@ export default class Documents extends React.Component {
                         <tr key={ index }>
                             <td>{category}</td>
                             <td><a
-                                href={ list.signed_urls.find(url => url.name === name).url }
+                                href={ document.url }
                                 target='_blank' rel="noopener noreferrer">
                                 {name}
                             </a></td>
@@ -296,7 +295,12 @@ export default class Documents extends React.Component {
 
     loadDocuments(installation) {
         if (installation.installation_documents.length > 0) {
-            installation.installation_documents.forEach(document => this.addDocument({ key: document.id, name: document._name, category: document.category, object_key: document.object_key }));
+            installation.installation_documents.forEach(document => this.addDocument({
+                key: document.id,
+                name: document._name,
+                category: document.category,
+                object_key: document.object_key
+            }));
         }
     }
 
@@ -360,9 +364,6 @@ export default class Documents extends React.Component {
                 </div>
             </div>
         </div>;
-        // return (
-        //     <h1>read only</h1>
-        // );
     }
 
     static propTypes = {
