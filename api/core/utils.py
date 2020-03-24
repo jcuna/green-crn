@@ -2,17 +2,17 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-import boto3
-import pytz
-from flask import Flask
-import queue
-from logging.handlers import QueueHandler, QueueListener, TimedRotatingFileHandler
 
+import queue
+import pytz
+import boto3
+from flask import Flask
 import requests
 from requests.auth import HTTPDigestAuth
+import xmltodict
 
+from logging.handlers import QueueHandler, QueueListener, TimedRotatingFileHandler
 from config import configs
-from config.settings import EGAUGE_USER, EGAUGE_PASSWORD
 
 
 def configure_loggers(app: Flask):
@@ -96,13 +96,17 @@ def utc_to_local(date: datetime) -> datetime:
     return date.astimezone(pytz.timezone(configs.TIME_ZONE))
 
 
+def get_egauge(realm):
+
+    host = '{}.{}'.format(realm, configs.EGAUGE_DOMAIN)
+    url = 'https://{}/{}'.format(host, configs.EGAUGE_DATA_ENDPOINT)
+    resp = requests.get(url, auth=HTTPDigestAuth(configs.EGAUGE_USER, configs.EGAUGE_PASSWORD), headers={'Host': host})
+
+    return xmltodict.parse(resp.content)
+
+
 app_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 log_path = app_path + '/log/'
 
 if not Path(log_path).is_dir():
     os.mkdir(log_path)
-
-def get_egauge(realm):
-    url = 'http:///{}.egaug.es'.format(realm)
-    requests.get(url, auth=HTTPDigestAuth(EGAUGE_USER, EGAUGE_PASSWORD))
-    return

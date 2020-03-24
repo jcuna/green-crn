@@ -8,10 +8,11 @@ from sqlalchemy.orm import joinedload
 from flask_mail import Message
 
 from core import Cache, API
+from core.messages import send_message
 from core.middleware import HttpException
 from core.router import permissions
-from dal.shared import get_fillable, token_required, access_required, Paginator
-from dal.user import User, db, Role, UserToken, UserAttributes
+from dal.shared import get_fillable, token_required, access_required, Paginator, system_call
+from dal.user import User, db, Role, UserToken, UserAttributes, UserMessage
 from views import Result
 
 
@@ -288,9 +289,9 @@ class UserTokens(API):
         time = datetime.datetime.utcnow()
 
         if jwt and jwt.expires > time:
-            return {'isValid': True}
+            return Result.custom({'isValid': True}, 200)
 
-        return {'isValid': False}
+        return Result.custom({'isValid': False}, 400)
 
 
 class Activate(API):
@@ -325,6 +326,64 @@ class Audit(API):
     @access_required
     def get(self):
         pass
+
+
+class UserPasswords(API):
+    def put(self):
+        data = request.get_json()
+        if data is None or 'email' not in data:
+            raise HttpException('Missing email')
+
+        user = User.query.filter_by(email=data['email']).first()
+        if user is not None:
+            send_user_token_email(user, 'Actualiza tu contraseña', 'email/change_password.html')
+
+        # for security reasons, even if user does not exist, we return a success call
+        return Result.success()
+
+
+def send_user_token_email(user: User, mail_subject, template):
+    ut = UserToken(target=request.host_url.rstrip('/') + url_for('user_activate_url'))
+    ut.new_token(user.email)
+    user.tokens.append(ut)
+    db.session.commit()
+    msg = Message(mail_subject, recipients=[user.email])
+    msg.html = render_template(
+        template,
+        name=user.first_name,
+        url=request.host_url,
+        token='account/activate/' + ut.token
+    )
+    current_app.mail(msg)
+
+
+class Messages(API):
+    @token_required
+    def get(self):
+        total_unread = UserMessage.query.filter_by(user_id=request.user.id, read=False).count()
+        page = request.args.get('page', 1)
+        paginator = Paginator(
+            UserMessage.query.filter_by(user_id=request.user.id),
+            int(page),
+            request.args.get('orderBy', 'date'),
+            request.args.get('orderDir', 'desc')
+        )
+        total_pages = paginator.total_pages
+
+        return Result.custom(
+            {'list': paginator.get_items(), 'page': page, 'total_pages': total_pages, 'total_unread': total_unread}
+        )
+
+    @system_call
+    def post(self):
+        send_message(**request.json)
+        return Result.success()
+
+    def put(self, message_id):
+        message = UserMessage.query.filter_by(id=message_id).first()
+        message.read = True
+        db.session.commit()
+        return Result.success()
 
 
 def get_user_attr(user: User):

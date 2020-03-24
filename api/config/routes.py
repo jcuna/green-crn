@@ -12,6 +12,9 @@ def register():
         'users.UserTokens@user_tokens_url': '/user-tokens|/user-tokens/<user_token>',
         'users.Activate@user_activate_url': '/account/activate-pass',
         'users.Audit@audit_url': '/audit|/audit/<int:user_id>',
+        'users.UserPasswords@user_passwords_url': '/users/reset-password',
+        'users.Messages@messages_url': '/messages|/messages/<int:message_id>',
+
         'company.Company@company_url': '/company',
 
         'meta.Countries@country_url': '/meta/countries',
@@ -32,7 +35,12 @@ def register():
         'customers.CustomerProjects@customer_projects_url': '/customers/projects|/customers/projects/<int:project_id>',
         'customers.CustomerInstallations@customer_installations_url': '/customers/installations||/customers/installations/<int:installation_id>',
         'customers.CustomerDocuments@customer_documents_url': '/customers/documents|/customers/documents/<int:installation_id>',
-        'customers.Egauge@egauge_url': '/egauge|/egauge/<realm>',
+        'customers.EGauge@egauge_url': '/egauge/<realm>',
+
+        'shared.Email@emails_url': '/email|/email/<string:action>',
+        'shared.HtmlToPdf@html_to_pdf_url': '/to-pdf',
+        'shared.Widgets@widgets_url': '/widgets',
+        'shared.RunWidget@run_widgets_url': '/widgets/<string:widget_name>',
     }
 
 

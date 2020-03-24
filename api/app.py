@@ -1,7 +1,8 @@
 from flask import Flask
+from flask_mail import Mail
 
 from core.utils import configure_loggers
-from config import get_mail, configs
+from config import configs
 from dal.shared import db
 import core
 
@@ -20,7 +21,7 @@ def init_app(mode='web') -> Flask:
         core.Router(this_app)
 
     db.init_app(this_app)
-    this_app.mail = get_mail(this_app)
+    this_app.mail = Mail(this_app).send
 
     return this_app
 

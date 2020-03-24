@@ -18,6 +18,6 @@ RUN apk add --no-cache bash jpeg-dev zlib-dev wkhtmltopdf
 
 RUN apk add --no-cache postgresql-libs \
     && apk add --no-cache --virtual .build-deps gcc libffi-dev musl-dev postgresql-dev \
-    && pip install pydevd-pycharm~=191.7479.19 \
+    && pip install pydevd-pycharm~=201.6487.18 \
     && pip install -r /build/requirements.txt --no-cache-dir \
     && apk --purge del .build-deps

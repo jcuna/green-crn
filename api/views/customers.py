@@ -4,6 +4,7 @@ from mimetypes import guess_all_extensions
 from flask import request
 from sqlalchemy.orm import joinedload
 from config import configs
+from config.constants import DOCUMENT_CATEGORIES
 from core import API, Cache, utils
 from core.AWS import Storage
 from core.middleware import HttpException
@@ -92,13 +93,13 @@ class CustomerProjects(API):
     @token_required
     @access_required
     def put(self, project_id):
-        c = CustomerProject.query.filter_by(id=project_id).first()
-        if not c:
+        project = CustomerProject.query.filter_by(id=project_id).first()
+        if not project:
             raise HttpException('Not found', 404)
 
         json = get_fillable(CustomerProject, **request.get_json())
         for field, value in json.items():
-            setattr(c, field, value)
+            setattr(project, field, value)
 
         db.session.commit()
         return Result.success('Success', 201)
@@ -167,10 +168,13 @@ class CustomerDocuments(API):
     @token_required
     @access_required
     def post(self):
-        name = request.form.get('name')
         category = request.form.get('category')
+        name = request.form.get('name')
         installation_id = request.form.get('installation_id')
         file = request.files.get('file')
+
+        if category not in DOCUMENT_CATEGORIES:
+            raise HttpException('Invalid Category')
 
         extension = max(guess_all_extensions(file.content_type),key=len)
 
@@ -223,7 +227,12 @@ class CustomerDocuments(API):
                 raise HttpException('Not found')
 
         else:
-            paginator = Paginator(InstallationDocument.query, page, request.args.get('orderBy'), request.args.get('orderDir'))
+            paginator = Paginator(
+                InstallationDocument.query,
+                page,
+                request.args.get('orderBy'),
+                request.args.get('orderDir')
+            )
             total_pages = paginator.total_pages
             result = paginator.get_items()
 
@@ -246,7 +255,10 @@ class CustomerDocuments(API):
 
         return Result.success()
 
-class Egauge(API):
-    def get(self,realm):
-        utils.get_egauge('enestar170')
-        return
+
+class EGauge(API):
+    # TODO: Uncomment following two lines
+    # @token_required
+    # @access_required
+    def get(self, realm):
+        return utils.get_egauge(realm)

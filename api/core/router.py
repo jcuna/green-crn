@@ -38,8 +38,7 @@ class Router:
             if pack_name + '.' + parts[1] not in no_permissions:
                 permissions.update({parts[2]: pack_name + '.' + parts[1]})
 
-            with app.test_request_context():
-                self.routes.update({parts[2]: url_for(parts[2])})
+            self.routes.update({parts[2]: full_routes[0]})
 
 
 @base.route('/status')

@@ -38,3 +38,8 @@ EXTERNAL_DEV_URL = 'http://10.0.0.23:8000'
 AWS_ACCESS_KEY_ID = '{AccessKeyId}'
 AWS_SECRET_ACCESS_KEY = '{SecretAccessKey}'
 UPLOAD_FILE_BUCKET = '{UploadFileBucket}'
+
+EGAUGE_USER = '{egaugeUser}'
+EGAUGE_PASSWORD = '{egaugePassword}'
+EGAUGE_DOMAIN = 'egaug.es'
+EGAUGE_DATA_ENDPOINT = 'cgi-bin/egauge?v1&inst'

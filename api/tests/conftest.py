@@ -5,6 +5,7 @@ from multiprocessing import Process
 from time import sleep
 
 import pytest
+from flask_socketio import SocketIO
 from flask.testing import FlaskClient
 
 from tests import tear_files, init, endpoint
@@ -17,7 +18,8 @@ sys.modules['boto3'] = injector
 sys.modules['boto3.dynamodb'] = injector
 sys.modules['boto3.dynamodb.conditions'] = injector
 sys.modules['psycopg2'] = injector
-
+sys.modules['flask_mail'] = injector
+sys.modules['urllib'] = injector
 
 
 @pytest.fixture(scope='module')
@@ -29,8 +31,8 @@ def client():
 
     from app import init_app
     from helpers import run_migration
-
     app = init_app()
+    app.extensions['socketio'] = SocketIO(app)
     with app.test_client() as client:
         with app.app_context():
             run_migration()

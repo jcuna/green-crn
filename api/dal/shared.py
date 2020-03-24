@@ -62,6 +62,28 @@ def token_required(f):
     return decorated
 
 
+def system_call(f):
+    """
+    meant to be called from within server instance, this is a temporary solution until an API key system is created
+    :param f:
+    :return:
+    """
+    from flask import current_app, request
+
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+
+        if 'X-System-Token' in request.headers:
+            token = request.headers.get('X-SYSTEM-TOKEN')
+
+        if not token or token != current_app.config['SECRET_KEY']:
+            return Result.error('Token is missing!', 401)
+
+        return f(*args, **kwargs)
+
+    return decorated
+
 def access_required(f):
     from flask import request
     from core.router import permissions
@@ -122,6 +144,7 @@ class Paginator:
 
 
 class ModelIter(object):
+    allowed_widget = False
     def __init__(self, *args, **kwargs):
         super(self, *args, **kwargs)
 

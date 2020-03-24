@@ -2,7 +2,7 @@ import json
 from socket import timeout
 from datetime import timedelta
 from time import sleep, time
-from flask import request
+from flask import request, Response
 from config import configs
 from dal.user import Audit
 from flask_restful import Resource
@@ -13,7 +13,7 @@ from .middleware import Middleware, error_handler
 from flask_caching import Cache as CacheService
 from cryptography.fernet import Fernet
 from base64 import b64encode, b64decode
-from core.queue_worker import MaxMessageSizeExceededError
+from core.queue_worker import MaxMessageSizeExceededError, MAX_MSG_LENGTH
 from core import mem_queue
 from config.routes import no_permissions, default_access
 
@@ -48,12 +48,10 @@ class Cache:
 
 class API(Resource):
 
-    audit_tasks = []
-
     def dispatch_request(self, *args, **kwargs):
         output = super(Resource, self).dispatch_request(*args, **kwargs)
 
-        view_name = '%s.%s' %( self.__class__.__module__, self.__class__.__name__)
+        view_name = '%s.%s' % (self.__class__.__module__, self.__class__.__name__)
         if view_name in no_permissions or \
                 view_name in default_access and access_map[request.method.upper()] in default_access[view_name]:
             return output
@@ -68,16 +66,23 @@ class API(Resource):
             'endpoint': request.path,
             'headers': json.dumps([{key: request.environ[key]} for key in request.environ if 'HTTP_' in key]),
             'method': request.method,
-            'response': json.dumps(output),
             'payload': json.dumps({
                 'json': request.get_json(silent=True),
                 'query': request.args.to_dict(),
                 'form': request.form.to_dict(),
                 'all': request.get_data(as_text=True)
-            })
+            }),
+            'response': {}
         }
+        if not isinstance(output, Response):
+            response = json.dumps(output)
+            if len(response) <= MAX_MSG_LENGTH - 2400:
+                audit['response'] = response
+            else:
+                audit['response'] = 'truncated original length = %s' % len(response)
+                get_logger('app').info('Message response truncated as it was too large')
         # TODO: Identify if this is the best approach given that the
-        #  queue is not active on test unless running queue tests
+        # queue is not active on test unless running queue tests
         if not hasattr(configs, 'TESTING'):
             try:
                 mem_queue.send_msg(json.dumps(audit))

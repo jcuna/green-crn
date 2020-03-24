@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.dialects.postgresql import MACADDR
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.ext.mutable import MutableList
+from sqlalchemy.ext.mutable import MutableList, MutableDict
 from sqlalchemy.orm import relationship, composite, deferred
 from sqlalchemy.dialects import sqlite
 
@@ -139,6 +139,22 @@ class Tension(db.Model, ModelIter):
     label = db.Column(db.SmallInteger, unique=True, nullable=False)
 
 
+class Status(db.Model, ModelIter):
+    __tablename__ = 'status'
+
+    id = db.Column(SmallInteger, primary_key=True)
+    label = db.Column(db.SmallInteger, unique=True, nullable=False)
+
+
+class FinancialEntity(db.Model, ModelIter):
+    __tablename__ = 'financial_entities'
+
+    id = db.Column(SmallInteger, primary_key=True)
+    name = db.Column(db.SmallInteger, unique=True, nullable=False)
+    primary_phone = db.Column(db.String(10, collation=configs.DB_COLLATION), nullable=False, unique=True)
+    secondary_phone = db.Column(db.String(10, collation=configs.DB_COLLATION), nullable=True)
+
+
 class Integration(db.Model, ModelIter):
     __tablename__ = 'integrations'
 
@@ -158,6 +174,7 @@ class Integration(db.Model, ModelIter):
 
 class Customer(db.Model, ModelIter):
     __tablename__ = 'customers'
+    allowed_widget = True
 
     fillable = [
         'first_name',
@@ -200,6 +217,7 @@ class Customer(db.Model, ModelIter):
 
 class CustomerProject(db.Model, ModelIter):
     __tablename__ = 'customer_projects'
+    allowed_widget = True
 
     fillable = [
         'name',
@@ -241,6 +259,11 @@ class CustomerProject(db.Model, ModelIter):
     capacity = relationship(TrCapacity, uselist=False, lazy='joined')
     phase = relationship(Phase, uselist=False, lazy='joined')
     tension = relationship(Tension, uselist=False, lazy='joined')
+    project_metadata = db.Column(
+        MutableDict.as_mutable(db.JSON),
+        comment='A JSON schema that allows free form data, i.e. historical consumption data',
+        server_default='{}'
+    )
 
     project_type_id = deferred(db.Column(db.Integer, db.ForeignKey('project_types.id')))
     customer_id = deferred(db.Column(db.Integer, db.ForeignKey('customers.id'), index=True, nullable=False))
@@ -253,8 +276,32 @@ class CustomerProject(db.Model, ModelIter):
     tension_id = deferred(db.Column(db.Integer, db.ForeignKey('tensions.id')))
 
 
+class Financing(db.Model, ModelIter):
+    __tablename__ = 'financing'
+    allowed_widget = True
+
+    id = db.Column(db.Integer, primary_key=True)
+    project = relationship(CustomerProject, uselist=False, backref='financing', cascade='all, delete')
+    financial_entity = relationship(FinancialEntity, uselist=False, backref='financing')
+    request_date = db.Column(db.DateTime())
+    response_date = db.Column(db.DateTime())
+    requested_amount = db.Column(db.Numeric(10, 2), nullable=False)
+    assigned_official = db.Column(db.String(60, collation=configs.DB_COLLATION))
+    official_phone = db.Column(db.String(10, collation=configs.DB_COLLATION))
+    approved_rate = db.Column(db.SmallInteger)
+    retention_percentage = db.Column(db.SmallInteger)
+    insurance = db.Column(db.Numeric(10, 2))
+    number_of_payments = db.Column(db.SmallInteger)
+    payments_amount = db.Column(db.Numeric(10, 2))
+    status = relationship(Status, uselist=False, backref='financing')
+
+    project_id = deferred(db.Column(db.Integer, db.ForeignKey('customer_projects.id'), index=True, nullable=False))
+    financial_entity_id = deferred(db.Column(db.Integer, db.ForeignKey('financial_entities.id'), index=True, nullable=False))
+    status_id = deferred(db.Column(db.Integer, db.ForeignKey('status.id'), index=True, nullable=False))
+
 class Installations(db.Model, ModelIter):
     __tablename__ = 'installations'
+    allowed_widget = True
 
     fillable = [
         'installed_capacity',
@@ -293,6 +340,7 @@ class Installations(db.Model, ModelIter):
 
 class InstallationDocument(db.Model, ModelIter):
     __tablename__ = 'installation_documents'
+    allowed_widget = True
 
     fillable = [
         'name',
@@ -303,9 +351,9 @@ class InstallationDocument(db.Model, ModelIter):
 
     id = db.Column(db.Integer, primary_key=True)
     installation = relationship(Installations, backref='installation_documents')
-    _name = db.Column('name', db.String(96, collation=configs.DB_COLLATION))
-    category = db.Column(db.String(96, collation=configs.DB_COLLATION))
-    object_key = db.Column(db.String(512, collation=configs.DB_COLLATION), index=True)
+    _name = db.Column('name', db.String(96, collation=configs.DB_COLLATION), nullable=False)
+    category = db.Column(db.String(96, collation=configs.DB_COLLATION), nullable=False)
+    object_key = db.Column(db.String(512, collation=configs.DB_COLLATION), index=True, nullable=False)
 
     installation_id = deferred(db.Column(db.Integer, db.ForeignKey('installations.id'), index=True))
 
@@ -320,18 +368,15 @@ class InstallationDocument(db.Model, ModelIter):
 
 class Note(db.Model, ModelIter):
     __tablename__ = 'notes'
+    allowed_widget = True
+
     id = db.Column(db.Integer, primary_key=True)
     comment = db.Column(db.String)
 
-    customer_id = deferred(db.Column(
+    model_id = deferred(db.Column(
         db.Integer,
         db.ForeignKey('customers.id'),
         index=True,
         nullable=True
     ))
-    customer_project_id = deferred(db.Column(
-        db.Integer,
-        db.ForeignKey('customer_projects.id'),
-        index=True,
-        nullable=True
-    ))
+    model_name = db.Column(db.String(96, collation=configs.DB_COLLATION), nullable=False)

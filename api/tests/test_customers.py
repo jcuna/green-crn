@@ -1,6 +1,7 @@
 import io
 from flask.testing import FlaskClient
 
+from tests.injector import resources
 from tests import endpoint, front_end_date
 
 
@@ -115,24 +116,49 @@ def test_project_add_installation(client: FlaskClient, admin_login):
     assert 'id' in resp.json
 
 
-def test_add_installation_documents(client: FlaskClient, admin_login):
+def test_add_invalid_installation_documents(client: FlaskClient, admin_login: dict):
     from dal.customer import Installations
 
     data = {
-        'name': 'something',
+        'category': 'Bad',
+        'name': 'bad_file',
         'installation_id': Installations.query.first().id,
-        'file': (io.BytesIO(b'12345asdfg'), 'file.pdf'),
+        'file': (io.BytesIO(b'12345AF3DC13D'), 'file.pdf'),
     }
 
     error = client.post(endpoint('/customers/documents'), data={}, content_type='multipart/form-data')
     assert error.status_code == 401
     assert 'error' in error.json
 
+    resp1 = client.post(
+        endpoint('/customers/documents'), data=data, content_type='multipart/form-data', headers=admin_login
+    )
+
+    assert resp1.status_code == 400
+    assert 'Invalid Category' in resp1.json['error']
+
+
+def test_add_installation_documents(client: FlaskClient, admin_login: dict):
+    from dal.customer import Installations
+
+    data = {
+        'category': 'Legal',
+        'name': 'something',
+        'installation_id': Installations.query.first().id,
+        'file': (io.BytesIO(b'F23DD5AF3DC13DF23DD5AF3DC13D'), 'file.pdf'),
+    }
+
     resp = client.post(
         endpoint('/customers/documents'), data=data, content_type='multipart/form-data', headers=admin_login
     )
+
     assert resp.status_code == 200
     assert resp.json['message'] == 'Success'
+
+    assert hasattr(resources, 'buckets')
+    assert 'mytestbucket' in resources.buckets
+    assert 'documents' in resources.buckets['mytestbucket']
+    assert len(resources.buckets['mytestbucket']['documents']) == 1
 
 
 def test_customer_data(client: FlaskClient, admin_login):
@@ -163,8 +189,7 @@ def test_customer_data(client: FlaskClient, admin_login):
     assert isinstance(customer.json['customer_projects'][0]['installations'][0]['inverters'], list)
     assert isinstance(customer.json['customer_projects'][0]['installations'][0]['installation_documents'], list)
     assert len(customer.json['customer_projects'][0]['installations'][0]['installation_documents']) == 1
-    assert customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['_name'] == '2'
-    assert customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['file_extension'] \
-        == '.pdf'
-    assert 'something-' in \
+    assert customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['_name'] == 'SOMETHING'
+    assert customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['category'] == 'Legal'
+    assert 'documents/1/' in \
         customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['object_key']

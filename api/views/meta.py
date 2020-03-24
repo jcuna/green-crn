@@ -8,6 +8,7 @@ from dal.customer import Country, SourceProject, ProjectType, Distributor, Rate,
 from dal.shared import token_required, access_required
 from views import Result
 
+
 class Countries(API):
 
     @token_required
@@ -85,16 +86,10 @@ class InverterModels(API):
     def get(self):
         return Result.model(InverterModel.query.all())
 
+
 class DocumentCategories(API):
     @token_required
     @access_required
     def get(self):
-
-        return [OTHER, DOCUMENTS_SECTION_CLIENT, DOCUMENTS_SECTION_LEGAL, DOCUMENTS_SECTION_DISTRIBUTOR, DOCUMENTS_SECTION_CNE]
-
-class DocumentTypes(API):
-    @token_required
-    @access_required
-    def get(self):
-
-        return 1
+        return [OTHER, DOCUMENTS_SECTION_CLIENT, DOCUMENTS_SECTION_LEGAL, DOCUMENTS_SECTION_DISTRIBUTOR,
+                DOCUMENTS_SECTION_CNE]

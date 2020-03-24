@@ -2,6 +2,8 @@ import os
 from cryptography.fernet import Fernet
 from datetime import datetime, time
 
+secret_key = Fernet.generate_key().decode()
+
 config = """
 TESTING = True
 DEBUG = False
@@ -20,11 +22,11 @@ CACHE_CONFIG = {
 }
 TIME_ZONE = 'America/New_York'
 
-AWS_ACCESS_KEY_ID = 'ASHWAAAQQQIII3453HHHH'
-AWS_SECRET_ACCESS_KEY = 'aws_secret_key_goes_here'
-BUCKETS_PREFIX = 'enestar-'
+AWS_ACCESS_KEY_ID = 'testid'
+AWS_SECRET_ACCESS_KEY = 'testsecretkey'
+UPLOAD_FILE_BUCKET = 'mytestbucket'
 
-""" % (os.path.dirname(os.environ['APP_SETTINGS_PATH']) + '/testdb', Fernet.generate_key().decode())
+""" % (os.path.dirname(os.environ['APP_SETTINGS_PATH']) + '/testdb', secret_key)
 
 
 def init():

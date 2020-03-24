@@ -24,7 +24,7 @@ def error_handler(app: Flask):
         app_logger.exception(error)
         _, _, tb = sys.exc_info()
         json_output = {
-            'error': str(error),
+            'error': error.__message__ if isinstance(error, HttpException) else str(error),
         }
         if app.debug:
             json_output['traceback'] = traceback.format_list(traceback.extract_tb(tb))
@@ -47,4 +47,5 @@ class HttpException(Exception):
     def __init__(self, message, status_code=400):
         super(Exception, self).__init__(message)
 
+        self.__message__ = message
         self.status_code = status_code

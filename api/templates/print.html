@@ -1,0 +1,11 @@
+{% extends "header.html" %}
+{% block style %}
+{% for css in extra_css %}
+    <link rel="stylesheet" href="{{ css }}">
+{% endfor %}
+{{ styles }}
+{% endblock %}
+
+{% block content %}
+{{ body }}
+{% endblock %}

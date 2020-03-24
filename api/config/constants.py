@@ -3,8 +3,7 @@
 # and make use of global variables and local substitution variables
 
 from dal.customer import Country, Province, SourceProject, ProjectType, PanelModel, InverterModel, Distributor, Rate, \
-    Transformer, TrCapacity, Phase, Tension, Integration
-
+    Transformer, TrCapacity, Phase, Tension, Integration, Status, FinancialEntity
 
 DOCUMENTS_SECTION_CLIENT = {
     'category': 'Cliente',
@@ -79,6 +78,12 @@ OTHER = {
     'name': []
 }
 
+DOCUMENT_CATEGORIES = [
+    item['category'] for item in
+    [OTHER, DOCUMENTS_SECTION_CLIENT, DOCUMENTS_SECTION_LEGAL, DOCUMENTS_SECTION_DISTRIBUTOR, DOCUMENTS_SECTION_CNE]
+]
+
+
 updatable_lists = [
     Country,
     Province,
@@ -92,5 +97,7 @@ updatable_lists = [
     TrCapacity,
     Phase,
     Tension,
-    Integration
+    Integration,
+    Status,
+    FinancialEntity
 ]

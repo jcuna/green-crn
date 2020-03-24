@@ -31,6 +31,7 @@ user_roles = db.Table(
 
 class User(db.Model, ModelIter):
     __tablename__ = 'users'
+    allowed_widget = True
     fillable = ['password', 'email', 'first_name', 'last_name', 'deleted']
 
     id = db.Column(BigInteger, primary_key=True)
@@ -160,6 +161,7 @@ class Audit(db.Model, ModelIter):
 
 class CompanyProfile(db.Model, ModelIter):
     __tablename__ = 'company_profile'
+    allowed_widget = True
     fillable = ['name', 'address', 'contact', 'logo']
 
     id = db.Column(db.Integer, primary_key=True)
@@ -167,3 +169,22 @@ class CompanyProfile(db.Model, ModelIter):
     address = db.Column(db.Text(collation=configs.DB_COLLATION), nullable=False)
     contact = db.Column(db.String(10, collation=configs.DB_COLLATION), nullable=False)
     logo = db.Column(db.LargeBinary)
+    settings = db.Column(
+        MutableDict.as_mutable(db.JSON),
+        comment='A JSON schema for global settings',
+        nullable=False,
+        server_default='{}')
+
+
+class UserMessage(db.Model, ModelIter):
+    __tablename__ = 'user_messages'
+    allowed_widget = True
+
+    id = db.Column(BigInteger, primary_key=True)
+    user = relationship(User, uselist=False)
+    date = db.Column(db.DateTime(), nullable=False, default=datetime.utcnow)
+    read = db.Column(db.Boolean, nullable=False, index=True, server_default='0')
+    subject = db.Column(db.String(255, collation=configs.DB_COLLATION), nullable=False)
+    message = db.Column(db.Text(collation=configs.DB_COLLATION))
+
+    user_id = db.Column(BigInteger, db.ForeignKey('users.id'), index=True, nullable=True)
