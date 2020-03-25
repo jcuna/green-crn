@@ -15,7 +15,7 @@ import { clearNotifications, notifications } from '../../../actions/appActions';
 import {
     fetchInverterModels, fetchPanelModels,
 } from '../../../actions/metaActions';
-import { dateToDatetimeString, friendlyDateEs, normalize, toDatePicker } from '../../../utils/helpers';
+import { dateToDatetimeString, friendlyDateEs, toDatePicker } from '../../../utils/helpers';
 import Autocomplete from '../../../utils/Autocomplete';
 import FontAwesome from '../../../utils/FontAwesome';
 import '../../../../css/installation.scss';
