@@ -11,15 +11,16 @@ import {
     createCustomerInstallation,
     clearCustomersInstallation, fetchCustomer, clearCurrentCustomer, updateCustomerInstallation,
 } from '../../../actions/customerAction';
-import { notifications } from '../../../actions/appActions';
+import { clearNotifications, notifications } from '../../../actions/appActions';
 import {
     fetchInverterModels, fetchPanelModels,
 } from '../../../actions/metaActions';
-import { dateToDatetimeString, friendlyDateEs, toDatePicker } from '../../../utils/helpers';
+import { dateToDatetimeString, friendlyDateEs, normalize, toDatePicker } from '../../../utils/helpers';
 import Autocomplete from '../../../utils/Autocomplete';
 import FontAwesome from '../../../utils/FontAwesome';
 import '../../../../css/installation.scss';
 import Table from '../../../utils/Table';
+import '../../../utils/helpers';
 
 export default class Installation extends React.Component {
     constructor(props) {
@@ -43,7 +44,7 @@ export default class Installation extends React.Component {
 
         if (typeof match.params.customer_id !== 'undefined' && customer.current.id !== Number(match.params.customer_id)) {
             dispatch(fetchCustomer(match.params.customer_id, Function, () => {
-                // history.push(ENDPOINTS.NOT_FOUND);
+                history.push(ENDPOINTS.NOT_FOUND);
             }));
         } else if (typeof match.params.customer_id === 'undefined') {
             dispatch(clearCurrentCustomer());
@@ -64,6 +65,9 @@ export default class Installation extends React.Component {
     componentDidUpdate(prevProps, prevState) {
         const proj = this.getCurrentProject();
         const { inst } = this.getCurrentInstallation(proj);
+        if (typeof inst === 'undefined') {
+            return;
+        }
         if (typeof inst.id !== 'undefined' && prevState.inst.id !== inst.id) {
             if (inst.inverters.length > 0) {
                 inst.inverters.forEach(inverter => this.addInverter({
@@ -135,6 +139,9 @@ export default class Installation extends React.Component {
         const proj = this.getCurrentProject();
         const { inst } = this.getCurrentInstallation(proj);
 
+        if (typeof inst === 'undefined') {
+            return null;
+        }
         if (typeof proj.id === 'undefined' && typeof match.params.project_id !== 'undefined') {
             return (
                 <h1>read only</h1>
@@ -176,7 +183,10 @@ export default class Installation extends React.Component {
 
         const proj = this.getCurrentProject();
         const { inst } = this.getCurrentInstallation(proj);
-        if (typeof proj.id === 'undefined' && typeof match.params.project_id !== 'undefined') {
+        if (typeof inst === 'undefined') {
+            return null;
+        }
+        if (typeof inst.id === 'undefined' && typeof match.params.installation_id !== 'undefined') {
             return null;
         }
 
@@ -203,7 +213,7 @@ export default class Installation extends React.Component {
                         title: 'Egauge',
                         placeholder: 'Egauge',
                         defaultValue: inst.egauge_url,
-                        validate: ['required', 'regex:^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&\'\\(\\)\\*\\+,;=.]+$'],
+                        validate: ['required', 'regex:^http(s)?:\\/\\/[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&\'\\(\\)\\*\\+,;=.]+(?<!/)$'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
                     },
@@ -320,6 +330,8 @@ export default class Installation extends React.Component {
         if (typeof inst.id !== 'undefined') {
             installation_data.start_date = dateToDatetimeString(installation_data.start_date);
         }
+        installation_data.egauge_mac = installation_data.egauge_mac.trim();
+        installation_data.egauge_url = installation_data.egauge_url.trim();
         installation_data.project_id = this.props.match.params.project_id;
         installation_data.inverters = this.state.inverters;
         installation_data.panels = this.state.panels;
@@ -328,6 +340,9 @@ export default class Installation extends React.Component {
             this.props.dispatch(notifications(
                 { type: ALERTS.SUCCESS, message: `Instalación ${verb} satisfactoriamente` })
             );
+            this.props.dispatch(fetchCustomer(match.params.customer_id, Function, () => {
+                history.push(ENDPOINTS.NOT_FOUND);
+            }));
             this.props.history.push(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${match.params.customer_id}/${match.params.project_id}/info/${ id || installation_data.id }#`);
             this.setState({
                 button: { ...this.state.button, disabled: true }
@@ -344,7 +359,11 @@ export default class Installation extends React.Component {
         }
         let valid = true;
         Object.keys(this.fields).forEach(key => valid = typeof validate[key] === 'undefined' || valid && validate[key].isValid);
-
+        if (target.name === 'egauge_url' && String(validate.egauge_url.value).substring(0, 6).toUpperCase() !== 'HTTPS:') {
+            this.props.dispatch(notifications({ type: ALERTS.WARNING, message: 'Es recomendable ingresar una dirección segura ( https ) a menos que no sea posible' }));
+        } else {
+            this.props.dispatch(clearNotifications());
+        }
         this.setState({
             ...state,
             button: { ...this.state.button, disabled: !valid }
@@ -384,7 +403,6 @@ export default class Installation extends React.Component {
             return { inst: result };
         }
         return { inst: {
-            // panel_models: { id: 1 },
             egauge_url: '',
             egauge_serial: '',
             egauge_mac: '',
@@ -392,22 +410,7 @@ export default class Installation extends React.Component {
             detailed_performance: '',
             project_id: '',
             installed_capacity: '',
-            // inverter_models: { id: 1 },
         }};
-    }
-
-    getIdPath() {
-        if (this.state.editing) {
-            return `/${ this.state.id }`;
-        }
-        return '';
-    }
-
-    getClassName(action) {
-        if (action === this.props.match.params.action) {
-            return 'nav-link active';
-        }
-        return this.state.id ? 'nav-link' : 'nav-link disabled';
     }
 
     get fields() {
@@ -424,7 +427,7 @@ export default class Installation extends React.Component {
 
     addInverter(target) {
         const { inverters } = this.state;
-        if (target.key === 0 && target.label === '' || inverters.some(inverter => inverter.key === target.key)) {
+        if (target.key === 0 && target.label === '' || inverters.some(inverter => Number(inverter.key) === Number(target.key))) {
             return;
         }
         if (typeof target.quantity === 'undefined') {
@@ -478,7 +481,7 @@ export default class Installation extends React.Component {
 
     addPanel(target) {
         const { panels } = this.state;
-        if (target.key === 0 && target.label === '' || panels.some(panel => panel.key === target.key)) {
+        if (target.key === 0 && target.label === '' || panels.some(panel => Number(panel.key) === Number(target.key))) {
             return;
         }
         if (typeof target.quantity === 'undefined') {

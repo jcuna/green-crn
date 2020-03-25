@@ -18,6 +18,7 @@ import { notifications } from '../../actions/appActions';
 import { hasAccess } from '../../utils/config';
 import Spinner from '../../utils/Spinner';
 import Table from '../../utils/Table';
+import {normalize} from "../../utils/helpers";
 
 export default class CustomerInfo extends React.Component {
     constructor(props) {
@@ -263,7 +264,7 @@ export default class CustomerInfo extends React.Component {
             this.props.dispatch(notifications(
                 { type: ALERTS.SUCCESS, message: `Cliente ${verb} satisfactoriamente` })
             );
-            this.props.history.push(`${ ENDPOINTS.CUSTOMERS_URL }/info/${ id || customer_data.id }#`);
+            this.props.history.push(`${ ENDPOINTS.CUSTOMERS_URL }/info/${ id || customer_data.id }`);
             this.setState({
                 button: { ...this.state.button, disabled: true }
             });

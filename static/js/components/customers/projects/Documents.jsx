@@ -19,6 +19,7 @@ import {
 import '../../../../css/installation.scss';
 
 import { notifications } from '../../../actions/appActions';
+import { normalize } from '../../../utils/helpers';
 
 export default class Documents extends React.Component {
     constructor(props) {
@@ -39,7 +40,7 @@ export default class Documents extends React.Component {
             button: {
                 disabled: false,
                 className: 'col-12',
-                value: 'Registrar',
+                value: 'Agregar',
                 style: { width: '100%' },
             },
             document_types: { list: [] },
@@ -69,6 +70,9 @@ export default class Documents extends React.Component {
             if (inst.installation_documents.length > 0) {
                 this.loadDocuments(inst);
             }
+        }
+        if (prevProps.match.params.id !== this.props.match.params.id) {
+            this.setState({ id: this.props.match.params.id, editing: true });
         }
     }
     componentDidMount() {
@@ -135,28 +139,28 @@ export default class Documents extends React.Component {
                             onSelect= { this.setCurrentDocName }
                         />
                     </div>,
-                    <div className='col-1 upload-btn-wrapper row-item' key={ 200 }>
-                        <button className='btn-w'>{<FontAwesome type='fas fa-upload'/>}</button>
+                    <div className='col-4 upload-btn-wrapper row-item' key={ 200 }>
+                        <button className='btn-w'> Cargar {<FontAwesome type='fas fa-upload'/>}</button>
                         <input name='file' ref={ this.file } type='file'/>
                     </div>,
-                    <div className='col-12' key={ 300 }>
-                        <div className='row'>
-                            <div className='col-12'>
-                                <h4 id='title'>Archivos</h4>
-                                <div className='table table-responsive'>
-                                    <table className='inverters' id='filesTable'>
-                                        <tbody>
-                                            <tr>{this.renderTableHeader()}</tr>
-                                            {this.renderDocumentTable()}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 ] }
                 button={ this.state.button }
             />
+            <div className='col-12' key={ 300 }>
+                <div className='row'>
+                    <div className='col-12'>
+                        <h4 id='title'>Archivos</h4>
+                        <div className='table table-responsive'>
+                            <table className='inverters' id='filesTable'>
+                                <tbody>
+                                    <tr>{this.renderTableHeader()}</tr>
+                                    {this.renderDocumentTable()}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div>
 
             </div>
@@ -169,7 +173,7 @@ export default class Documents extends React.Component {
         const action = createCustomerDocument;
         documents_data.append('installation_id', params.installation_id);
         documents_data.append('category', this.state.currentCategory);
-        documents_data.append('name', this.state.currentDocName.trim());
+        documents_data.append('name', normalize(this.state.currentDocName));
         documents_data.append('file', this.file.current.files[0]);
         this.props.dispatch(action(documents_data, () => {
             this.props.dispatch(clearCurrentCustomer());
