@@ -18,7 +18,6 @@ import { notifications } from '../../actions/appActions';
 import { hasAccess } from '../../utils/config';
 import Spinner from '../../utils/Spinner';
 import Table from '../../utils/Table';
-import {normalize} from "../../utils/helpers";
 
 export default class CustomerInfo extends React.Component {
     constructor(props) {
