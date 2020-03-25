@@ -256,9 +256,9 @@ class FormGenerator extends React.Component {
         }
 
         const currentReferences = { ...this.state.references, [key]: {
-                isValid,
-                value,
-            }};
+            isValid,
+            value,
+        }};
 
         event.persist();
 

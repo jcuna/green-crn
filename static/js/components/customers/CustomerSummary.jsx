@@ -16,7 +16,6 @@ export default class CustomerSummary extends React.Component {
 
         const { action, id } = this.props.match.params;
         const editing = typeof id !== 'undefined';
-
         this.state = { editing, id, render: this.getRenderComponent(action), action };
     }
 
@@ -53,6 +52,9 @@ export default class CustomerSummary extends React.Component {
     componentDidUpdate(prevProps) {
         if (prevProps.match.params.action !== this.props.match.params.action) {
             this.setState({ render: this.getRenderComponent(this.props.match.params.action) });
+        }
+        if (prevProps.match.params.id !== this.props.match.params.id) {
+            this.setState({ id: this.props.match.params.id, editing: true });
         }
     }
 

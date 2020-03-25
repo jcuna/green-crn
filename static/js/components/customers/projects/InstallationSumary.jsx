@@ -15,13 +15,14 @@ export default class InstallationSumary extends React.Component {
         super(props);
 
         const { action, id, project_id, installation_id } = this.props.match.params;
-        const editing = typeof project_id !== 'undefined';
+        const editing = typeof installation_id !== 'undefined';
 
         this.state = { editing, id, project_id, installation_id, render: this.getRenderComponent(action), action };
     }
 
     render() {
         const { customer } = this.props;
+        const { installation_id } = this.state;
         const path_id = this.getIdPath();
         return (
             <div>
@@ -31,7 +32,7 @@ export default class InstallationSumary extends React.Component {
                     <ul className='nav nav-tabs'>
                         <li className='nav-item'>
                             <Link
-                                className={ this.getClassName('info') }
+                                className={ this.getClassName(typeof installation_id === 'undefined' ? 'nuevo' : 'info') }
                                 data-func='projects'
                                 to={ `${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${customer.current.id}/${ this.state.project_id }/info${ path_id }` }>
                                 Información
@@ -55,6 +56,12 @@ export default class InstallationSumary extends React.Component {
         if (prevProps.match.params.action !== this.props.match.params.action) {
             this.setState({ render: this.getRenderComponent(this.props.match.params.action) });
         }
+        if (prevProps.match.params.installation_id !== this.props.match.params.installation_id) {
+            this.setState({ id: this.props.match.params.customer_id,
+                project_id: this.props.match.params.project_id,
+                installation_id: this.props.match.params.installation_id,
+                editing: true });
+        }
     }
 
     getIdPath() {
@@ -68,7 +75,7 @@ export default class InstallationSumary extends React.Component {
         if (action === this.props.match.params.action) {
             return 'nav-link active';
         }
-        return this.state.project_id ? 'nav-link' : 'nav-link disabled';
+        return this.state.installation_id ? 'nav-link' : 'nav-link disabled';
     }
 
     getRenderComponent(action) {

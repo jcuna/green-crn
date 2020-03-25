@@ -46,22 +46,22 @@
 
 .upload-btn-wrapper {
     position: relative;
-    overflow: hidden;
+    //overflow: hidden;
     display: inline-block;
-    padding-top: 15px;
+    padding: 25px 0px 0px 0px;
+    text-align: center;
     //cursor: pointer;
 }
 
 .btn-w {
     //cursor: inherit;
-    border: 2px solid gray;
-    color: gray;
-    background-color: white;
+    color: white;
+    background-color: #0069d9;
     padding: 8px 20px;
     border-radius: 8px;
     font-size: 20px;
-    font-weight: bold;
     cursor: pointer;
+    font-family: inherit;
 }
 
 .upload-btn-wrapper input[type=file] {
@@ -70,7 +70,6 @@
     left: 0;
     top: 0;
     opacity: 0;
-    //z-index: -1;
 }
 
 .quantity-input{

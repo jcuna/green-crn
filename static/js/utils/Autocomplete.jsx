@@ -19,6 +19,12 @@ export default class Autocomplete extends React.Component {
         this.selectItem = this.selectItem.bind(this);
     }
 
+    componentDidUpdate(prevProps) {
+        if (prevProps.items.length > 0 && this.props.items.length === 0) {
+            this.hideItems();
+        }
+    }
+
     render() {
         return <div className='dropdown autocomplete'>
             <input
@@ -74,7 +80,9 @@ export default class Autocomplete extends React.Component {
     }
 
     showItems({ target }) {
-        this.setState({ showItems: true, target });
+        if (this.props.items.length > 0) {
+            this.setState({ showItems: true, target });
+        }
     }
 
     hideItems() {
