@@ -102,8 +102,14 @@ def test_project_add_installation(client: FlaskClient, admin_login):
         'start_date': front_end_date(),
         'detailed_performance': 135,
         'project_id': project_id,
-        'panels': [{'id': 1, 'quantity': 100}, {'id': 2, 'quantity': 100}],
-        'inverters': [{'id': 2, 'quantity': 2}, {'id': 2, 'quantity': 1}],
+        'sale_type_id': 1,
+        'price_per_kwp': 250,
+        'responsible_party': 'Juan Pedro',
+        'panels': [
+            {'id': 1, 'quantity': 5, 'serials': ['AD2', 'AG3', 'TG4', 'GT5', '5G5']},
+            {'id': 2, 'quantity': 2, 'serials': ['GT5', '5G5']}
+        ],
+        'inverters': [{'id': 2, 'quantity': 2, 'serials': ['GF5', '5P5']}, {'id': 2, 'quantity': 1, 'serials': ['JT5', '5GF']}],
     }
 
     error = client.post(endpoint('/customers/installations'), json=data)
@@ -117,12 +123,12 @@ def test_project_add_installation(client: FlaskClient, admin_login):
 
 
 def test_add_invalid_installation_documents(client: FlaskClient, admin_login: dict):
-    from dal.customer import Installations
+    from dal.customer import Installation
 
     data = {
         'category': 'Bad',
         'name': 'bad_file',
-        'installation_id': Installations.query.first().id,
+        'installation_id': Installation.query.first().id,
         'file': (io.BytesIO(b'12345AF3DC13D'), 'file.pdf'),
     }
 
@@ -139,12 +145,12 @@ def test_add_invalid_installation_documents(client: FlaskClient, admin_login: di
 
 
 def test_add_installation_documents(client: FlaskClient, admin_login: dict):
-    from dal.customer import Installations
+    from dal.customer import Installation
 
     data = {
         'category': 'Legal',
         'name': 'something',
-        'installation_id': Installations.query.first().id,
+        'installation_id': Installation.query.first().id,
         'file': (io.BytesIO(b'F23DD5AF3DC13DF23DD5AF3DC13D'), 'file.pdf'),
     }
 

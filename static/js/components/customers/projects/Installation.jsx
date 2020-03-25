@@ -122,7 +122,7 @@ export default class Installation extends React.Component {
         return (
             <div>
                 <section className='widget'>
-                    <h4>Detalles de instalacion</h4>
+                    <h4>Detalles de instalación</h4>
                     { this.state.editing && this.form || this.renderReadOnly() }
                 </section>
             </div>
@@ -241,8 +241,8 @@ export default class Installation extends React.Component {
                     {
                         className: 'col-6',
                         name: 'detailed_performance',
-                        title: 'Detalle de desempeño',
-                        placeholder: 'Detalle de desempeño',
+                        title: 'Rendimiento Especifico:',
+                        placeholder: 'Rendimiento Especifico',
                         defaultValue: inst.detailed_performance,
                         validate: ['required', 'number'],
                         onChange: this.onInputChange,

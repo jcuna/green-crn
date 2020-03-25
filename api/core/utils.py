@@ -8,6 +8,7 @@ import pytz
 import boto3
 from flask import Flask
 import requests
+from urllib import parse
 from requests.auth import HTTPDigestAuth
 import xmltodict
 
@@ -96,13 +97,24 @@ def utc_to_local(date: datetime) -> datetime:
     return date.astimezone(pytz.timezone(configs.TIME_ZONE))
 
 
-def get_egauge(realm):
+class EGaugeAPI:
+    def __init__(self, egauge_url):
+        self.realm = parse.urlparse(egauge_url)
 
-    host = '{}.{}'.format(realm, configs.EGAUGE_DOMAIN)
-    url = 'https://{}/{}'.format(host, configs.EGAUGE_DATA_ENDPOINT)
-    resp = requests.get(url, auth=HTTPDigestAuth(configs.EGAUGE_USER, configs.EGAUGE_PASSWORD), headers={'Host': host})
+    def get_data_egauge(self):
+        return self._call_api(configs.EGAUGE_DATA_ENDPOINT)
 
-    return xmltodict.parse(resp.content)
+    def get_month_range_egauge(self):
+        return self._call_api(configs.EGAUGE_MONTH_RANGE_ENDPOINT)
+
+    def _call_api(self, endpoint):
+        url = '{}://{}/{}'.format(self.realm.scheme, self.realm.hostname, endpoint)
+        resp = requests.get(
+            url,
+            auth=HTTPDigestAuth(configs.EGAUGE_USER, configs.EGAUGE_PASSWORD),
+            headers={'Host': self.realm.hostname}
+        )
+        return xmltodict.parse(resp.content)
 
 
 app_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
