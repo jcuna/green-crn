@@ -24,6 +24,7 @@ import {
 import { notifications } from '../../../actions/appActions';
 import InstallationList from './InstallationList';
 import Table from '../../../utils/Table';
+import { normalize } from '../../../utils/helpers';
 
 export default class Project extends React.Component {
     constructor(props) {
@@ -68,7 +69,15 @@ export default class Project extends React.Component {
 
     componentDidUpdate(prevProps) {
         const { meta: { project_types }} = prevProps;
-        const { meta, customer } = this.props;
+        const { meta, customer, dispatch, match } = this.props;
+        if (typeof match.params.customer_id !== 'undefined' && prevProps.customer.current.id !== Number(match.params.customer_id)) {
+            dispatch(fetchCustomer(match.params.customer_id, Function, () => {
+                history.push(ENDPOINTS.NOT_FOUND);
+            }));
+        } else if (typeof match.params.customer_id === 'undefined') {
+            dispatch(clearCurrentCustomer());
+        }
+
         if (project_types.length !== meta.project_types.length) {
             this.setState({ project_type_id: meta.project_types.pop().id });
         }
@@ -116,7 +125,6 @@ export default class Project extends React.Component {
     renderReadOnly() {
         const { match, meta } = this.props;
         const proj = this.getCurrentProject();
-        // debugger;
         if (typeof proj.id === 'undefined' && typeof match.params.project_id !== 'undefined') {
             return <h1>read only</h1>;
         }
@@ -352,7 +360,7 @@ export default class Project extends React.Component {
         }
         Object.keys(this.fields).forEach(field => {
             if (typeof data[field] !== 'undefined') {
-                project_data[field] = data[field].value;
+                project_data[field] = normalize(data[field].value);
             }
         });
         project_data.customer_id = this.props.customer.current.id;
@@ -361,7 +369,10 @@ export default class Project extends React.Component {
             this.props.dispatch(notifications(
                 { type: ALERTS.SUCCESS, message: `Proyecto ${verb} satisfactoriamente` })
             );
-            this.props.history.push(`${ ENDPOINTS.CUSTOMER_PROJECTS_URL }/${ match.params.customer_id}/info/${ id || project_data.id }#`);
+            this.props.dispatch(fetchCustomer(match.params.customer_id, Function, () => {
+                history.push(ENDPOINTS.NOT_FOUND);
+            }));
+            this.props.history.push(`${ ENDPOINTS.CUSTOMER_PROJECTS_URL }/${ match.params.customer_id}/info/${ id || project_data.id }`);
             this.setState({
                 button: { ...this.state.button, disabled: true }
             });
@@ -431,20 +442,6 @@ export default class Project extends React.Component {
         if (this.props.meta.transformers.status === STATUS.PENDING) {
             this.props.dispatch(fetchTransformers());
         }
-    }
-
-    getIdPath() {
-        if (this.state.editing) {
-            return `/${ this.state.id }`;
-        }
-        return '';
-    }
-
-    getClassName(action) {
-        if (action === this.props.match.params.action) {
-            return 'nav-link active';
-        }
-        return this.state.id ? 'nav-link' : 'nav-link disabled';
     }
 
     getRenderComponent(action) {

@@ -14,9 +14,8 @@ export default class InstallationList extends React.Component {
 
         const { match, history, dispatch, customer } = props;
         const { action, project_id } = this.props.match.params;
-        const editing = typeof project_id !== 'undefined';
 
-        this.state = { editing, project_id, action };
+        this.state = { project_id, action };
 
         if (typeof match.params.customer_id !== 'undefined' && customer.current.id !== Number(match.params.customer_id)) {
             dispatch(fetchCustomer(match.params.customer_id, Function, () => {
@@ -32,7 +31,7 @@ export default class InstallationList extends React.Component {
         const proj = this.getCurrentProject();
 
         if (typeof proj.id === 'undefined' && typeof match.params.project_id !== 'undefined') {
-            return this.renderReadOnly;
+            return this.renderReadOnly();
         }
 
         return (

@@ -137,3 +137,8 @@ export const inlineWorker = function (func) {
     }
     return null;
 };
+
+export const normalize = function (data) {
+    //left and right trim input data, uppercasing
+    return String(data).trim().toUpperCase();
+};

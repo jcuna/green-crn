@@ -56,6 +56,9 @@ export default class ProjectSumary extends React.Component {
         if (prevProps.match.params.action !== this.props.match.params.action) {
             this.setState({ render: this.getRenderComponent(this.props.match.params.action) });
         }
+        if (prevProps.match.params.project_id !== this.props.match.params.project_id) {
+            this.setState({ id: this.props.match.params.customer_id, project_id: this.props.match.params.project_id, editing: true });
+        }
     }
 
     getIdPath() {
