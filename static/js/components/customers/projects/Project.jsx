@@ -360,9 +360,12 @@ export default class Project extends React.Component {
         }
         Object.keys(this.fields).forEach(field => {
             if (typeof data[field] !== 'undefined') {
-                project_data[field] = normalize(data[field].value);
+                project_data[field] = data[field].value;
             }
         });
+        project_data.nic_title = normalize(project_data.nic_title);
+        project_data.circuit = normalize(project_data.circuit);
+        project_data.ct = normalize(project_data.ct);
         project_data.customer_id = this.props.customer.current.id;
         this.props.dispatch(action(project_data, ({ id }) => {
             this.props.dispatch(clearCustomersProject());

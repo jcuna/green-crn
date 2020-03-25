@@ -57,7 +57,6 @@ export default class InstallationSumary extends React.Component {
             this.setState({ render: this.getRenderComponent(this.props.match.params.action) });
         }
         if (prevProps.match.params.installation_id !== this.props.match.params.installation_id) {
-            debugger;
             this.setState({ id: this.props.match.params.customer_id,
                 project_id: this.props.match.params.project_id,
                 installation_id: this.props.match.params.installation_id,

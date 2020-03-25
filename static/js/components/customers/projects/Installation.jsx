@@ -27,7 +27,6 @@ export default class Installation extends React.Component {
         super(props);
 
         const { customer, match, dispatch } = props;
-        debugger;
         this.state = {
             editing: hasAccess(`${ENDPOINTS.CUSTOMER_PROJECTS_URL}`, ACCESS_TYPES.WRITE),
             button: {
@@ -214,7 +213,7 @@ export default class Installation extends React.Component {
                         title: 'Egauge',
                         placeholder: 'Egauge',
                         defaultValue: inst.egauge_url,
-                        validate: ['required', 'regex:^(http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&\'\\(\\)\\*\\+,;=.]+(?<!/)$'],
+                        validate: ['required', 'regex:^http(s)?:\\/\\/[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&\'\\(\\)\\*\\+,;=.]+(?<!/)$'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
                     },
@@ -325,13 +324,15 @@ export default class Installation extends React.Component {
         }
         Object.keys(this.fields).forEach(field => {
             if (typeof data[field] !== 'undefined') {
-                installation_data[field] = normalize(data[field].value);
+                installation_data[field] = data[field].value;
             }
         });
         if (typeof inst.id !== 'undefined') {
             installation_data.start_date = dateToDatetimeString(installation_data.start_date);
         }
-        installation_data.project_id = normalize(this.props.match.params.project_id);
+        installation_data.egauge_mac = installation_data.egauge_mac.trim();
+        installation_data.egauge_url = installation_data.egauge_url.trim();
+        installation_data.project_id = this.props.match.params.project_id;
         installation_data.inverters = this.state.inverters;
         installation_data.panels = this.state.panels;
         this.props.dispatch(action(installation_data, ({ id }) => {
@@ -359,7 +360,7 @@ export default class Installation extends React.Component {
         let valid = true;
         Object.keys(this.fields).forEach(key => valid = typeof validate[key] === 'undefined' || valid && validate[key].isValid);
         if (target.name === 'egauge_url' && String(validate.egauge_url.value).substring(0, 6).toUpperCase() !== 'HTTPS:') {
-            this.props.dispatch(notifications({ type: ALERTS.WARNING, message: 'Asegurarse de solo acceder a la direccion en una conexcion no asegurada' }));
+            this.props.dispatch(notifications({ type: ALERTS.WARNING, message: 'Es recomendable ingresar una dirección segura ( https ) a menos que no sea posible' }));
         } else {
             this.props.dispatch(clearNotifications());
         }
