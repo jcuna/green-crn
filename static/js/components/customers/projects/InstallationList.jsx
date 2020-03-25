@@ -44,14 +44,13 @@ export default class InstallationList extends React.Component {
                             Crear Instalación
                         </Link>}
                     </div>
-                    <h4>Instalaciones</h4>
                     <Table
                         rows={
-                            proj.installations.map(o => [
+                            proj.installations.map((o, i) => [
                                 <Link
                                     key={ o.id }
                                     to={ `${ENDPOINTS.CUSTOMER_INSTALLATIONS_URL}/${ this.props.match.params.customer_id }/${proj.id}/info/${o.id}` }>
-                                    {`${o.id}`}
+                                    {`Instalación ${i + 1}`}
                                 </Link>,
                                 o.egauge_url,
                                 o.detailed_performance,
@@ -62,7 +61,7 @@ export default class InstallationList extends React.Component {
                                     {<FontAwesome type='fas fa-folder'/>}
                                 </Link>])
                         }
-                        headers={ ['ID', 'Egauge', 'NIC', 'Fecha de Inicio', 'Documentos'] }
+                        headers={ ['#', 'Egauge', 'NIC', 'Fecha de Inicio', 'Documentos'] }
                     />
                 </section>
             </div>

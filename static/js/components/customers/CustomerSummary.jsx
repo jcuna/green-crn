@@ -25,7 +25,6 @@ export default class CustomerSummary extends React.Component {
             <div>
                 <Breadcrumbs { ...this.props }/>
                 <section className='widget'>
-                    <h2>Clientes</h2>
                     <ul className='nav nav-tabs'>
                         <li className='nav-item'>
                             <Link
