@@ -95,7 +95,7 @@ def test_project_add_installation(client: FlaskClient, admin_login):
     project_id = customer.json['customer_projects'][0]['id']
 
     data = {
-        'installed_capacity': 1325.362,
+        'installed_capacity': 1325,
         'egauge_url': 'http://enestar170.egaug.es',
         'egauge_serial': 'AC4654S5E6H46455',
         'egauge_mac': 'ec:35:86:2e:8c:0c',
@@ -210,6 +210,11 @@ def test_customer_data(client: FlaskClient, admin_login):
     assert isinstance(customer.json['customer_projects'][0]['installations'], list)
     assert isinstance(customer.json['customer_projects'][0]['installations'][0]['panels'], list)
     assert isinstance(customer.json['customer_projects'][0]['installations'][0]['panels'][0], dict)
+
+    assert customer.json['customer_projects'][0]['installations'][0]['installation_size'] == 'Comercial Grande'
+    assert customer.json['customer_projects'][0]['installations'][0]['total_investment'] == '331250.00'
+    assert customer.json['customer_projects'][0]['installations'][0]['annual_production'] == '178875.00'
+
     assert customer.json['customer_projects'][0]['installations'][0]['panels'][0]['quantity'] == 5
     assert isinstance(customer.json['customer_projects'][0]['installations'][0]['panels'][0]['serials'], list)
     assert len(customer.json['customer_projects'][0]['installations'][0]['panels'][0]['serials']) == 5
