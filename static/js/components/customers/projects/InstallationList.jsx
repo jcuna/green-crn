@@ -53,7 +53,7 @@ export default class InstallationList extends React.Component {
                                     {`Instalación ${i + 1}`}
                                 </Link>,
                                 o.egauge_url,
-                                o.detailed_performance,
+                                o.specific_yield,
                                 friendlyDateEs(new Date(o.start_date)),
                                 <Link
                                     key={ o.id }

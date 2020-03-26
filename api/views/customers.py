@@ -10,7 +10,7 @@ from core.AWS import Storage
 from core.middleware import HttpException, HttpNotFoundException
 from core.utils import local_to_utc, EGaugeAPI
 from dal.customer import Customer, CustomerProject, Installation, InstallationPanelModel, \
-    InstallationInverterModel, InstallationDocument
+    InstallationInverterModel, InstallationDocument, InstallationStatus
 from dal.shared import Paginator, token_required, access_required, get_fillable, db
 from views import Result
 
@@ -26,7 +26,9 @@ class Customers(API):
                 joinedload('customer_projects.installations'),
                 joinedload('customer_projects.installations.panels.panel_model'),
                 joinedload('customer_projects.installations.inverters.inverter_model'),
-                joinedload('customer_projects.installations.installation_documents')
+                joinedload('customer_projects.installations.installation_documents'),
+                joinedload('customer_projects.installations.installation_status'),
+                joinedload('customer_projects.installations.financing')
             ).filter_by(id=customer_id)
 
             return Result.model(customer.first())
@@ -119,7 +121,7 @@ class CustomerInstallations(API):
             for panel in data['panels']:
                 c.panels.append(
                     InstallationPanelModel(
-                        panel_model_id=panel['id'], panel_quantity=panel['quantity'], serials=panel['serials']
+                        model_id=panel['id'], quantity=panel['quantity'], serials=panel['serials']
                     )
                 )
 
@@ -127,12 +129,10 @@ class CustomerInstallations(API):
             for inverter in data['inverters']:
                 c.inverters.append(
                     InstallationInverterModel(
-                        inverter_model_id=inverter['id'],
-                        inverter_quantity=inverter['quantity'],
-                        serials=inverter['serials']
+                        model_id=inverter['id'], quantity=inverter['quantity'], serials=inverter['serials']
                     )
                 )
-
+        c.installation_status = InstallationStatus()
         db.session.add(c)
         db.session.commit()
         return Result.id(c.id)
@@ -162,8 +162,10 @@ class CustomerInstallations(API):
             InstallationInverterModel.query.filter_by(installation_id=installation_id).delete()
             for inverter in data['inverters']:
                 db.session.add(InstallationInverterModel(
-                    installation_id=installation_id, inverter_model_id=inverter['id'], inverter_quantity=int(inverter['quantity']))
-                )
+                    installation_id=installation_id,
+                    inverter_model_id=inverter['id'],
+                    inverter_quantity=int(inverter['quantity'])
+                ))
 
         db.session.commit()
         return Result.success('Success', 201)

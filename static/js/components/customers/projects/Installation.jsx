@@ -72,7 +72,7 @@ export default class Installation extends React.Component {
             if (inst.inverters.length > 0) {
                 inst.inverters.forEach(inverter => this.addInverter({
                     key: inverter.inverter_model.id,
-                    quantity: inverter.inverter_quantity,
+                    quantity: inverter.quantity,
                     id: inverter.inverter_model.id,
                     label: inverter.inverter_model.label
                 }));
@@ -80,7 +80,7 @@ export default class Installation extends React.Component {
             if (inst.panels.length > 0) {
                 inst.panels.forEach(panel => this.addPanel({
                     key: panel.panel_model.id,
-                    quantity: panel.panel_quantity,
+                    quantity: panel.quantity,
                     id: panel.panel_model.id,
                     label: panel.panel_model.label
                 }));
@@ -96,7 +96,7 @@ export default class Installation extends React.Component {
             if (inst.inverters.length > 0) {
                 inst.inverters.forEach(inverter => this.addInverter({
                     key: inverter.inverter_model.id,
-                    quantity: inverter.inverter_quantity,
+                    quantity: inverter.quantity,
                     id: inverter.inverter_model.id,
                     label: inverter.inverter_model.label
                 }));
@@ -104,7 +104,7 @@ export default class Installation extends React.Component {
             if (inst.panels.length > 0) {
                 inst.panels.forEach(panel => this.addPanel({
                     key: panel.panel_model.id,
-                    quantity: panel.panel_quantity,
+                    quantity: panel.quantity,
                     id: panel.panel_model.id,
                     label: panel.panel_model.label
                 }));
@@ -150,7 +150,7 @@ export default class Installation extends React.Component {
 
         return <div>
             <Table
-                rows={ [['Installed Capacity', inst.installed_capacity], ['Egauge', inst.egauge_url], ['Egauge Serial', inst.egauge_serial], ['Detalle', inst.detailed_performance], ['Fecha de Inicio', friendlyDateEs(new Date(inst.start_date))]
+                rows={ [['Installed Capacity', inst.installed_capacity], ['Egauge', inst.egauge_url], ['Egauge Serial', inst.egauge_serial], ['Detalle', inst.specific_yield], ['Fecha de Inicio', friendlyDateEs(new Date(inst.start_date))]
                 ] }
             />
             <div>
@@ -250,10 +250,10 @@ export default class Installation extends React.Component {
                     },
                     {
                         className: 'col-6',
-                        name: 'detailed_performance',
+                        name: 'specific_yield',
                         title: 'Rendimiento Especifico:',
                         placeholder: 'Rendimiento Especifico',
-                        defaultValue: inst.detailed_performance,
+                        defaultValue: inst.specific_yield,
                         validate: ['required', 'number'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
@@ -407,7 +407,7 @@ export default class Installation extends React.Component {
             egauge_serial: '',
             egauge_mac: '',
             start_date: '',
-            detailed_performance: '',
+            specific_yield: '',
             project_id: '',
             installed_capacity: '',
         }};
@@ -421,7 +421,7 @@ export default class Installation extends React.Component {
             egauge_serial: '',
             egauge_mac: '',
             start_date: '',
-            detailed_performance: '',
+            specific_yield: '',
         };
     }
 

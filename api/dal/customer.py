@@ -2,9 +2,8 @@ from datetime import datetime
 
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.dialects.postgresql import MACADDR
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.mutable import MutableList, MutableDict
-from sqlalchemy.orm import relationship, composite, deferred
+from sqlalchemy.orm import relationship, composite, deferred, backref
 from sqlalchemy.dialects import sqlite
 
 from dal import db
@@ -23,8 +22,8 @@ class InstallationPanelModel(db.Model, ModelIter):
 
     id = db.Column(db.Integer, primary_key=True)
     installation_id = deferred(db.Column(db.Integer, db.ForeignKey('installations.id'), index=True))
-    panel_model_id = deferred(db.Column(db.Integer, db.ForeignKey('panel_models.id'), index=True))
-    panel_quantity = db.Column(db.Integer, nullable=False)
+    model_id = deferred(db.Column(db.Integer, db.ForeignKey('panel_models.id'), index=True))
+    quantity = db.Column(db.Integer, nullable=False)
     serials = db.Column(
         MutableList.as_mutable(db.JSON),
         comment='A JSON list of serial numbers, one per quantity',
@@ -38,8 +37,8 @@ class InstallationInverterModel(db.Model, ModelIter):
 
     id = db.Column(db.Integer, primary_key=True)
     installation_id = deferred(db.Column(db.Integer, db.ForeignKey('installations.id'), index=True))
-    inverter_model_id = deferred(db.Column(db.Integer, db.ForeignKey('inverter_models.id'), index=True))
-    inverter_quantity = db.Column(db.Integer, nullable=False)
+    model_id = deferred(db.Column(db.Integer, db.ForeignKey('inverter_models.id'), index=True))
+    quantity = db.Column(db.Integer, nullable=False)
     serials = db.Column(
         MutableList.as_mutable(db.JSON),
         comment='A JSON list of serial numbers, one per quantity',
@@ -97,10 +96,10 @@ class PanelModel(db.Model, ModelIter):
 
     id = db.Column(SmallInteger, primary_key=True)
     label = db.Column(db.String(255, collation=configs.DB_COLLATION), unique=True, nullable=False)
-    quantity = relationship(
+    details = relationship(
         InstallationPanelModel,
         backref='panel_model',
-        primaryjoin=id == InstallationPanelModel.panel_model_id,
+        primaryjoin=id == InstallationPanelModel.model_id,
     )
 
 
@@ -109,10 +108,10 @@ class InverterModel(db.Model, ModelIter):
 
     id = db.Column(SmallInteger, primary_key=True)
     label = db.Column(db.String(255, collation=configs.DB_COLLATION), unique=True, nullable=False)
-    quantity = relationship(
+    details = relationship(
         InstallationInverterModel,
         backref='inverter_model',
-        primaryjoin=id == InstallationInverterModel.inverter_model_id,
+        primaryjoin=id == InstallationInverterModel.model_id,
     )
 
 
@@ -158,8 +157,8 @@ class Tension(db.Model, ModelIter):
     label = db.Column(db.SmallInteger, unique=True, nullable=False)
 
 
-class Status(db.Model, ModelIter):
-    __tablename__ = 'status'
+class FinancialStatus(db.Model, ModelIter):
+    __tablename__ = 'financial_status'
 
     id = db.Column(SmallInteger, primary_key=True)
     label = db.Column(db.SmallInteger, unique=True, nullable=False)
@@ -278,11 +277,6 @@ class CustomerProject(db.Model, ModelIter):
     capacity = relationship(TrCapacity, uselist=False, lazy='joined')
     phase = relationship(Phase, uselist=False, lazy='joined')
     tension = relationship(Tension, uselist=False, lazy='joined')
-    project_metadata = db.Column(
-        MutableDict.as_mutable(db.JSON),
-        comment='A JSON schema that allows free form data, i.e. historical consumption data',
-        server_default='{}'
-    )
 
     project_type_id = deferred(db.Column(db.Integer, db.ForeignKey('project_types.id')))
     customer_id = deferred(db.Column(db.Integer, db.ForeignKey('customers.id'), index=True, nullable=False))
@@ -300,16 +294,17 @@ class Installation(db.Model, ModelIter):
     allowed_widget = True
 
     fillable = [
-        'installed_capacity',
+        'installed_capacity', # kWp
         'egauge_url',
         'egauge_serial',
         'egauge_mac',
         'start_date',
-        'detailed_performance',
+        'specific_yield', # kWh/kWp/Year
         'project_id',
         'sale_type_id',
         'price_per_kwp',
-        'responsible_party'
+        'responsible_party',
+        'setup_summary'
     ]
 
     id = db.Column(db.Integer, primary_key=True)
@@ -319,6 +314,15 @@ class Installation(db.Model, ModelIter):
     installed_capacity = db.Column(db.Numeric(8, 3), nullable=False)
     sale_type = relationship(SaleType, uselist=False, lazy='joined')
     price_per_kwp = db.Column(db.Numeric(10, 2), nullable=False)
+    setup_summary = db.Column(
+        MutableDict.as_mutable(db.JSON),
+        comment='A JSON schema that allows free form data, i.e. historical consumption data',
+        server_default=('{'
+                        '"historical_consumption": [],'
+                        '"historical_power": [],'
+                        '"expected_generation": []'
+                        '}')
+    )
     panels = relationship(
         InstallationPanelModel,
         backref='installations',
@@ -335,7 +339,7 @@ class Installation(db.Model, ModelIter):
     egauge_serial = db.Column(db.String(255, collation=configs.DB_COLLATION))
     egauge_mac = db.Column(MacAddress)
     start_date = db.Column(db.DateTime)
-    detailed_performance = db.Column(db.SmallInteger)
+    specific_yield = db.Column(db.SmallInteger)
 
     @property
     def installation_size(self):
@@ -358,7 +362,7 @@ class Installation(db.Model, ModelIter):
 
     @property
     def annual_production(self):
-        return self.installed_capacity * self.detailed_performance
+        return self.installed_capacity * self.specific_yield
 
     sale_type_id = deferred(db.Column(db.Integer, db.ForeignKey('sale_types.id'), index=True, nullable=False))
     project_id = deferred(db.Column(db.Integer, db.ForeignKey('customer_projects.id'), index=True, nullable=False))
@@ -370,7 +374,7 @@ class InstallationFinancing(db.Model, ModelIter):
 
     id = db.Column(db.Integer, primary_key=True)
     installation = relationship(Installation, uselist=False, backref='financing', cascade='all, delete')
-    financial_entity = relationship(FinancialEntity, uselist=False, backref='installation_financing')
+    financial_entity = relationship(FinancialEntity, uselist=False, backref=backref('financing', uselist=False))
     request_date = db.Column(db.DateTime())
     response_date = db.Column(db.DateTime())
     requested_amount = db.Column(db.Numeric(10, 2), nullable=False)
@@ -382,11 +386,11 @@ class InstallationFinancing(db.Model, ModelIter):
     insurance = db.Column(db.Numeric(10, 2))
     number_of_payments = db.Column(db.SmallInteger)
     payments_amount = db.Column(db.Numeric(10, 2))
-    status = relationship(Status, uselist=False, backref='financing')
+    status = relationship(FinancialStatus, uselist=False, backref='financing')
 
     installation_id = deferred(db.Column(db.Integer, db.ForeignKey('installations.id'), index=True, nullable=False))
     financial_entity_id = deferred(db.Column(db.Integer, db.ForeignKey('financial_entities.id'), index=True, nullable=False))
-    status_id = deferred(db.Column(db.Integer, db.ForeignKey('status.id'), index=True, nullable=False))
+    status_id = deferred(db.Column(db.Integer, db.ForeignKey('financial_status.id'), index=True, nullable=False))
 
 
 class InstallationStatus(db.Model, ModelIter):
@@ -394,8 +398,9 @@ class InstallationStatus(db.Model, ModelIter):
     allowed_widget = True
 
     id = db.Column(db.Integer, primary_key=True)
-    installation = relationship(Installation, uselist=False, backref='installation_status', cascade='all, delete')
-
+    installation = relationship(
+        Installation, uselist=False, backref=backref('installation_status', uselist=False), cascade='all, delete'
+    )
     design_done = db.Column(db.DateTime()) # Carpeta Movida
     proposition_ready = db.Column(db.DateTime()) #
     proposition_delivered = db.Column(db.DateTime()) #
@@ -466,7 +471,7 @@ class InstallationDocument(db.Model, ModelIter):
 
     installation_id = deferred(db.Column(db.Integer, db.ForeignKey('installations.id'), index=True))
 
-    @hybrid_property
+    @property
     def name(self):
         return self._name
 

@@ -301,7 +301,7 @@ export default class Documents extends React.Component {
         if (installation.installation_documents.length > 0) {
             installation.installation_documents.forEach(document => this.addDocument({
                 key: document.id,
-                name: document._name,
+                name: document.name,
                 category: document.category,
                 object_key: document.object_key
             }));
@@ -346,7 +346,7 @@ export default class Documents extends React.Component {
             egauge_serial: '',
             egauge_mac: '',
             start_date: '',
-            detailed_performance: '',
+            specific_yield: '',
             project_id: '',
             inverter_models: { id: 1 },
             installation_documents: [],
