@@ -243,7 +243,7 @@ export default class Installation extends React.Component {
                         name: 'start_date',
                         title: 'Fecha de Inicio',
                         placeholder: 'Fecha de Inicio',
-                        defaultValue: toDatePicker(new Date(inst.start_date)),
+                        defaultValue: inst.start_date ? toDatePicker(new Date(inst.start_date)) : '',
                         validate: ['required'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
@@ -354,10 +354,12 @@ export default class Installation extends React.Component {
 
     onInputChange({ target }, validate) {
         const state = {};
+
         if (validate[target.name].isValid) {
             state[target.name] = validate[target.name].value;
         }
         let valid = true;
+
         Object.keys(this.fields).forEach(key => valid = typeof validate[key] === 'undefined' || valid && validate[key].isValid);
         if (target.name === 'egauge_url' && String(validate.egauge_url.value).substring(0, 6).toUpperCase() !== 'HTTPS:') {
             this.props.dispatch(notifications({ type: ALERTS.WARNING, message: 'Es recomendable ingresar una dirección segura ( https ) a menos que no sea posible' }));
