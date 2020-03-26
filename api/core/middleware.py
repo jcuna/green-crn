@@ -49,3 +49,10 @@ class HttpException(Exception):
 
         self.__message__ = message
         self.status_code = status_code
+
+
+class HttpNotFoundException(HttpException):
+    def __init__(self):
+        self.__message__ = 'Not Found'
+        self.status_code = 404
+        super(HttpException, self).__init__(self.__message__, self.status_code)

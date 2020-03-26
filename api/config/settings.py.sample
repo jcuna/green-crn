@@ -41,5 +41,5 @@ UPLOAD_FILE_BUCKET = '{UploadFileBucket}'
 
 EGAUGE_USER = '{egaugeUser}'
 EGAUGE_PASSWORD = '{egaugePassword}'
-EGAUGE_DOMAIN = 'egaug.es'
 EGAUGE_DATA_ENDPOINT = 'cgi-bin/egauge?v1&inst'
+EGAUGE_MONTH_RANGE_ENDPOINT = 'cgi-bin/egauge-show?e&m&C&s=43&n=1015'

@@ -1,6 +1,6 @@
 from app import db, init_app
-from dal.customer import Country, Province, SourceProject, ProjectType, PanelModel, InverterModel,\
-    Distributor, Rate, Transformer, TrCapacity, Phase, Tension
+from dal.customer import Country, Province, SourceProject, ProjectType, PanelModel, InverterModel, \
+    Distributor, Rate, Transformer, TrCapacity, Phase, Tension, SaleType, FinancialStatus
 
 
 def seed_meta():
@@ -34,6 +34,12 @@ def seed_meta():
 
     for tension in tensions:
         objects.append(Tension(label=tension))
+
+    for sale_type in sale_types:
+        objects.append(SaleType(label=sale_type))
+
+    for status in financial_status:
+        objects.append(FinancialStatus(label=status))
 
     db.session.bulk_save_objects(objects)
     db.session.commit()
@@ -170,10 +176,12 @@ source_projects = ['ENESTAR', 'OCHOA', 'OTRA']
 project_types = ['COMERCIAL', 'RESIDENCIAL']
 distributors = ['EDENORTE', 'EDESUR', 'EDEESTE', 'UERS']
 rates = ['BTS1', 'BTS2', 'MTD', 'MTD2']
-transformers = ['PROPIO', 'DISTRIBUIDORA', 'NO']
+transformers = ['PROPIO', 'DISTRIBUIDORA']
 tr_capacities = [37.5, 50, 75, 112.5]
 phases = ['MONOFASICO', 'TRIFASICO']
 tensions = [120, 240, 208, 480]
+sale_types = ['CONECTADO A RED', 'AISLADO/HIBRIDO', 'BOMBEO']
+financial_status = ['INICIADO', 'ESPERANDO RESPUESTA', 'DECLINADO', 'APROVADO']
 
 panel_models = [
     'Q.PEAK L-G5.0.G 375',

@@ -12,7 +12,7 @@ def test_widgets_return_models(client: FlaskClient, admin_login: dict):
     resp = client.get(endpoint('/widgets'), headers=admin_login)
     assert resp.status_code == 200
     assert isinstance(resp.json, list)
-    assert len(resp.json) == 9
+    assert len(resp.json) == 10
     assert resp.json[2]['class'] == 'dal.user.UserMessage'
     assert len(resp.json[2]['fields']) == 6
     assert len(resp.json[2]['relationships']) == 1

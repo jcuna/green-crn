@@ -28,7 +28,6 @@ export default class ProjectSumary extends React.Component {
             <div>
                 <Breadcrumbs { ...this.props }/>
                 <section className='widget'>
-                    <h2>Proyectos</h2>
                     <ul className='nav nav-tabs'>
                         <li className='nav-item'>
                             <Link

@@ -28,7 +28,7 @@ export default class InstallationSumary extends React.Component {
             <div>
                 <Breadcrumbs { ...this.props }/>
                 <section className='widget'>
-                    <h2>Installaciones</h2>
+                    <h2>Instalaciones</h2>
                     <ul className='nav nav-tabs'>
                         <li className='nav-item'>
                             <Link

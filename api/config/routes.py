@@ -34,7 +34,7 @@ def register():
         'customers.CustomerProjects@customer_projects_url': '/customers/projects|/customers/projects/<int:project_id>',
         'customers.CustomerInstallations@customer_installations_url': '/customers/installations||/customers/installations/<int:installation_id>',
         'customers.CustomerDocuments@customer_documents_url': '/customers/documents|/customers/documents/<int:installation_id>',
-        'customers.EGauge@egauge_url': '/egauge/<realm>',
+        'customers.EGauge@egauge_url': '/egauge/<int:installation_id>',
 
         'shared.Email@emails_url': '/email|/email/<string:action>',
         'shared.HtmlToPdf@html_to_pdf_url': '/to-pdf',

@@ -7,10 +7,10 @@ from config import configs
 from config.constants import DOCUMENT_CATEGORIES
 from core import API, Cache, utils
 from core.AWS import Storage
-from core.middleware import HttpException
-from core.utils import local_to_utc
-from dal.customer import Customer, CustomerProject, Installations, InstallationPanelModel, \
-    InstallationInverterModel, InstallationDocument
+from core.middleware import HttpException, HttpNotFoundException
+from core.utils import local_to_utc, EGaugeAPI
+from dal.customer import Customer, CustomerProject, Installation, InstallationPanelModel, \
+    InstallationInverterModel, InstallationDocument, InstallationStatus
 from dal.shared import Paginator, token_required, access_required, get_fillable, db
 from views import Result
 
@@ -26,7 +26,9 @@ class Customers(API):
                 joinedload('customer_projects.installations'),
                 joinedload('customer_projects.installations.panels.panel_model'),
                 joinedload('customer_projects.installations.inverters.inverter_model'),
-                joinedload('customer_projects.installations.installation_documents')
+                joinedload('customer_projects.installations.installation_documents'),
+                joinedload('customer_projects.installations.installation_status'),
+                joinedload('customer_projects.installations.financing')
             ).filter_by(id=customer_id)
 
             return Result.model(customer.first())
@@ -69,7 +71,7 @@ class Customers(API):
     def put(self, customer_id):
         c = Customer.query.filter_by(id=customer_id).first()
         if not c:
-            raise HttpException('Not found', 404)
+            raise HttpNotFoundException()
 
         json = get_fillable(Customer, **request.get_json())
         for field, value in json.items():
@@ -95,7 +97,7 @@ class CustomerProjects(API):
     def put(self, project_id):
         project = CustomerProject.query.filter_by(id=project_id).first()
         if not project:
-            raise HttpException('Not found', 404)
+            raise HttpNotFoundException()
 
         json = get_fillable(CustomerProject, **request.get_json())
         for field, value in json.items():
@@ -114,19 +116,23 @@ class CustomerInstallations(API):
         data = request.get_json().copy()
         data['start_date'] = local_to_utc(data['start_date'])
 
-        c = Installations(**get_fillable(Installations, **data))
+        c = Installation(**get_fillable(Installation, **data))
         if 'panels' in data:
             for panel in data['panels']:
                 c.panels.append(
-                    InstallationPanelModel(panel_model_id=panel['id'], panel_quantity=panel['quantity'])
+                    InstallationPanelModel(
+                        model_id=panel['id'], quantity=panel['quantity'], serials=panel['serials']
+                    )
                 )
 
         if 'inverters' in data:
             for inverter in data['inverters']:
                 c.inverters.append(
-                    InstallationInverterModel(inverter_model_id=inverter['id'], inverter_quantity=inverter['quantity'])
+                    InstallationInverterModel(
+                        model_id=inverter['id'], quantity=inverter['quantity'], serials=inverter['serials']
+                    )
                 )
-
+        c.installation_status = InstallationStatus()
         db.session.add(c)
         db.session.commit()
         return Result.id(c.id)
@@ -135,12 +141,12 @@ class CustomerInstallations(API):
     @token_required
     @access_required
     def put(self, installation_id):
-        c = Installations.query.filter_by(id=installation_id).first()
+        c = Installation.query.filter_by(id=installation_id).first()
 
         if not c:
-            raise HttpException('Not found', 404)
+            raise HttpNotFoundException()
 
-        json = get_fillable(Installations, **request.get_json())
+        json = get_fillable(Installation, **request.get_json())
 
         for field, value in json.items():
             setattr(c, field, value)
@@ -156,8 +162,10 @@ class CustomerInstallations(API):
             InstallationInverterModel.query.filter_by(installation_id=installation_id).delete()
             for inverter in data['inverters']:
                 db.session.add(InstallationInverterModel(
-                    installation_id=installation_id, inverter_model_id=inverter['id'], inverter_quantity=int(inverter['quantity']))
-                )
+                    installation_id=installation_id,
+                    inverter_model_id=inverter['id'],
+                    inverter_quantity=int(inverter['quantity'])
+                ))
 
         db.session.commit()
         return Result.success('Success', 201)
@@ -204,7 +212,7 @@ class CustomerDocuments(API):
         page = int(request.args.get('page', 1))
 
         if installation_id:
-            docs = Installations.query.filter_by(id=installation_id).first()
+            docs = Installation.query.filter_by(id=installation_id).first()
             if docs:
                 s3 = Storage(configs.UPLOAD_FILE_BUCKET)
                 row = dict(docs)
@@ -224,7 +232,7 @@ class CustomerDocuments(API):
 
                 return row
             else:
-                raise HttpException('Not found')
+                raise HttpNotFoundException()
 
         else:
             paginator = Paginator(
@@ -260,5 +268,9 @@ class EGauge(API):
     # TODO: Uncomment following two lines
     # @token_required
     # @access_required
-    def get(self, realm):
-        return utils.get_egauge(realm)
+    def get(self, installation_id):
+        inst = Installation.query.filter_by(id=installation_id).first()
+        if inst is None:
+            raise HttpNotFoundException()
+        egauge = EGaugeAPI(inst.egauge_url)
+        return egauge.get_month_range_egauge()

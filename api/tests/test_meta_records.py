@@ -57,7 +57,7 @@ def test_transformers(client: FlaskClient, admin_login):
     resp = client.get(endpoint('/meta/transformers'), headers=admin_login)
 
     assert resp.status_code == 200
-    assert len(resp.json) == 3
+    assert len(resp.json) == 2
     assert 'PROPIO' == resp.json[0]['label']
 
 

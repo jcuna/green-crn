@@ -145,21 +145,33 @@ class Paginator:
 
 class ModelIter(object):
     allowed_widget = False
+    hidden_props = [
+        'hidden_props',
+        'allowed_widget',
+        'query',
+        'query_class',
+        'metadata',
+        'fillable',
+    ]
     def __init__(self, *args, **kwargs):
         super(self, *args, **kwargs)
 
     def __iter__(self):
         if isinstance(self, db.Model):
-            for column in self.__dict__.keys():
+            relationships = [rel.key for rel in self.__mapper__.relationships]
+            for column in dir(self):
+                if column.startswith('_') or column in relationships or column in self.hidden_props:
+                    continue
                 attr = getattr(self, column)
 
-                if isinstance(attr, InstanceState) or hasattr(self.__mapper__.attrs, column) and \
+                if isinstance(attr, InstanceState) or \
+                        hasattr(self.__mapper__.attrs, column) and \
                         hasattr(getattr(self.__mapper__.attrs, column), 'deferred') and \
                         getattr(self.__mapper__.attrs, column).deferred:
                     continue
 
                 if isinstance(attr, bool) or isinstance(attr, int) or isinstance(attr, float) or isinstance(attr, dict) \
-                        or attr is None:
+                        or isinstance(attr, list) or attr is None:
                     yield column, attr
                 elif isinstance(attr, Decimal):
                     yield column, '{0:.2f}'.format(attr)
@@ -173,16 +185,16 @@ class ModelIter(object):
                     yield column, str(attr)
                 else:
                     yield column, attr
-        if hasattr(self, '__mapper__'):
-            # models that have not been loaded
-            unloaded = orm.attributes.instance_state(self).unloaded
-            for relationship in self.__mapper__.relationships:
-                if relationship.key not in unloaded and hasattr(self, relationship.key):
-                    value = getattr(self, relationship.key)
-                    if isinstance(value, list):
-                        yield relationship.key, list(map(dict, value))
-                    else:
-                        yield relationship.key, dict(value) if value else value
+            if hasattr(self, '__mapper__'):
+                # models that have not been loaded
+                unloaded = orm.attributes.instance_state(self).unloaded
+                for relationship in relationships:
+                    if relationship not in unloaded and hasattr(self, relationship):
+                        value = getattr(self, relationship)
+                        if isinstance(value, list):
+                            yield relationship, list(map(dict, value))
+                        else:
+                            yield relationship, dict(value) if value else value
 
 
 

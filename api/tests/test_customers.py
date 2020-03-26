@@ -95,15 +95,38 @@ def test_project_add_installation(client: FlaskClient, admin_login):
     project_id = customer.json['customer_projects'][0]['id']
 
     data = {
-        'installed_capacity': 1325.362,
+        'installed_capacity': 1325,
         'egauge_url': 'http://enestar170.egaug.es',
         'egauge_serial': 'AC4654S5E6H46455',
         'egauge_mac': 'ec:35:86:2e:8c:0c',
         'start_date': front_end_date(),
-        'detailed_performance': 135,
+        'specific_yield': 135,
         'project_id': project_id,
-        'panels': [{'id': 1, 'quantity': 100}, {'id': 2, 'quantity': 100}],
-        'inverters': [{'id': 2, 'quantity': 2}, {'id': 2, 'quantity': 1}],
+        'sale_type_id': 1,
+        'price_per_kwp': 250,
+        'responsible_party': 'Juan Pedro',
+        'panels': [
+            {'id': 1, 'quantity': 5, 'serials': ['AD2', 'AG3', 'TG4', 'GT5', '5G5']},
+            {'id': 2, 'quantity': 2, 'serials': ['GT5', '5G5']}
+        ],
+        'inverters': [{'id': 2, 'quantity': 2, 'serials': ['GF5', '5P5']}, {'id': 2, 'quantity': 1, 'serials': ['JT5', '5GF']}],
+        'setup_summary': {
+            'historical_consumption': [
+                {'year': 2018, 'month': 1, 'value': 200},
+                {'year': 2018, 'month': 2, 'value': 220},
+                {'year': 2018, 'month': 3, 'value': 170}
+            ],
+            'historical_power': [
+                {'year': 2018, 'month': 1, 'value': 10},
+                {'year': 2018, 'month': 2, 'value': 9},
+                {'year': 2018, 'month': 3, 'value': 15}
+            ],
+            'expected_generation': [
+                {'year': 2018, 'month': 1, 'value': 210},
+                {'year': 2018, 'month': 2, 'value': 215},
+                {'year': 2018, 'month': 3, 'value': 240}
+            ]
+        }
     }
 
     error = client.post(endpoint('/customers/installations'), json=data)
@@ -117,12 +140,12 @@ def test_project_add_installation(client: FlaskClient, admin_login):
 
 
 def test_add_invalid_installation_documents(client: FlaskClient, admin_login: dict):
-    from dal.customer import Installations
+    from dal.customer import Installation
 
     data = {
         'category': 'Bad',
         'name': 'bad_file',
-        'installation_id': Installations.query.first().id,
+        'installation_id': Installation.query.first().id,
         'file': (io.BytesIO(b'12345AF3DC13D'), 'file.pdf'),
     }
 
@@ -139,12 +162,12 @@ def test_add_invalid_installation_documents(client: FlaskClient, admin_login: di
 
 
 def test_add_installation_documents(client: FlaskClient, admin_login: dict):
-    from dal.customer import Installations
+    from dal.customer import Installation
 
     data = {
         'category': 'Legal',
         'name': 'something',
-        'installation_id': Installations.query.first().id,
+        'installation_id': Installation.query.first().id,
         'file': (io.BytesIO(b'F23DD5AF3DC13DF23DD5AF3DC13D'), 'file.pdf'),
     }
 
@@ -186,10 +209,49 @@ def test_customer_data(client: FlaskClient, admin_login):
     assert isinstance(customer.json['customer_projects'][0]['tension'], dict)
     assert isinstance(customer.json['customer_projects'][0]['installations'], list)
     assert isinstance(customer.json['customer_projects'][0]['installations'][0]['panels'], list)
+    assert isinstance(customer.json['customer_projects'][0]['installations'][0]['panels'][0], dict)
+
+    assert customer.json['customer_projects'][0]['installations'][0]['installation_size'] == 'Comercial Grande'
+    assert customer.json['customer_projects'][0]['installations'][0]['total_investment'] == '331250.00'
+    assert customer.json['customer_projects'][0]['installations'][0]['annual_production'] == '178875.00'
+
+    assert customer.json['customer_projects'][0]['installations'][0]['panels'][0]['quantity'] == 5
+    assert isinstance(customer.json['customer_projects'][0]['installations'][0]['panels'][0]['serials'], list)
+    assert len(customer.json['customer_projects'][0]['installations'][0]['panels'][0]['serials']) == 5
+
     assert isinstance(customer.json['customer_projects'][0]['installations'][0]['inverters'], list)
+    assert isinstance(customer.json['customer_projects'][0]['installations'][0]['inverters'][0], dict)
+    assert customer.json['customer_projects'][0]['installations'][0]['inverters'][0]['quantity'] == 2
+    assert isinstance(customer.json['customer_projects'][0]['installations'][0]['inverters'][0]['serials'], list)
+    assert len(customer.json['customer_projects'][0]['installations'][0]['inverters'][0]['serials']) == 2
+
     assert isinstance(customer.json['customer_projects'][0]['installations'][0]['installation_documents'], list)
     assert len(customer.json['customer_projects'][0]['installations'][0]['installation_documents']) == 1
-    assert customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['_name'] == 'SOMETHING'
+    assert customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['name'] == 'SOMETHING'
     assert customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['category'] == 'Legal'
     assert 'documents/1/' in \
         customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['object_key']
+
+    assert isinstance(customer.json['customer_projects'][0]['installations'][0]['setup_summary'], dict)
+    assert 'historical_consumption' in customer.json['customer_projects'][0]['installations'][0]['setup_summary']
+    assert isinstance(
+        customer.json['customer_projects'][0]['installations'][0]['setup_summary']['historical_consumption'], list
+    )
+    assert len(customer.json['customer_projects'][0]['installations'][0]['setup_summary']['historical_consumption']) == 3
+    assert customer.json['customer_projects'][0]['installations'][0]['setup_summary']['historical_consumption'][1]['value'] == 220
+
+    assert 'historical_power' in customer.json['customer_projects'][0]['installations'][0]['setup_summary']
+    assert isinstance(
+        customer.json['customer_projects'][0]['installations'][0]['setup_summary']['historical_power'], list
+    )
+    assert customer.json['customer_projects'][0]['installations'][0]['setup_summary']['historical_power'][2]['value'] == 15
+
+    assert 'expected_generation' in customer.json['customer_projects'][0]['installations'][0]['setup_summary']
+    assert isinstance(
+        customer.json['customer_projects'][0]['installations'][0]['setup_summary']['expected_generation'], list
+    )
+    assert customer.json['customer_projects'][0]['installations'][0]['setup_summary']['expected_generation'][0]['value'] == 210
+
+    assert 'installation_status' in customer.json['customer_projects'][0]['installations'][0]
+    assert customer.json['customer_projects'][0]['installations'][0]['installation_status']['status'] == 'Levantamiendo', \
+        'Should have initial status as no dates have been input'

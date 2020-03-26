@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timedelta
 
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, deferred
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from sqlalchemy.dialects import sqlite
@@ -188,3 +188,19 @@ class UserMessage(db.Model, ModelIter):
     message = db.Column(db.Text(collation=configs.DB_COLLATION))
 
     user_id = db.Column(BigInteger, db.ForeignKey('users.id'), index=True, nullable=True)
+
+
+class Note(db.Model, ModelIter):
+    __tablename__ = 'notes'
+    allowed_widget = True
+
+    id = db.Column(db.Integer, primary_key=True)
+    user = relationship(User, backref='notes')
+    comment = db.Column(db.String)
+    date = db.Column(db.DateTime())
+    model_name = db.Column(db.String(96, collation=configs.DB_COLLATION), nullable=False)
+    model_id = db.Column(db.Integer, index=True, nullable=True)
+
+    user_id = deferred(db.Column(BigInteger, db.ForeignKey('users.id'), index=True, nullable=True))
+
+    __table_args__ = (db.Index('note_model_name_id_idx', model_name, model_id), )
