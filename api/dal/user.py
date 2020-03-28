@@ -28,6 +28,13 @@ user_roles = db.Table(
     db.Column('role_id', BigInteger, db.ForeignKey('roles.id'), index=True)
 )
 
+user_user_groups = db.Table(
+    'user_user_groups',
+    db.Column('id', BigInteger, primary_key=True),
+    db.Column('user_id', BigInteger, db.ForeignKey('users.id'), index=True),
+    db.Column('group_id', BigInteger, db.ForeignKey('user_groups.id'), index=True)
+)
+
 
 class User(db.Model, ModelIter):
     __tablename__ = 'users'
@@ -190,6 +197,16 @@ class UserMessage(db.Model, ModelIter):
     user_id = db.Column(BigInteger, db.ForeignKey('users.id'), index=True, nullable=True)
 
 
+class UserGroup(db.Model, ModelIter):
+    __tablename__ = 'user_groups'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64))
+    users = relationship(
+        User, secondary=user_user_groups, lazy='joined', backref=db.backref('user_groups', lazy='dynamic')
+    )
+
+
 class Note(db.Model, ModelIter):
     __tablename__ = 'notes'
     allowed_widget = True
@@ -204,3 +221,7 @@ class Note(db.Model, ModelIter):
     user_id = deferred(db.Column(BigInteger, db.ForeignKey('users.id'), index=True, nullable=True))
 
     __table_args__ = (db.Index('note_model_name_id_idx', model_name, model_id), )
+    __mapper_args__ = {
+        'polymorphic_on' : model_name,
+        'with_polymorphic' : '*'
+    }

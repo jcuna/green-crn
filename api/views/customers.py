@@ -10,7 +10,7 @@ from core.AWS import Storage
 from core.middleware import HttpException, HttpNotFoundException
 from core.utils import local_to_utc, EGaugeAPI
 from dal.customer import Customer, CustomerProject, Installation, InstallationPanelModel, \
-    InstallationInverterModel, InstallationDocument, InstallationStatus
+    InstallationInverterModel, InstallationDocument, InstallationStatus, InstallationFinancing
 from dal.shared import Paginator, token_required, access_required, get_fillable, db
 from views import Result
 
@@ -27,8 +27,10 @@ class Customers(API):
                 joinedload('customer_projects.installations.panels.panel_model'),
                 joinedload('customer_projects.installations.inverters.inverter_model'),
                 joinedload('customer_projects.installations.installation_documents'),
-                joinedload('customer_projects.installations.installation_status'),
-                joinedload('customer_projects.installations.financing')
+                joinedload('customer_projects.installations.status'),
+                joinedload('customer_projects.installations.financing'),
+                joinedload('customer_projects.installations.financing.status'),
+                joinedload('customer_projects.installations.financing.financial_entity')
             ).filter_by(id=customer_id)
 
             return Result.model(customer.first())
@@ -78,7 +80,7 @@ class Customers(API):
             setattr(c, field, value)
 
         db.session.commit()
-        return Result.success('Success', 201)
+        return Result.success(code=201)
 
 
 class CustomerProjects(API):
@@ -104,7 +106,7 @@ class CustomerProjects(API):
             setattr(project, field, value)
 
         db.session.commit()
-        return Result.success('Success', 201)
+        return Result.success(code=201)
 
 
 class CustomerInstallations(API):
@@ -132,7 +134,7 @@ class CustomerInstallations(API):
                         model_id=inverter['id'], quantity=inverter['quantity'], serials=inverter['serials']
                     )
                 )
-        c.installation_status = InstallationStatus()
+        c.status = InstallationStatus()
         db.session.add(c)
         db.session.commit()
         return Result.id(c.id)
@@ -168,7 +170,7 @@ class CustomerInstallations(API):
                 ))
 
         db.session.commit()
-        return Result.success('Success', 201)
+        return Result.success(code=201)
 
 
 class CustomerDocuments(API):
@@ -262,6 +264,63 @@ class CustomerDocuments(API):
         s3.remove(object_key)
 
         return Result.success()
+
+
+class InstallationFinances(API):
+
+    @token_required
+    @access_required
+    def post(self):
+        data = request.get_json().copy()
+
+        if 'request_date' in data:
+            data['request_date'] = local_to_utc(data['request_date'])
+        if 'response_date' in data:
+            data['response_date'] = local_to_utc(data['response_date'])
+
+        financing = InstallationFinancing(**get_fillable(InstallationFinancing, **data))
+        db.session.add(financing)
+        db.session.commit()
+        return Result.id(financing.id)
+
+    @token_required
+    @access_required
+    def put(self, installation_id):
+        financing = InstallationFinancing.query.filter_by(installation_id=installation_id).first()
+
+        if financing is None:
+            raise HttpNotFoundException()
+
+        data = request.get_json().copy()
+
+        if 'request_date' in data:
+            data['request_date'] = local_to_utc(data['request_date'])
+        if 'response_date' in data:
+            data['response_date'] = local_to_utc(data['response_date'])
+
+        for field, value in data.items():
+            setattr(financing, field, value)
+
+        db.session.commit()
+        return Result.success(code=201)
+
+
+class InstallationProgressStatus(API):
+
+    @token_required
+    @access_required
+    def put(self, installation_id):
+        status = InstallationStatus.query.filter_by(installation_id=installation_id).first()
+
+        if status is None:
+            raise HttpNotFoundException()
+
+        update = request.get_json().copy()
+        for field, value in update.items():
+            setattr(status, field, local_to_utc(value))
+
+        db.session.commit()
+        return Result.success(code=201)
 
 
 class EGauge(API):

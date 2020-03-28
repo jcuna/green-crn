@@ -211,6 +211,18 @@ def test_customer_data(client: FlaskClient, admin_login):
     assert isinstance(customer.json['customer_projects'][0]['installations'][0]['panels'], list)
     assert isinstance(customer.json['customer_projects'][0]['installations'][0]['panels'][0], dict)
 
+
+def test_customer_installation_data(client: FlaskClient, admin_login):
+    from dal.customer import Customer
+
+    customer_id = Customer.query.first().id
+
+    error = client.get(endpoint('/customers/%s' % customer_id))
+    assert error.status_code == 401
+    assert 'error' in error.json
+
+    customer = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+
     assert customer.json['customer_projects'][0]['installations'][0]['installation_size'] == 'Comercial Grande'
     assert customer.json['customer_projects'][0]['installations'][0]['total_investment'] == '331250.00'
     assert customer.json['customer_projects'][0]['installations'][0]['annual_production'] == '178875.00'
@@ -230,7 +242,7 @@ def test_customer_data(client: FlaskClient, admin_login):
     assert customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['name'] == 'SOMETHING'
     assert customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['category'] == 'Legal'
     assert 'documents/1/' in \
-        customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['object_key']
+           customer.json['customer_projects'][0]['installations'][0]['installation_documents'][0]['object_key']
 
     assert isinstance(customer.json['customer_projects'][0]['installations'][0]['setup_summary'], dict)
     assert 'historical_consumption' in customer.json['customer_projects'][0]['installations'][0]['setup_summary']
@@ -251,7 +263,111 @@ def test_customer_data(client: FlaskClient, admin_login):
         customer.json['customer_projects'][0]['installations'][0]['setup_summary']['expected_generation'], list
     )
     assert customer.json['customer_projects'][0]['installations'][0]['setup_summary']['expected_generation'][0]['value'] == 210
-
-    assert 'installation_status' in customer.json['customer_projects'][0]['installations'][0]
-    assert customer.json['customer_projects'][0]['installations'][0]['installation_status']['status'] == 'Levantamiendo', \
+    assert 'status' in customer.json['customer_projects'][0]['installations'][0]
+    assert customer.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Levantamiendo', \
         'Should have initial status as no dates have been input'
+
+
+def test_add_installation_financial_info(client: FlaskClient, admin_login):
+    from dal.customer import InstallationFinancing
+    from dal.customer import Installation
+
+    inst_id = Installation.query.first().id
+
+    data = {
+        'installation_id': inst_id,
+        'financial_entity_id': 1,
+        'status_id': 1,
+        'request_date': front_end_date(),
+        'requested_amount': 1500000,
+        'assigned_official': 'Pedro Juan',
+        'official_phone': '8095659869',
+        'official_email': 'pjuan@banco.com.do',
+        'insurance': 120000,
+        'number_of_payments': 30,
+        'payments_amount': 50000
+    }
+    error = client.post(endpoint('/customers/installations/financing'), json=data)
+    assert error.status_code == 401
+    assert 'error' in error.json
+
+    resp = client.post(endpoint('/customers/installations/financing'), json=data, headers=admin_login)
+
+    assert resp.status_code == 200
+    assert 'id' in resp.json
+
+    assert InstallationFinancing.query.first() is not None
+
+def test_customer_data_has_installation_financial_info(client: FlaskClient, admin_login):
+    from dal.customer import Customer
+    customer_id = Customer.query.first().id
+
+    customer = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+
+    assert 'financing' in customer.json['customer_projects'][0]['installations'][0]
+    assert customer.json['customer_projects'][0]['installations'][0]['financing']['response_date'] is None
+    assert customer.json['customer_projects'][0]['installations'][0]['financing']['request_date'] is not None
+    assert customer.json['customer_projects'][0]['installations'][0]['financing']['requested_amount'] == '1500000.00'
+    assert customer.json['customer_projects'][0]['installations'][0]['financing']['payments_amount'] == '50000.00'
+    assert customer.json['customer_projects'][0]['installations'][0]['financing']['status']['label'] == 'INICIADO'
+    assert customer.json['customer_projects'][0]['installations'][0]['financing']['financial_entity']['name'] == 'Banco Popular Dominicano'
+
+def test_update_installation_financial_info(client: FlaskClient, admin_login):
+    from dal.customer import Installation
+    inst_id = Installation.query.first().id
+
+    data = {
+        'installation_id': inst_id,
+        'status_id': 2,
+        'approved_rate': 25.53,
+        'retention_percentage': 2,
+    }
+
+    error = client.put(endpoint('/customers/installations/financing/{}'.format(inst_id)), json=data)
+    assert error.status_code == 401
+    assert 'error' in error.json
+
+
+    resp = client.put(endpoint('/customers/installations/financing/{}'.format(inst_id)), json=data, headers=admin_login)
+
+    assert resp.status_code == 201
+
+def test_customer_installation_financial_info_updated(client: FlaskClient, admin_login):
+    from dal.customer import Customer
+    customer_id = Customer.query.first().id
+
+    customer = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+
+    assert customer.json['customer_projects'][0]['installations'][0]['financing']['approved_rate'] == 25.53
+    assert customer.json['customer_projects'][0]['installations'][0]['financing']['retention_percentage'] == 2
+    assert customer.json['customer_projects'][0]['installations'][0]['financing']['status']['label'] == 'ESPERANDO RESPUESTA'
+
+
+def test_customer_project_installation_status_update(client: FlaskClient, admin_login):
+    from dal.customer import Installation
+    from dal.customer import Customer
+
+    customer_id = Customer.query.first().id
+    inst_id = Installation.query.first().id
+
+    error = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'design_done': front_end_date()
+    })
+
+    assert error.status_code == 401
+    assert 'error' in error.json
+
+    update1 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'design_done': front_end_date()
+    }, headers=admin_login)
+    assert update1.status_code == 201
+    get1 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get1.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Diseño'
+
+
+    update2 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'proposition_ready': front_end_date()
+    }, headers=admin_login)
+    assert update2.status_code == 201
+    get2 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get2.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Negociación'

@@ -11,6 +11,8 @@ from dal.shared import ModelIter, Point
 from config import configs
 
 # sqlite is used for testing. this adds compatibility
+from dal.user import Note, UserGroup
+
 BigInteger = db.BigInteger().with_variant(sqlite.INTEGER(), 'sqlite')
 SmallInteger = db.SmallInteger().with_variant(sqlite.INTEGER(), 'sqlite')
 MacAddress = MACADDR().with_variant(db.String, 'sqlite')
@@ -338,7 +340,7 @@ class Installation(db.Model, ModelIter):
     egauge_url = db.Column(db.String(255, collation=configs.DB_COLLATION))
     egauge_serial = db.Column(db.String(255, collation=configs.DB_COLLATION))
     egauge_mac = db.Column(MacAddress)
-    start_date = db.Column(db.DateTime)
+    start_date = db.Column(db.DateTime())
     specific_yield = db.Column(db.SmallInteger)
 
     @property
@@ -371,9 +373,28 @@ class Installation(db.Model, ModelIter):
 class InstallationFinancing(db.Model, ModelIter):
     __tablename__ = 'installation_financing'
     allowed_widget = True
+    fillable = [
+        'installation_id',
+        'financial_entity_id',
+        'status_id',
+        'request_date',
+        'response_date',
+        'requested_amount',
+        'assigned_official',
+        'official_phone',
+        'official_email',
+        'approved_rate',
+        'retention_percentage',
+        'insurance',
+        'number_of_payments',
+        'payments_amount',
+        'status_id'
+    ]
 
     id = db.Column(db.Integer, primary_key=True)
-    installation = relationship(Installation, uselist=False, backref='financing', cascade='all, delete')
+    installation = relationship(
+        Installation, uselist=False, backref=backref('financing', uselist=False), cascade='all, delete'
+    )
     financial_entity = relationship(FinancialEntity, uselist=False, backref=backref('financing', uselist=False))
     request_date = db.Column(db.DateTime())
     response_date = db.Column(db.DateTime())
@@ -399,11 +420,11 @@ class InstallationStatus(db.Model, ModelIter):
 
     id = db.Column(db.Integer, primary_key=True)
     installation = relationship(
-        Installation, uselist=False, backref=backref('installation_status', uselist=False), cascade='all, delete'
+        Installation, uselist=False, backref=backref('status', uselist=False), cascade='all, delete'
     )
     design_done = db.Column(db.DateTime()) # Carpeta Movida
-    proposition_ready = db.Column(db.DateTime()) #
-    proposition_delivered = db.Column(db.DateTime()) #
+    proposition_ready = db.Column(db.DateTime()) # Propuesta Lista
+    proposition_delivered = db.Column(db.DateTime()) # Entrega de Propuesta
     approved = db.Column(db.Boolean)
     documents_filed = db.Column(db.DateTime()) # Recopilación de Documentos
     signed_contract = db.Column(db.DateTime()) # Firma de Contrato
@@ -450,6 +471,21 @@ class InstallationStatus(db.Model, ModelIter):
                 return 'Negociación'
             return 'Diseño'
         return 'Levantamiendo'
+
+
+class InstallationFollowUp(Note):
+    __tablename__ = 'installation_follow_ups'
+
+    id = db.Column(db.Integer, db.ForeignKey('notes.id'), primary_key=True)
+    next_follow_up = db.Column(db.DateTime)
+    alert_group = relationship(UserGroup)
+
+    user_group_id = deferred(db.Column(db.Integer, db.ForeignKey('user_groups.id'), index=True, nullable=False))
+
+    __mapper_args__ = {
+        'polymorphic_identity' : 'installation_note',
+        'inherit_condition' : (id == Note.id)
+    }
 
 
 class InstallationDocument(db.Model, ModelIter):

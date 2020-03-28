@@ -32,7 +32,9 @@ def register():
 
         'customers.Customers@customers_url': '/customers|/customers/<int:customer_id>',
         'customers.CustomerProjects@customer_projects_url': '/customers/projects|/customers/projects/<int:project_id>',
-        'customers.CustomerInstallations@customer_installations_url': '/customers/installations||/customers/installations/<int:installation_id>',
+        'customers.CustomerInstallations@customer_installations_url': '/customers/installations|/customers/installations/<int:installation_id>',
+        'customers.InstallationFinances@customer_installations_financing_url': '/customers/installations/financing|/customers/installations/financing/<int:installation_id>',
+        'customers.InstallationProgressStatus@customer_installations_status_url': '/customers/installations/status/<int:installation_id>',
         'customers.CustomerDocuments@customer_documents_url': '/customers/documents|/customers/documents/<int:installation_id>',
         'customers.EGauge@egauge_url': '/egauge/<int:installation_id>',
 
