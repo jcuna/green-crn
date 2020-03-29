@@ -371,3 +371,31 @@ def test_customer_project_installation_status_update(client: FlaskClient, admin_
     assert update2.status_code == 201
     get2 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
     assert get2.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Negociación'
+
+    update3 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'proposition_delivered': front_end_date()
+    }, headers=admin_login)
+    assert update3.status_code == 201
+    get3= client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get3.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Negociación'
+
+    update4 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'approved': False
+    }, headers=admin_login)
+    assert update4.status_code == 201
+    get4 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get4.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Declinado'
+
+    update5 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'approved': True
+    }, headers=admin_login)
+    assert update5.status_code == 201
+    get5 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get5.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Negociación'
+
+    update6 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'documents_filed': front_end_date()
+    }, headers=admin_login)
+    assert update6.status_code == 201
+    get6 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get6.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Cerrado'

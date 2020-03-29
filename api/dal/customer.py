@@ -453,16 +453,16 @@ class InstallationStatus(db.Model, ModelIter):
             return 'Declinado'
         elif self.design_done is not None:
             if self.proposition_ready is not None:
-                if self.proposition_delivered is not None and self.approved is True and self.signed_contract is not None \
-                        and self.annex_a is not None and self.initial_payment is not None:
-                    if self.structural_installation is not None and self.no_objection_letter is not None \
+                if self.proposition_delivered is not None or self.approved is True or self.signed_contract is not None \
+                        and self.annex_a is not None or self.initial_payment is not None:
+                    if self.structural_installation is not None or self.no_objection_letter is not None \
                             and self.final_installation is not None:
                         if self.annex_b is not None:
-                            if self.distributor_supervision is not None and \
-                                    self.in_interconnection_agreement is not None and \
-                                    self.out_interconnection_agreement is not None and self.rc_policy is not None and \
-                                    self.in_metering_agreement is not None and self.out_metering_agreement is not None and \
-                                    self.metering_letter is not None and self.metering_payment is not None and \
+                            if self.distributor_supervision is not None or \
+                                    self.in_interconnection_agreement is not None or \
+                                    self.out_interconnection_agreement is not None or self.rc_policy is not None or \
+                                    self.in_metering_agreement is not None or self.out_metering_agreement is not None or \
+                                    self.metering_letter is not None or self.metering_payment is not None or \
                                     self.meter_deployment is not None:
                                 return 'Encendido'
                             return 'Distribuidura'

@@ -317,7 +317,10 @@ class InstallationProgressStatus(API):
 
         update = request.get_json().copy()
         for field, value in update.items():
-            setattr(status, field, local_to_utc(value))
+            if isinstance(value, str):
+                setattr(status, field, local_to_utc(value))
+            elif isinstance(value, bool):
+                setattr(status, field, value)
 
         db.session.commit()
         return Result.success(code=201)
