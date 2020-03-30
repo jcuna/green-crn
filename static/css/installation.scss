@@ -20,12 +20,17 @@
     width: inherit;
 }
 
+.modal-body {
+    max-height: calc(100vh - 210px);
+    overflow-y: auto;
+}
+
 .inverters td, .inverters th {
     border: 1px solid #ddd;
     padding:  8px;
     text-overflow: ellipsis;
     white-space: nowrap;
-    overflow: hidden;
+    overflow-y: hidden;
     //width: inherit;
 }
 

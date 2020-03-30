@@ -161,7 +161,7 @@ class FinancialStatus(db.Model, ModelIter):
     __tablename__ = 'financial_status'
 
     id = db.Column(SmallInteger, primary_key=True)
-    label = db.Column(db.SmallInteger, unique=True, nullable=False)
+    label = db.Column(db.String(32, collation=configs.DB_COLLATION), unique=True, nullable=False)
 
 
 class FinancialEntity(db.Model, ModelIter):

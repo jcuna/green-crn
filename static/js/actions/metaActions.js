@@ -29,6 +29,8 @@ export const DOCUMENT_CATEGORIES_FETCHED = 'DOCUMENT_CATEGORIES_FETCHED';
 export const DOCUMENT_CATEGORIES_FAILED = 'DOCUMENT_CATEGORIES_FAILED';
 export const DOCUMENT_TYPES_FETCHED = 'DOCUMENT_TYPES_FETCHED';
 export const DOCUMENT_TYPES_FAILED = 'DOCUMENT_TYPES_FAILED';
+export const SALE_TYPES_FETCHED = 'SALE_TYPES_FETCHED';
+export const SALE_TYPES_FAILED = 'SALE_TYPES_FAILED';
 
 export const fetchCountries = () =>
     (dispatch) => token.through().then(auth => api({ url: '/meta/countries', headers: auth }).then(resp =>
@@ -72,6 +74,6 @@ export const fetchDocumentCategories = () =>
 export const fetchDocumentTypes = () =>
     (dispatch) => token.through().then(auth => api({ url: '/meta/document-types', headers: auth }).then(resp =>
         dispatch({ type: DOCUMENT_TYPES_FETCHED, payload: resp.data }), dispatch({ type: DOCUMENT_TYPES_FAILED })));
-// export const fetchDocumentList = () =>
-//     (dispatch) => token.through().then(auth => api({ url: '/meta/document-types', headers: auth }).then(resp =>
-//         dispatch({ type: DOCUMENT_LIST_FETCHED, payload: resp.data }), dispatch({ type: DOCUMENT_LIST_FAILED })));
+export const fetchSaleTypes = () =>
+    (dispatch) => token.through().then(auth => api({ url: '/meta/sale-types', headers: auth }).then(resp =>
+        dispatch({ type: SALE_TYPES_FETCHED, payload: resp.data }), dispatch({ type: SALE_TYPES_FAILED })));
