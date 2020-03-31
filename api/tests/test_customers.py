@@ -1,4 +1,7 @@
+import datetime
 import io
+
+from dateutil.relativedelta import relativedelta
 from flask.testing import FlaskClient
 
 from tests.injector import resources
@@ -399,3 +402,308 @@ def test_customer_project_installation_status_update(client: FlaskClient, admin_
     assert update6.status_code == 201
     get6 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
     assert get6.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Cerrado'
+
+    update7 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'signed_contract': front_end_date()
+    }, headers=admin_login)
+    assert update7.status_code == 201
+    get7 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get7.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Cerrado'
+
+    update8 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'annex_a': front_end_date()
+    }, headers=admin_login)
+    assert update8.status_code == 201
+    get8 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get8.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Cerrado'
+
+    update9 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'initial_payment': front_end_date()
+    }, headers=admin_login)
+    assert update9.status_code == 201
+    get9 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get9.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Cerrado'
+
+    update10 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'structural_installation': front_end_date()
+    }, headers=admin_login)
+    assert update10.status_code == 201
+    get10 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get10.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Instalacion'
+
+    update11 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'no_objection_letter': front_end_date()
+    }, headers=admin_login)
+    assert update11.status_code == 201
+    get11 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get11.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Instalacion'
+
+    update12 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'final_installation': front_end_date()
+    }, headers=admin_login)
+    assert update12.status_code == 201
+    get12 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get12.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Instalacion'
+
+    update13 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'annex_b': front_end_date()
+    }, headers=admin_login)
+    assert update13.status_code == 201
+    get13 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get13.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Distribuidora'
+
+    update14 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'distributor_supervision': front_end_date()
+    }, headers=admin_login)
+    assert update14.status_code == 201
+    get14 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get14.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Distribuidora'
+
+    update15 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'in_interconnection_agreement': front_end_date()
+    }, headers=admin_login)
+    assert update15.status_code == 201
+    get15 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get15.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Distribuidora'
+
+    update16 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'out_interconnection_agreement': front_end_date()
+    }, headers=admin_login)
+    assert update16.status_code == 201
+    get16 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get16.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Distribuidora'
+
+    update17 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'rc_policy': front_end_date()
+    }, headers=admin_login)
+    assert update17.status_code == 201
+    get17 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get17.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Distribuidora'
+
+    update18 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'in_metering_agreement': front_end_date()
+    }, headers=admin_login)
+    assert update18.status_code == 201
+    get18 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get18.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Distribuidora'
+
+    update19 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'out_metering_agreement': front_end_date()
+    }, headers=admin_login)
+    assert update19.status_code == 201
+    get19 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get19.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Distribuidora'
+
+    update20 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'metering_letter': front_end_date()
+    }, headers=admin_login)
+    assert update20.status_code == 201
+    get20 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get20.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Distribuidora'
+
+    update21 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'metering_payment': front_end_date()
+    }, headers=admin_login)
+    assert update21.status_code == 201
+    get21 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get21.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Distribuidora'
+
+    update22 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'meter_deployment': front_end_date()
+    }, headers=admin_login)
+    assert update22.status_code == 201
+    get22 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get22.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Distribuidora'
+
+    update23 = client.put(endpoint('/customers/installations/status/{}'.format(inst_id)), json={
+        'service_start': front_end_date()
+    }, headers=admin_login)
+    assert update23.status_code == 201
+    get23 = client.get(endpoint('/customers/%s' % customer_id), headers=admin_login)
+    assert get23.json['customer_projects'][0]['installations'][0]['status']['status'] == 'Encendido'
+
+
+def test_add_users_group(client: FlaskClient, admin_login):
+    from dal.user import User
+
+    client.post(
+        endpoint('/users'),
+        json={
+            'first_name': 'John',
+            'last_name': 'Smith',
+            'email': 'jondmith@school.edu',
+            'roles': [1],  # admin
+            'attributes': {}
+        },
+        headers=admin_login
+    )
+
+    resp = client.post(endpoint('/user/groups'))
+    assert resp.status_code == 401
+
+    users = User.query.all()
+
+    assert len(users) == 2
+
+    resp = client.post(endpoint('/user/groups'), headers=admin_login, json={
+        'ids': [r.id for r in users], 'name': 'Field Engineers'})
+    assert resp.status_code == 200
+    assert 'id' in resp.json
+
+
+def test_get_user_group(client: FlaskClient, admin_login):
+    from dal.user import UserGroup
+
+    up_id = UserGroup.query.first().id
+
+    resp = client.get(endpoint('/user/groups/{}'.format(up_id)), headers=admin_login)
+    assert resp.status_code == 200
+
+    assert resp.json['name'] == 'FIELD ENGINEERS'
+    assert len(resp.json['users']) == 2
+    assert resp.json['users'][0]['name'] == 'Test User'
+    assert resp.json['users'][1]['name'] == 'John Smith'
+
+    # test proper group returns
+    user = client.post(
+        endpoint('/users'),
+        json={
+            'first_name': 'Peter',
+            'last_name': 'Gabriel',
+            'email': 'pgabriel@school.edu',
+            'roles': [1],  # admin
+            'attributes': {}
+        },
+        headers=admin_login
+    )
+
+    user_id = user.json['id']
+
+    resp = client.post(endpoint('/user/groups'), headers=admin_login, json={
+        'ids': [user_id], 'name': 'Second Group'})
+
+    group_id = resp.json['id']
+    resp = client.get(endpoint('/user/groups/{}'.format(group_id)), headers=admin_login)
+    assert resp.status_code == 200
+    assert resp.json['name'] == 'SECOND GROUP'
+    assert len(resp.json['users']) == 1
+    assert resp.json['users'][0]['name'] == 'Peter Gabriel'
+
+    # test getting all groups
+    resp = client.get(endpoint('/user/groups'))
+    assert resp.status_code == 401
+
+    resp = client.get(endpoint('/user/groups'), headers=admin_login)
+    assert resp.status_code == 200
+    assert len(resp.json) == 2
+
+    assert resp.json['FIELD ENGINEERS']['name'] == 'FIELD ENGINEERS'
+    assert len(resp.json['FIELD ENGINEERS']['users']) == 2
+    assert resp.json['FIELD ENGINEERS']['users'][0]['name'] == 'Test User'
+    assert resp.json['FIELD ENGINEERS']['users'][1]['name'] == 'John Smith'
+
+    assert resp.json['SECOND GROUP']['name'] == 'SECOND GROUP'
+    assert len(resp.json['SECOND GROUP']['users']) == 1
+    assert resp.json['SECOND GROUP']['users'][0]['name'] == 'Peter Gabriel'
+
+def test_add_follow_up_note(client: FlaskClient, admin_login):
+    from dal.customer import Installation
+    from dal.customer import InstallationFollowUp
+    from dal.user import Commentable
+
+    inst_id = Installation.query.first().id
+
+    date = datetime.datetime.utcnow() + relativedelta(days=7)
+
+    payload = {
+        'installation_id': inst_id,
+        'alert_group_id': 1,
+        'next_follow_up': front_end_date(date),
+        'comment': 'This is a user note'
+    }
+
+    resp = client.post(endpoint('/customers/installations/follow-up'), json=payload)
+
+    assert resp.status_code == 401
+
+    resp = client.post(endpoint('/customers/installations/follow-up'), json=payload, headers=admin_login)
+    assert resp.status_code == 200
+    assert 'id' in resp.json
+
+    n = Commentable.query.count()
+    assert n == 1
+
+    follow_ups = InstallationFollowUp.query.all()
+
+    assert len(follow_ups) == 1
+
+
+def test_update_follow_up_note(client: FlaskClient, admin_login):
+    from dal.customer import Installation
+
+    fu_id = Installation.query.first().follow_ups[0].id
+    payload = {'comment': 'This is another comment'}
+    resp = client.put(
+        endpoint('/customers/installations/follow-up/{}'.format(fu_id)), json=payload, headers=admin_login
+    )
+    assert resp.status_code == 201
+
+
+def test_get_installation_follow_ups_with_comments(client: FlaskClient, admin_login):
+    from dal.customer import Installation
+
+    inst_id = Installation.query.first().id
+
+    resp = client.get(endpoint('/customers/installations/follow-up'), headers=admin_login)
+    assert resp.status_code == 400
+
+    resp = client.get(endpoint('/customers/installations/follow-up?installation_id=inst_id'))
+    assert resp.status_code == 401
+
+    resp = client.get(
+        endpoint('/customers/installations/follow-up?installation_id={}'.format(inst_id)), headers=admin_login
+    )
+
+    assert resp.status_code == 200
+
+    assert len(resp.json) == 1
+    assert 'comments' in resp.json[0]
+    assert len(resp.json[0]['comments']) == 2
+    assert 'user' in resp.json[0]['comments'][0]
+    assert 'comment' in resp.json[0]['comments'][0]
+    assert resp.json[0]['comments'][0]['comment'] == 'This is a user note'
+    assert 'date' in resp.json[0]['comments'][0]
+    assert 'next_follow_up' in resp.json[0]
+
+    assert 'alert_group' in resp.json[0]
+    assert len(resp.json[0]['alert_group']['users']) == 2
+
+    date = datetime.datetime.utcnow() + relativedelta(days=3)
+    payload = {
+        'installation_id': inst_id,
+        'alert_group_id': 2,
+        'next_follow_up': front_end_date(date),
+        'comment': 'This is a comment in a different follow up'
+    }
+
+    resp = client.post(endpoint('/customers/installations/follow-up'), json=payload, headers=admin_login)
+    assert resp.status_code == 200
+    assert 'id' in resp.json
+
+    resp = client.get(
+        endpoint('/customers/installations/follow-up?installation_id={}'.format(inst_id)), headers=admin_login
+    )
+
+    assert len(resp.json[0]['comments']) == 2
+
+    assert len(resp.json) == 2
+    assert 'comments' in resp.json[1]
+    assert len(resp.json[1]['comments']) == 1
+    assert 'user' in resp.json[1]['comments'][0]
+    assert 'comment' in resp.json[1]['comments'][0]
+    assert resp.json[1]['comments'][0]['comment'] == 'This is a comment in a different follow up'
+    assert 'date' in resp.json[1]['comments'][0]
+    assert 'next_follow_up' in resp.json[1]
+
+    assert 'alert_group' in resp.json[1]
+    assert len(resp.json[1]['alert_group']['users']) == 1

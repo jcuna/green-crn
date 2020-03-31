@@ -9,10 +9,10 @@ from flask_mail import Message
 
 from core import Cache, API
 from core.messages import send_message
-from core.middleware import HttpException
+from core.middleware import HttpException, HttpNotFoundException
 from core.router import permissions
 from dal.shared import get_fillable, token_required, access_required, Paginator, system_call
-from dal.user import User, db, Role, UserToken, UserAttributes, UserMessage
+from dal.user import User, db, Role, UserToken, UserAttributes, UserMessage, UserGroup
 from views import Result
 
 
@@ -385,6 +385,55 @@ class Messages(API):
         db.session.commit()
         return Result.success()
 
+
+class UserGroups(API):
+
+    @token_required
+    @access_required
+    def post(self):
+        data = request.get_json()
+
+        group = UserGroup(name=data['name'].upper().strip())
+        users = User.query.filter(User.id.in_(data['ids'])).all()
+
+        for user in users:
+            group.users.append(user)
+
+        db.session.commit()
+
+        return Result.id(group.id)
+
+    @token_required
+    @access_required
+    def get(self, group_id=None):
+        if group_id is None:
+            result = {}
+            for item in self._get_user_groups_query().all():
+                if item.name not in result:
+                    result.update({item.name: {'name': item.name, 'id': item.id, 'users': []}})
+                result[item.name]['users'].append({
+                    'name': '{} {}'.format(item.first_name, item.last_name),
+                    'id': item.id
+                })
+            return result
+
+        up = self._get_user_groups_query().filter(UserGroup.id == group_id).all()
+
+        if len(up) == 0:
+            raise HttpNotFoundException()
+
+        result = {'users': []}
+        for item in up:
+            result['name'] = item.name
+            result['id'] = item.id
+            result['users'].append({'name': '{} {}'.format(item.first_name, item.last_name), 'id': item.user_id})
+        return result
+
+    @staticmethod
+    def _get_user_groups_query():
+        return UserGroup.query.add_columns(
+            UserGroup.name, UserGroup.id, User.first_name, User.last_name, User.id.label('user_id')
+        ).join(User, UserGroup.users)
 
 def get_user_attr(user: User):
     return {

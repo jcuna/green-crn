@@ -189,7 +189,7 @@ phases = ['MONOFASICO', 'TRIFASICO']
 tensions = [120, 240, 208, 480]
 sale_types = ['CONECTADO A RED', 'AISLADO/HIBRIDO', 'BOMBEO']
 financial_status = ['INICIADO', 'ESPERANDO RESPUESTA', 'DECLINADO', 'APROVADO']
-financial_entities = [['Banco Popular Dominicano', '809-544-6193']]
+financial_entities = [['Banco Popular Dominicano', '8095446193']]
 
 panel_models = [
     'Q.PEAK L-G5.0.G 375',

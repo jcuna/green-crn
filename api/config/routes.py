@@ -13,6 +13,7 @@ def register():
         'users.Activate@user_activate_url': '/account/activate-pass',
         'users.Audit@audit_url': '/audit|/audit/<int:user_id>',
         'users.UserPasswords@user_passwords_url': '/users/reset-password',
+        'users.UserGroups@user_groups_url': '/user/groups|/user/groups/<int:group_id>',
         'users.Messages@messages_url': '/messages|/messages/<int:message_id>',
 
         'company.Company@company_url': '/company',
@@ -35,6 +36,7 @@ def register():
         'customers.CustomerInstallations@customer_installations_url': '/customers/installations|/customers/installations/<int:installation_id>',
         'customers.InstallationFinances@customer_installations_financing_url': '/customers/installations/financing|/customers/installations/financing/<int:installation_id>',
         'customers.InstallationProgressStatus@customer_installations_status_url': '/customers/installations/status/<int:installation_id>',
+        'customers.InstallationFollowUps@installation_follow_up_url': '/customers/installations/follow-up|/customers/installations/follow-up/<int:installation_follow_up_id>',
         'customers.CustomerDocuments@customer_documents_url': '/customers/documents|/customers/documents/<int:installation_id>',
         'customers.EGauge@egauge_url': '/egauge/<int:installation_id>',
 

@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timedelta
 
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship, deferred
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -52,6 +53,10 @@ class User(db.Model, ModelIter):
     tokens = relationship('UserToken', back_populates='user')
     attributes = relationship('UserAttributes', back_populates='user', lazy='joined', uselist=False)
     audit = relationship('Audit')
+
+    @hybrid_property
+    def name(self):
+        return '{} {}'.format(self.first_name, self.last_name)
 
     def hash_password(self):
         self.password = generate_password_hash(str(self.password).encode('ascii'), method='sha256')
@@ -201,27 +206,26 @@ class UserGroup(db.Model, ModelIter):
     __tablename__ = 'user_groups'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64))
+    name = db.Column(db.String(64), unique=True)
     users = relationship(
-        User, secondary=user_user_groups, lazy='joined', backref=db.backref('user_groups', lazy='dynamic')
+        User, secondary=user_user_groups, backref=db.backref('user_groups')
     )
 
 
-class Note(db.Model, ModelIter):
-    __tablename__ = 'notes'
+class Commentable(db.Model, ModelIter):
+    __tablename__ = 'comments'
     allowed_widget = True
 
     id = db.Column(db.Integer, primary_key=True)
     user = relationship(User, backref='notes')
     comment = db.Column(db.String)
-    date = db.Column(db.DateTime())
-    model_name = db.Column(db.String(96, collation=configs.DB_COLLATION), nullable=False)
-    model_id = db.Column(db.Integer, index=True, nullable=True)
+    date = db.Column(db.DateTime(), default=datetime.utcnow)
+    commentable_name = db.Column(db.String(96, collation=configs.DB_COLLATION), nullable=False)
 
     user_id = deferred(db.Column(BigInteger, db.ForeignKey('users.id'), index=True, nullable=True))
 
-    __table_args__ = (db.Index('note_model_name_id_idx', model_name, model_id), )
+    #__table_args__ = (db.Index('note_model_name_id_idx', commentable_name, commentable_id), )
     __mapper_args__ = {
-        'polymorphic_on' : model_name,
-        'with_polymorphic' : '*'
+        'polymorphic_on' : commentable_name,
+        'polymorphic_identity' : 'comment'
     }

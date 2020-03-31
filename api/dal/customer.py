@@ -11,7 +11,7 @@ from dal.shared import ModelIter, Point
 from config import configs
 
 # sqlite is used for testing. this adds compatibility
-from dal.user import Note, UserGroup
+from dal.user import Commentable, UserGroup
 
 BigInteger = db.BigInteger().with_variant(sqlite.INTEGER(), 'sqlite')
 SmallInteger = db.SmallInteger().with_variant(sqlite.INTEGER(), 'sqlite')
@@ -163,14 +163,14 @@ class FinancialStatus(db.Model, ModelIter):
     __tablename__ = 'financial_status'
 
     id = db.Column(SmallInteger, primary_key=True)
-    label = db.Column(db.SmallInteger, unique=True, nullable=False)
+    label = db.Column(db.String(30, collation=configs.DB_COLLATION), unique=True, nullable=False)
 
 
 class FinancialEntity(db.Model, ModelIter):
     __tablename__ = 'financial_entities'
 
     id = db.Column(SmallInteger, primary_key=True)
-    name = db.Column(db.SmallInteger, unique=True, nullable=False)
+    name = db.Column(db.String(128, collation=configs.DB_COLLATION), unique=True, nullable=False)
     primary_phone = db.Column(db.String(10, collation=configs.DB_COLLATION), nullable=False, unique=True)
     secondary_phone = db.Column(db.String(10, collation=configs.DB_COLLATION), nullable=True)
 
@@ -416,7 +416,6 @@ class InstallationFinancing(db.Model, ModelIter):
 
 class InstallationStatus(db.Model, ModelIter):
     __tablename__ = 'installation_status'
-    allowed_widget = True
 
     id = db.Column(db.Integer, primary_key=True)
     installation = relationship(
@@ -452,20 +451,20 @@ class InstallationStatus(db.Model, ModelIter):
         if self.approved is False:
             return 'Declinado'
         elif self.design_done is not None:
-            if self.proposition_ready is not None:
-                if self.proposition_delivered is not None or self.approved is True or self.signed_contract is not None \
-                        and self.annex_a is not None or self.initial_payment is not None:
+            if self.proposition_ready is not None or self.proposition_delivered is not None:
+                if self.approved is True and (self.documents_filed is not None or self.signed_contract is not None
+                                              or self.annex_a is not None or self.initial_payment is not None):
                     if self.structural_installation is not None or self.no_objection_letter is not None \
                             and self.final_installation is not None:
-                        if self.annex_b is not None:
-                            if self.distributor_supervision is not None or \
-                                    self.in_interconnection_agreement is not None or \
-                                    self.out_interconnection_agreement is not None or self.rc_policy is not None or \
-                                    self.in_metering_agreement is not None or self.out_metering_agreement is not None or \
-                                    self.metering_letter is not None or self.metering_payment is not None or \
-                                    self.meter_deployment is not None:
+                        if self.annex_b is not None or self.distributor_supervision is not None or \
+                            self.in_interconnection_agreement is not None or \
+                            self.out_interconnection_agreement is not None or self.rc_policy is not None or \
+                            self.in_metering_agreement is not None or self.out_metering_agreement is not None or \
+                            self.metering_letter is not None or self.metering_payment is not None or \
+                            self.meter_deployment is not None:
+                            if self.service_start is not None:
                                 return 'Encendido'
-                            return 'Distribuidura'
+                            return 'Distribuidora'
                         return 'Instalacion'
                     return 'Cerrado'
                 return 'Negociación'
@@ -473,19 +472,38 @@ class InstallationStatus(db.Model, ModelIter):
         return 'Levantamiendo'
 
 
-class InstallationFollowUp(Note):
+
+class InstallationFollowUpComment(Commentable):
+    commentable_id = deferred(db.Column(db.Integer, index=True, nullable=False))
+    __mapper_args__ = {
+        'polymorphic_identity': 'installation_follow_up'
+    }
+
+
+class InstallationFollowUp(db.Model, ModelIter):
     __tablename__ = 'installation_follow_ups'
 
-    id = db.Column(db.Integer, db.ForeignKey('notes.id'), primary_key=True)
+    fillable = [
+        'installation_id',
+        'next_follow_up',
+        'alert_group_id',
+    ]
+
+    id = db.Column(db.Integer, primary_key=True)
+    installation = relationship(
+        Installation, uselist=False, backref='follow_ups', cascade='all, delete'
+    )
     next_follow_up = db.Column(db.DateTime)
     alert_group = relationship(UserGroup)
+    comments = relationship(
+        InstallationFollowUpComment,
+        primaryjoin=InstallationFollowUpComment.commentable_id == id,
+        foreign_keys=InstallationFollowUpComment.commentable_id
+    )
 
-    user_group_id = deferred(db.Column(db.Integer, db.ForeignKey('user_groups.id'), index=True, nullable=False))
+    alert_group_id = deferred(db.Column(db.Integer, db.ForeignKey('user_groups.id'), index=True, nullable=False))
+    installation_id = deferred(db.Column(db.Integer, db.ForeignKey('installations.id'), index=True, nullable=False))
 
-    __mapper_args__ = {
-        'polymorphic_identity' : 'installation_note',
-        'inherit_condition' : (id == Note.id)
-    }
 
 
 class InstallationDocument(db.Model, ModelIter):

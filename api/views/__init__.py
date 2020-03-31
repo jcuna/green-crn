@@ -1,4 +1,5 @@
 import datetime
+from typing import Union
 
 
 class Result:
@@ -20,7 +21,7 @@ class Result:
         return {'list': result, 'page': page, 'total_pages': total_pages}, 200
 
     @staticmethod
-    def custom(result: dict, code=200):
+    def custom(result: Union[dict, list], code=200):
         return result, code
 
     @staticmethod
