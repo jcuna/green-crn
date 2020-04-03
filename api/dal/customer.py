@@ -474,7 +474,6 @@ class InstallationStatus(db.Model, ModelIter):
 
 
 class InstallationFollowUpComment(Commentable):
-    commentable_id = deferred(db.Column(db.Integer, index=True, nullable=False))
     __mapper_args__ = {
         'polymorphic_identity': 'installation_follow_up'
     }

@@ -220,6 +220,7 @@ class Commentable(db.Model, ModelIter):
     user = relationship(User, backref='notes')
     comment = db.Column(db.String)
     date = db.Column(db.DateTime(), default=datetime.utcnow)
+    commentable_id = deferred(db.Column(db.Integer, index=True, nullable=False))
     commentable_name = db.Column(db.String(96, collation=configs.DB_COLLATION), nullable=False)
 
     user_id = deferred(db.Column(BigInteger, db.ForeignKey('users.id'), index=True, nullable=True))
