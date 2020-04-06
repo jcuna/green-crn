@@ -51,18 +51,26 @@
 
 .upload-btn-wrapper {
     position: relative;
-    //overflow: hidden;
     display: inline-block;
     padding: 25px 0px 0px 0px;
     text-align: center;
-    //cursor: pointer;
 }
 
 .btn-w {
-    //cursor: inherit;
     color: white;
     background-color: #0069d9;
     padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 20px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+
+.btn-add {
+    color: white;
+    background-color: #0069d9;
+    margin-bottom: 5%;
     border-radius: 8px;
     font-size: 20px;
     cursor: pointer;

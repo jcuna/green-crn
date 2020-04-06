@@ -164,7 +164,8 @@ class CustomerInstallations(API):
                 db.session.add(InstallationInverterModel(
                     installation_id=installation_id,
                     model_id=inverter['id'],
-                    quantity=int(inverter['quantity'])
+                    quantity=int(inverter['quantity']),
+                    serials=inverter['serials']
                 ))
 
         db.session.commit()
