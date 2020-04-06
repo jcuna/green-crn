@@ -6,14 +6,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import FormGenerator from '../../../utils/FromGenerator';
 import { hasAccess } from '../../../utils/config';
-import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, STATUS } from '../../../constants';
+import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, MONTHS, STATUS } from '../../../constants';
 import {
     createCustomerInstallation,
     clearCustomersInstallation, fetchCustomer, clearCurrentCustomer, updateCustomerInstallation,
 } from '../../../actions/customerAction';
-import { clearNotifications, notifications } from '../../../actions/appActions';
+import { clearNotifications, notifications, showOverlay } from '../../../actions/appActions';
 import {
-    fetchInverterModels, fetchPanelModels,
+    fetchInverterModels, fetchPanelModels, fetchSaleTypes,
 } from '../../../actions/metaActions';
 import { dateToDatetimeString, friendlyDateEs, toDatePicker } from '../../../utils/helpers';
 import Autocomplete from '../../../utils/Autocomplete';
@@ -21,12 +21,20 @@ import FontAwesome from '../../../utils/FontAwesome';
 import '../../../../css/installation.scss';
 import Table from '../../../utils/Table';
 import '../../../utils/helpers';
+import SerialList from './SerialList';
 
 export default class Installation extends React.Component {
     constructor(props) {
         super(props);
 
         const { customer, match, dispatch } = props;
+
+        this.panel_select = React.createRef();
+        this.panel_serial = React.createRef();
+        this.inverter_select = React.createRef();
+        this.inverter_serial = React.createRef();
+        this.historyref = React.createRef();
+
         this.state = {
             editing: hasAccess(`${ENDPOINTS.CUSTOMER_PROJECTS_URL}`, ACCESS_TYPES.WRITE),
             button: {
@@ -36,10 +44,12 @@ export default class Installation extends React.Component {
                 style: { width: '100%' },
             },
             inverters: [],
-            inverter: { id: '', Descripcion: '', Cantidad: 0, Eliminar: 0 },
+            inverter: { Descripcion: '', Cantidad: 0, Seriales: '' },
             panels: [],
             panel: { key: '', label: '', amount: 0 },
             inst: {},
+            summary: { Año: '', Mes: 0, Consumo: '', Potencia: '', Generacion: '' },
+            setup_summary: [],
         };
 
         if (typeof match.params.customer_id !== 'undefined' && customer.current.id !== Number(match.params.customer_id)) {
@@ -53,37 +63,47 @@ export default class Installation extends React.Component {
         this.fetchMeta();
         this.formSubmit = this.formSubmit.bind(this);
         this.addInverter = this.addInverter.bind(this);
-        this.handleInverterChange = this.handleInverterChange.bind(this);
-        this.handlePanelChange = this.handlePanelChange.bind(this);
+        this.addHistory = this.addHistory.bind(this);
         this.removeInverter = this.removeInverter.bind(this);
         this.addPanel = this.addPanel.bind(this);
+        this.addModel = this.addModel.bind(this);
+        this.loadModel = this.loadModel.bind(this);
         this.onInputChange = this.onInputChange.bind(this);
         this.removePanel = this.removePanel.bind(this);
+        this.viewPanelSerials = this.viewPanelSerials.bind(this);
+        this.viewInverterSerials = this.viewInverterSerials.bind(this);
+        this.removePanelSerial = this.removePanelSerial.bind(this);
+        this.removeInverterSerial = this.removeInverterSerial.bind(this);
+        this.cleanModels = this.cleanModels.bind(this);
         this.removeInverter = this.removeInverter.bind(this);
     }
 
     componentDidUpdate(prevProps, prevState) {
         const proj = this.getCurrentProject();
         const { inst } = this.getCurrentInstallation(proj);
+        const { panels, inverters } = this.state;
         if (typeof inst === 'undefined') {
             return;
         }
         if (typeof inst.id !== 'undefined' && prevState.inst.id !== inst.id) {
             if (inst.inverters.length > 0) {
-                inst.inverters.forEach(inverter => this.addInverter({
+                inst.inverters.forEach(inverter => this.loadModel({
                     key: inverter.inverter_model.id,
                     quantity: inverter.quantity,
                     id: inverter.inverter_model.id,
-                    label: inverter.inverter_model.label
-                }));
+                    label: inverter.inverter_model.label,
+                    serials: inverter.serials,
+                }, inverters, 'inverters'
+                ));
             }
             if (inst.panels.length > 0) {
-                inst.panels.forEach(panel => this.addPanel({
+                inst.panels.forEach(panel => this.loadModel({
                     key: panel.panel_model.id,
                     quantity: panel.quantity,
                     id: panel.panel_model.id,
-                    label: panel.panel_model.label
-                }));
+                    label: panel.panel_model.label,
+                    serials: panel.serials,
+                }, panels, 'panels'));
             }
             this.setState({ inst });
         }
@@ -92,22 +112,23 @@ export default class Installation extends React.Component {
     componentDidMount() {
         const proj = this.getCurrentProject();
         const { inst } = this.getCurrentInstallation(proj);
+        const { panels, inverters } = this.state;
         if (typeof inst.id !== 'undefined') {
             if (inst.inverters.length > 0) {
-                inst.inverters.forEach(inverter => this.addInverter({
+                inst.inverters.forEach(inverter => this.loadModel({
                     key: inverter.inverter_model.id,
                     quantity: inverter.quantity,
                     id: inverter.inverter_model.id,
                     label: inverter.inverter_model.label
-                }));
+                }, inverters, 'inverters'));
             }
             if (inst.panels.length > 0) {
-                inst.panels.forEach(panel => this.addPanel({
+                inst.panels.forEach(panel => this.loadModel({
                     key: panel.panel_model.id,
                     quantity: panel.quantity,
                     id: panel.panel_model.id,
                     label: panel.panel_model.label
-                }));
+                }, panels, 'panels'));
             }
             this.setState({ inst });
         }
@@ -119,6 +140,9 @@ export default class Installation extends React.Component {
         }
         if (this.props.meta.panel_models.status === STATUS.PENDING) {
             this.props.dispatch(fetchPanelModels());
+        }
+        if (this.props.meta.sale_types.status === STATUS.PENDING) {
+            this.props.dispatch(fetchSaleTypes());
         }
     }
 
@@ -189,7 +213,6 @@ export default class Installation extends React.Component {
         if (typeof inst.id === 'undefined' && typeof match.params.installation_id !== 'undefined') {
             return null;
         }
-
         return <div>
             <FormGenerator
                 formName={ 'new-tenant' }
@@ -258,23 +281,134 @@ export default class Installation extends React.Component {
                         onChange: this.onInputChange,
                         autoComplete: 'off',
                     },
-                    <div className='col-6 row-item' key={ 100 }>
-                        <Autocomplete
-                            className='form-control'
-                            title='Modelo de inversor'
-                            placeholder='Modelo de inversor'
-                            items={ meta.inverter_models.list.map(obj => ({ key: obj.id, label: obj.label })) }
-                            onSelect= { this.addInverter }
-                        />
+                    {
+                        className: 'col-6',
+                        name: 'responsible_party',
+                        title: 'Responsable',
+                        placeholder: 'Responsable',
+                        defaultValue: inst.installed_capacity,
+                        validate: ['required'],
+                        onChange: this.onInputChange,
+                        autoComplete: 'off',
+                    },
+                    {
+                        className: 'col-6',
+                        name: 'price_per_kwp',
+                        title: 'Precio por kilowatt',
+                        placeholder: 'Precio por kilowatt',
+                        defaultValue: inst.installed_capacity,
+                        validate: ['required', 'number'],
+                        onChange: this.onInputChange,
+                        autoComplete: 'off',
+                    },
+                    {
+                        formElement: 'select',
+                        className: 'col-6',
+                        name: 'sale_type_id',
+                        title: 'Tipo de Venta',
+                        label: 'Tipo de Venta',
+                        defaultValue: 1, //meta.sale_types.distributor.id || 1,
+                        validate: ['required'],
+                        options: meta.sale_types.list.map(obj => ({ value: obj.id, label: obj.label })),
+                        onChange: this.onInputChange,
+                    },
+                    <div className='col-12 row' key={ 123 } >
+                        <label> Datos Historicos  </label>
+                        <div className='row' ref={ this.historyref }>
+                            <div className='col-2 row-item'>
+                                <input className='form-control'
+                                    name='consumption_year'
+                                    title='año'
+                                    placeholder='año'
+                                    autoComplete='off'
+                                    //pattern='^[12][0-9]{3}$'
+                                />
+                            </div>
+                            <div className='col-2 row-item'>
+                                <select className='form-control'
+                                    name='consumption_value'
+                                    title='consumo'
+                                    autoComplete='off'>
+                                    { MONTHS.map((month, index) => <option value={ index } key={ index }>{month}</option>)}
+                                </select>
+                            </div>
+                            <div className='col-2 row-item'>
+                                <input className='form-control'
+                                    name='consumption_value'
+                                    title='consumo'
+                                    placeholder='consumo'
+                                    autoComplete='off' />
+                            </div>
+                            <div className='col-2 row-item'>
+                                <input className='form-control'
+                                    name='power_value'
+                                    title='Potencia'
+                                    placeholder='Potencia'
+                                    autoComplete='off' />
+                            </div>
+                            <div className='col-2 row-item'>
+                                <input className='form-control'
+                                    name='generation_value'
+                                    title='Generación Esperada'
+                                    placeholder='Generación'
+                                    autoComplete='off' />
+                            </div>
+                            {/*<div className='col-2 row-item'>*/}
+                            {/*    <button className='form-control'*/}
+                            {/*        name='consumption_value'*/}
+                            {/*        title='consumo'*/}
+                            {/*        placeholder='consumo'*/}
+                            {/*        // onChange={ this.onInputChange }*/}
+                            {/*        onClick={ this.addHistory }>*/}
+                            {/*        Añadir*/}
+                            {/*    </button>*/}
+                            {/*</div>*/}
+                        </div>
                     </div>,
-                    <div className='col-6 row-item' key={ 200 }>
-                        <Autocomplete
-                            className='form-control'
-                            title='Panel'
-                            placeholder='Panel'
-                            items={ meta.panel_models.list.map(obj => ({ key: obj.id, label: obj.label })) }
-                            onSelect= { this.addPanel }
-                        />
+                    <div className='col-6 row' key={ 100 }>
+                        <div className='col-5 row-item' >
+                            <Autocomplete
+                                className='form-control'
+                                ref={ this.inverter_select }
+                                title='Modelo de inversor'
+                                placeholder='Modelo de inversor'
+                                items={ meta.inverter_models.list.map(obj => ({ key: obj.id, label: obj.label })) }
+                                onSelect= { () => {} }
+                            />
+                        </div>
+                        <div className='col-5 row-item' >
+                            <input className='form-control'
+                                name='inverter_serial'
+                                ref={ this.inverter_serial }
+                                title='Serial'
+                                placeholder='Serial'
+                                autoComplete='off'
+                                onKeyPress={ this.addInverter } />
+                        </div>
+                        <button type='button' className=' col-2 row-item btn-add'>{<FontAwesome type='fas fa-plus' onClick={ this.addInverter }/>}</button>
+                    </div>,
+                    <div className='col-6 row' key={ 200 }>
+                        <div className='col-5 row-item' >
+                            <Autocomplete
+                                className='form-control'
+                                ref={ this.panel_select }
+                                title='Panel'
+                                placeholder='Panel'
+                                items={ meta.panel_models.list.map(obj => ({ key: obj.id, label: obj.label })) }
+                                onSelect= { () => {} }
+                            />
+                        </div>
+                        <div className='col-5 row-item' >
+                            <input className='form-control'
+                                ref={ this.panel_serial }
+                                name='panel_serial'
+                                title='Serial'
+                                placeholder='Serial'
+                                autoComplete='off'
+                                onKeyPress={ this.addPanel }
+                            />
+                        </div>
+                        <button type='button' className=' col-2 row-item btn-add'>{<FontAwesome type='fas fa-plus' onClick={ this.addPanel }/>}</button>
                     </div>,
                     <div className='col-12' key={ 300 }>
                         <div className='row'>
@@ -301,7 +435,20 @@ export default class Installation extends React.Component {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div>,
+                    <div className='col-12 row' key={ 600 }>
+                        <div className='col-12' key={ 700 }>
+                            <h4 id='title'>Historial</h4>
+                            <div className='table table-responsive'>
+                                <table className='inverters' id='summaryTable'>
+                                    <tbody>
+                                        <tr>{this.renderSummaryTableHeader()}</tr>
+                                        {this.renderSummaryTable()}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>,
                 ] }
                 button={ this.state.button }
             />
@@ -335,6 +482,8 @@ export default class Installation extends React.Component {
         installation_data.project_id = this.props.match.params.project_id;
         installation_data.inverters = this.state.inverters;
         installation_data.panels = this.state.panels;
+        // TODO: send setup-summary after it is correted
+        // installation_data.setup_summary = this.state.setup_summary;
         this.props.dispatch(action(installation_data, ({ id }) => {
             this.props.dispatch(clearCustomersInstallation());
             this.props.dispatch(notifications(
@@ -354,7 +503,6 @@ export default class Installation extends React.Component {
 
     onInputChange({ target }, validate) {
         const state = {};
-
         if (validate[target.name].isValid) {
             state[target.name] = validate[target.name].value;
         }
@@ -424,51 +572,24 @@ export default class Installation extends React.Component {
             egauge_mac: '',
             start_date: '',
             specific_yield: '',
+            price_per_kwp: '',
+            sale_type_id: '',
+            responsible_party: '',
+            consumption_year: '',
+            consumption_value: '',
         };
     }
 
     addInverter(target) {
         const { inverters } = this.state;
-        if (target.key === 0 && target.label === '' || inverters.some(inverter => Number(inverter.key) === Number(target.key))) {
-            return;
-        }
-        if (typeof target.quantity === 'undefined') {
-            target.quantity = 1;
-        }
-        target.id = target.key;
-        inverters.push(target);
-        this.setState({ inverters });
+        const inverter_model = this.inverter_select.current.props.items.find(inverter => inverter.label === this.inverter_select.current.input.current.value);
+        this.addModel(target, inverters, inverter_model, 'inverters', this.inverter_serial);
     }
 
     removeInverter({ target: { parentElement: { parentElement }}}) {
         const { inverters } = this.state;
         inverters.splice(inverters.indexOf(parentElement), 1);
         this.setState({ inverters });
-    }
-
-    renderInverterTable(readOnly) {
-        return this.state.inverters.map((inverter, index) => {
-            const { id, label, quantity } = inverter; //destructuring
-            if (!readOnly) {
-                return (
-                    <tr key={ index }>
-                        <td >{id}</td>
-                        <td>{label}</td>
-                        <td><input className='quantity-input' data-id={ id } type='number' defaultValue={ quantity } onChange={ this.handleInverterChange }/> </td>
-                        <td data-id={ index } onClick={ this.removeInverter }>
-                            { <FontAwesome className='delete-icon' type='fas fa-times'/> }
-                        </td>
-                    </tr>
-                );
-            }
-            return (
-                <tr key={ index }>
-                    <td>{id}</td>
-                    <td>{label}</td>
-                    <td><input className='quantity-input' data-id={ id } disabled={ true } type='number' defaultValue='1'/></td>
-                </tr>
-            );
-        });
     }
 
     renderTableHeader(readOnly) {
@@ -481,17 +602,111 @@ export default class Installation extends React.Component {
         });
     }
 
+    renderSummaryTableHeader(readOnly) {
+        const header = Object.keys(this.state.summary);
+        if (readOnly) {
+            header.pop();
+        }
+        return header.map((key, index) => {
+            return <th key={ index }>{key.toUpperCase()}</th>;
+        });
+    }
+
     addPanel(target) {
         const { panels } = this.state;
-        if (target.key === 0 && target.label === '' || panels.some(panel => Number(panel.key) === Number(target.key))) {
+        const panel_model = this.panel_select.current.props.items.find(panel => panel.label === this.panel_select.current.input.current.value);
+        this.addModel(target, panels, panel_model, 'panels', this.panel_serial);
+    }
+
+    addModel(target, targetList, model, localList, ref) {
+        if (target.key === 'Enter' || target.type === 'click') {
+            target.preventDefault();
+            if (typeof model === 'undefined') {
+                this.props.dispatch(notifications({ type: ALERTS.WARNING, message: 'Debe seleccionar el modelo' }));
+                return;
+            }
+            if (ref.current.value === '') {
+                this.props.dispatch(notifications({ type: ALERTS.WARNING, message: 'El campo serial no puede estar vacio' }));
+                return;
+            }
+            let result = targetList.find(element => element.key === model.key);
+            if (typeof result === 'undefined') {
+                result = model;
+                result.quantity = 0;
+                result.serials = [];
+            }
+            if (result.serials.indexOf(ref.current.value) !== -1) {
+                this.props.dispatch(notifications({ type: ALERTS.WARNING, message: 'El serial ingresado ya existe para este modelo' }));
+                return;
+            }
+            result.serials.push(ref.current.value);
+            result.quantity++;
+            result.id = result.key;
+            if (targetList.indexOf(result) === -1) {
+                targetList.push(result);
+            }
+            this.setState({ [localList]: targetList });
+            ref.current.value = '';
+        }
+    }
+
+    loadModel(target, targetList, localList) {
+        let result = targetList.find(element => element.key === target.key);
+        if (typeof result === 'undefined') {
+            result = target;
+            result.quantity = 0;
+            result.serials = [];
+        }
+        result.serials = target.serials;
+        result.quantity = target.quantity;
+        result.id = result.key;
+        if (targetList.indexOf(result) === -1) {
+            targetList.push(result);
+        }
+        this.setState({ [localList]: targetList });
+    }
+
+    addHistory(target) {
+        target.preventDefault();
+        const { setup_summary } = this.state;
+        const year = this.historyref.current.children[0].children[0].value;
+        const month = this.historyref.current.children[1].children[0].value;
+        const consumption_value = this.historyref.current.children[2].children[0].value;
+        const power_value = this.historyref.current.children[3].children[0].value;
+        const generation_value = this.historyref.current.children[4].children[0].value;
+        let register;
+        if (typeof setup_summary.historical_consumption !== 'undefined') {
+            const exists = setup_summary.historical_consumption.find(registry => registry.year === year && registry.month === month);
+            if (typeof exists !== 'undefined') {
+                this.props.dispatch(notifications({ type: ALERTS.WARNING, message: 'Existe un registro para la fecha indicada' }));
+                return;
+            }
+            register = setup_summary;
+        } else {
+            register = {
+                historical_consumption: [],
+                historical_power: [],
+                expected_generation: [],
+            };
+        }
+        if (register.historical_consumption > 11) {
+            this.props.dispatch(notifications({ type: ALERTS.WARNING, message: 'Se ha alcanzado la cantidad maxima de registros del historial' }));
             return;
         }
-        if (typeof target.quantity === 'undefined') {
-            target.quantity = 1;
+        if (year === '' || consumption_value === '' || power_value === '' || generation_value === '') {
+            this.props.dispatch(notifications({ type: ALERTS.WARNING, message: 'Debe completar los valores del historial' }));
+            return;
         }
-        target.id = target.key;
-        panels.push(target);
-        this.setState({ panels });
+        register.historical_consumption.push(
+            { year, month, consumption_value }
+        );
+        register.historical_power.push(
+            { year, month, power_value }
+        );
+        register.expected_generation.push(
+            { year, month, generation_value }
+        );
+        this.setState({ setup_summary: register });
     }
 
     removePanel({ target: { parentElement: { parentElement }}}) {
@@ -500,17 +715,84 @@ export default class Installation extends React.Component {
         this.setState({ panels });
     }
 
-    renderPanelTable(readOnly) {
-        return this.state.panels.map((panel, index) => {
-            const { id, label, quantity } = panel; //destructuring
+    removePanelSerial({ target: { parentElement: { parentElement }}}) {
+        const { panels } = this.state;
+        const serial = parentElement.getAttribute('data-id');
+        const model = parentElement.getAttribute('data-model');
+        const panel = panels.find(element => element.label === model);
+        this.removeModelSerial(panels, panel, serial, 'panels');
+    }
+
+    removeInverterSerial({ target: { parentElement: { parentElement }}}) {
+        const { inverters } = this.state;
+        const serial = parentElement.getAttribute('data-id');
+        const model = parentElement.getAttribute('data-model');
+        const inverter = inverters.find(element => element.label === model);
+        this.removeModelSerial(inverters, inverter, serial, 'inverters');
+    }
+
+    removeModelSerial(list, element, serial, modelList) {
+        if (typeof element !== 'undefined') {
+            list.splice(list.indexOf(element), 1);
+            if (element.serials.indexOf(serial) !== -1) {
+                element.serials.splice(element.serials.indexOf(serial), 1);
+            }
+            element.quantity--;
+            list.push(element);
+        }
+        this.setState({ [modelList]: list });
+    }
+
+    cleanModels() {
+        const { panels, inverters } = this.state;
+        panels.forEach(panel => {
+            if (panel.quantity === 0) {
+                panels.splice(panels.indexOf(panel), 1);
+            }
+        });
+        inverters.forEach(inverter => {
+            if (inverter.quantity === 0) {
+                inverters.splice(inverters.indexOf(inverter), 1);
+            }
+        });
+    }
+
+    viewPanelSerials({ target: { parentElement: { parentElement }}}) {
+        const { panels } = this.state;
+        const model = panels.find(panel => panel.id === Number(parentElement.getAttribute('data-id')));
+        console.log(model.serials);
+        this.viewModelSerials(model, this.removePanelSerial);
+    }
+
+    viewInverterSerials({ target: { parentElement: { parentElement }}}) {
+        const { inverters } = this.state;
+        const model = inverters.find(inverter => inverter.id === Number(parentElement.getAttribute('data-id')));
+        console.log(model.serials);
+        this.viewModelSerials(model, this.removeInverterSerial);
+    }
+
+    viewModelSerials(model, removeSerial) {
+        this.props.dispatch(
+            showOverlay(
+                <SerialList model={ model } onDelete={ removeSerial }/>,
+                <div>Seriales modelo {model.label}</div>,
+                true,
+                null,
+                this.cleanModels
+            )
+        );
+    }
+
+    renderModelTable(readOnly, list, viewSerial) {
+        return list.map((model, index) => {
+            const { id, label, quantity } = model; //destructuring
             if (!readOnly) {
                 return (
                     <tr key={ index }>
-                        <td>{id}</td>
                         <td>{label}</td>
-                        <td><input className='quantity-input' data-id={ id } type='number' defaultValue={ quantity } onChange={ this.handlePanelChange }/></td>
-                        <td data-id={ index } onClick={ this.removePanel }>
-                            {<FontAwesome className='delete-icon' type='fas fa-times'/>}
+                        <td>{quantity}</td>
+                        <td data-id={ id } onClick={ viewSerial }>
+                            {<FontAwesome className='delete-icon' type='fas fa-eye'/>}
                         </td>
                     </tr>
                 );
@@ -519,6 +801,43 @@ export default class Installation extends React.Component {
                 <tr key={ index }>
                     <td>{id}</td>
                     <td>{label}</td>
+                    <td><input className='quantity-input' data-id={ id } disabled={ true } type='number' defaultValue='1' /></td>
+                </tr>
+            );
+        });
+    }
+
+    renderInverterTable(readOnly) {
+        return this.renderModelTable(readOnly, this.state.inverters, this.viewInverterSerials);
+    }
+
+    renderPanelTable(readOnly) {
+        return this.renderModelTable(readOnly, this.state.panels, this.viewPanelSerials);
+    }
+
+    renderSummaryTable(readOnly) {
+        const { installation_summary } = this.state;
+        if (typeof installation_summary === 'undefined') {
+            return null;
+        }
+        return installation_summary.historical_consumption.map((history, index) => {
+            const { id, label, year, month, value } = history; //destructuring
+            if (!readOnly) {
+                return (
+                    <tr key={ index }>
+                        <td>{year}</td>
+                        <td>{month}</td>
+                        <td>{value}</td>
+                        <td data-id={ id } onClick={ this.viewPanelSerials }>
+                            {<FontAwesome className='delete-icon' type='fas fa-eye'/>}
+                        </td>
+                    </tr>
+                );
+            }
+            return (
+                <tr key={ index }>
+                    <td>{ id }</td>
+                    <td>{ label }</td>
                     <td><input className='quantity-input' data-id={ id } disabled={ true } type='number' defaultValue='1' /></td>
                 </tr>
             );
@@ -539,22 +858,6 @@ export default class Installation extends React.Component {
             }
         }
         this.setState({ inverters: result });
-    }
-
-    handlePanelChange({ target }) {
-        const { panels } = this.state;
-        const result = panels.slice();
-
-        if (panels.length <= 0) {
-            return;
-        }
-        let i = 0;
-        for (i = 0; i < result.length; i++) {
-            if (Number(result[i].key) === Number(target.getAttribute('data-id'))) {
-                result[i].quantity = target.value;
-            }
-        }
-        this.setState({ panels: result });
     }
 
     static propTypes = {

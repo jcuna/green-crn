@@ -160,15 +160,16 @@ class CustomerInstallations(API):
             InstallationPanelModel.query.filter_by(installation_id=installation_id).delete()
             for panel in data['panels']:
                 db.session.add(InstallationPanelModel(
-                    installation_id=installation_id, panel_model_id=panel['id'], panel_quantity=int(panel['quantity']))
+                    installation_id=installation_id, model_id=panel['id'], quantity=int(panel['quantity']), serials=panel['serials'])
                 )
         if 'inverters' in data:
             InstallationInverterModel.query.filter_by(installation_id=installation_id).delete()
             for inverter in data['inverters']:
                 db.session.add(InstallationInverterModel(
                     installation_id=installation_id,
-                    inverter_model_id=inverter['id'],
-                    inverter_quantity=int(inverter['quantity'])
+                    model_id=inverter['id'],
+                    quantity=int(inverter['quantity']),
+                    serials=inverter['serials']
                 ))
 
         db.session.commit()

@@ -166,6 +166,7 @@ class FinancialStatus(db.Model, ModelIter):
     label = db.Column(db.String(30, collation=configs.DB_COLLATION), unique=True, nullable=False)
 
 
+
 class FinancialEntity(db.Model, ModelIter):
     __tablename__ = 'financial_entities'
 

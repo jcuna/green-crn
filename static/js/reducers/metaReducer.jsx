@@ -18,6 +18,7 @@ import {
     INTEGRATIONS_FETCHED,
     DOCUMENT_CATEGORIES_FETCHED,
     DOCUMENT_TYPES_FETCHED,
+    SALE_TYPES_FETCHED,
 } from '../actions/metaActions';
 
 const initState = {
@@ -77,6 +78,10 @@ const initState = {
         status: STATUS.PENDING,
         list: []
     },
+    sale_types: {
+        status: STATUS.PENDING,
+        list: []
+    },
 };
 
 export default function metaReducer(state = initState, action) {
@@ -109,6 +114,8 @@ export default function metaReducer(state = initState, action) {
             return { ...state, document_categories: { status: STATUS.COMPLETE, list: action.payload }};
         case DOCUMENT_TYPES_FETCHED:
             return { ...state, document_types: { status: STATUS.COMPLETE, list: action.payload }};
+        case SALE_TYPES_FETCHED:
+            return { ...state, sale_types: { status: STATUS.COMPLETE, list: action.payload }};
         default:
             return state;
     }
