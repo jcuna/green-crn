@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timedelta
 
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship, deferred
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -28,6 +29,13 @@ user_roles = db.Table(
     db.Column('role_id', BigInteger, db.ForeignKey('roles.id'), index=True)
 )
 
+user_user_groups = db.Table(
+    'user_user_groups',
+    db.Column('id', BigInteger, primary_key=True),
+    db.Column('user_id', BigInteger, db.ForeignKey('users.id'), index=True),
+    db.Column('group_id', BigInteger, db.ForeignKey('user_groups.id'), index=True)
+)
+
 
 class User(db.Model, ModelIter):
     __tablename__ = 'users'
@@ -45,6 +53,10 @@ class User(db.Model, ModelIter):
     tokens = relationship('UserToken', back_populates='user')
     attributes = relationship('UserAttributes', back_populates='user', lazy='joined', uselist=False)
     audit = relationship('Audit')
+
+    @hybrid_property
+    def name(self):
+        return '{} {}'.format(self.first_name, self.last_name)
 
     def hash_password(self):
         self.password = generate_password_hash(str(self.password).encode('ascii'), method='sha256')
@@ -190,17 +202,31 @@ class UserMessage(db.Model, ModelIter):
     user_id = db.Column(BigInteger, db.ForeignKey('users.id'), index=True, nullable=True)
 
 
-class Note(db.Model, ModelIter):
-    __tablename__ = 'notes'
+class UserGroup(db.Model, ModelIter):
+    __tablename__ = 'user_groups'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    users = relationship(
+        User, secondary=user_user_groups, backref=db.backref('user_groups')
+    )
+
+
+class Commentable(db.Model, ModelIter):
+    __tablename__ = 'comments'
     allowed_widget = True
 
     id = db.Column(db.Integer, primary_key=True)
     user = relationship(User, backref='notes')
     comment = db.Column(db.String)
-    date = db.Column(db.DateTime())
-    model_name = db.Column(db.String(96, collation=configs.DB_COLLATION), nullable=False)
-    model_id = db.Column(db.Integer, index=True, nullable=True)
+    date = db.Column(db.DateTime(), default=datetime.utcnow)
+    commentable_id = deferred(db.Column(db.Integer, index=True, nullable=False))
+    commentable_name = db.Column(db.String(96, collation=configs.DB_COLLATION), nullable=False)
 
     user_id = deferred(db.Column(BigInteger, db.ForeignKey('users.id'), index=True, nullable=True))
 
-    __table_args__ = (db.Index('note_model_name_id_idx', model_name, model_id), )
+    #__table_args__ = (db.Index('note_model_name_id_idx', commentable_name, commentable_id), )
+    __mapper_args__ = {
+        'polymorphic_on' : commentable_name,
+        'polymorphic_identity' : 'comment'
+    }

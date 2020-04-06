@@ -1,6 +1,6 @@
 from app import db, init_app
 from dal.customer import Country, Province, SourceProject, ProjectType, PanelModel, InverterModel, \
-    Distributor, Rate, Transformer, TrCapacity, Phase, Tension, SaleType, FinancialStatus
+    Distributor, Rate, Transformer, TrCapacity, Phase, Tension, SaleType, FinancialStatus, FinancialEntity
 
 
 def seed_meta():
@@ -40,6 +40,13 @@ def seed_meta():
 
     for status in financial_status:
         objects.append(FinancialStatus(label=status))
+
+    for financial_entity in financial_entities:
+        objects.append(
+            FinancialEntity(
+                name=financial_entity[0], primary_phone=financial_entity[1], secondary_phone=financial_entity[2] if len(financial_entity) == 3 else None
+            )
+        )
 
     db.session.bulk_save_objects(objects)
     db.session.commit()
@@ -182,6 +189,7 @@ phases = ['MONOFASICO', 'TRIFASICO']
 tensions = [120, 240, 208, 480]
 sale_types = ['CONECTADO A RED', 'AISLADO/HIBRIDO', 'BOMBEO']
 financial_status = ['INICIADO', 'ESPERANDO RESPUESTA', 'DECLINADO', 'APROVADO']
+financial_entities = [['Banco Popular Dominicano', '8095446193']]
 
 panel_models = [
     'Q.PEAK L-G5.0.G 375',
