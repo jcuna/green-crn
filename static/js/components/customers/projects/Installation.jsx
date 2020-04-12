@@ -307,7 +307,7 @@ export default class Installation extends React.Component {
                         name: 'sale_type_id',
                         title: 'Tipo de Venta',
                         label: 'Tipo de Venta',
-                        defaultValue: 1, //meta.sale_types.distributor.id || 1,
+                        defaultValue: inst.sale_type.id || 1,
                         validate: ['required'],
                         options: meta.sale_types.list.map(obj => ({ value: obj.id, label: obj.label })),
                         onChange: this.onInputChange,
@@ -385,7 +385,7 @@ export default class Installation extends React.Component {
                                 autoComplete='off'
                                 onKeyPress={ this.addInverter } />
                         </div>
-                        <button type='button' className=' col-2 row-item btn-add'>{<FontAwesome type='fas fa-plus' onClick={ this.addInverter }/>}</button>
+                        <button type='button' className=' col-2 row-item btn-add' onClick={ this.addInverter }>{<FontAwesome type='fas fa-plus'/>}</button>
                     </div>,
                     <div className='col-6 row' key={ 200 }>
                         <div className='col-5 row-item' >
@@ -408,7 +408,7 @@ export default class Installation extends React.Component {
                                 onKeyPress={ this.addPanel }
                             />
                         </div>
-                        <button type='button' className=' col-2 row-item btn-add'>{<FontAwesome type='fas fa-plus' onClick={ this.addPanel }/>}</button>
+                        <button type='button' className=' col-2 row-item btn-add' onClick={ this.addPanel }>{<FontAwesome type='fas fa-plus'/>}</button>
                     </div>,
                     <div className='col-12' key={ 300 }>
                         <div className='row'>
@@ -560,6 +560,7 @@ export default class Installation extends React.Component {
             specific_yield: '',
             project_id: '',
             installed_capacity: '',
+            sale_type: { id: 1 },
         }};
     }
 
@@ -760,14 +761,12 @@ export default class Installation extends React.Component {
     viewPanelSerials({ target: { parentElement: { parentElement }}}) {
         const { panels } = this.state;
         const model = panels.find(panel => panel.id === Number(parentElement.getAttribute('data-id')));
-        console.log(model.serials);
         this.viewModelSerials(model, this.removePanelSerial);
     }
 
     viewInverterSerials({ target: { parentElement: { parentElement }}}) {
         const { inverters } = this.state;
         const model = inverters.find(inverter => inverter.id === Number(parentElement.getAttribute('data-id')));
-        console.log(model.serials);
         this.viewModelSerials(model, this.removeInverterSerial);
     }
 

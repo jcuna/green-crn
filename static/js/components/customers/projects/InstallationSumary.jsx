@@ -9,6 +9,8 @@ import { Link } from 'react-router-dom';
 import { ENDPOINTS } from '../../../constants';
 import Installation from './Installation';
 import Documents from './Documents';
+import FinancialInfo from './FinancialInfo';
+import Status from './Status';
 
 export default class InstallationSumary extends React.Component {
     constructor(props) {
@@ -43,6 +45,20 @@ export default class InstallationSumary extends React.Component {
                                 className={ this.getClassName('docs') }
                                 to={ `${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${ customer.current.id }/${ this.state.project_id }/docs${ path_id }` }>
                                 Documentos
+                            </Link>
+                        </li>
+                        <li className='nav-item'>
+                            <Link
+                                className={ this.getClassName('financiera') }
+                                to={ `${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${ customer.current.id }/${ this.state.project_id }/financiera${ path_id }` }>
+                                Financiamiento
+                            </Link>
+                        </li>
+                        <li className='nav-item'>
+                            <Link
+                                className={ this.getClassName('estado') }
+                                to={ `${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${ customer.current.id }/${ this.state.project_id }/estado${ path_id }` }>
+                                Estado
                             </Link>
                         </li>
                     </ul>
@@ -81,6 +97,10 @@ export default class InstallationSumary extends React.Component {
     getRenderComponent(action) {
         if (action === 'docs') {
             return Documents;
+        } else if (action === 'financiera') {
+            return FinancialInfo;
+        } else if (action === 'estado') {
+            return Status;
         }
         return Installation;
     }

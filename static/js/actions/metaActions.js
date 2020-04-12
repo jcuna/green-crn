@@ -31,6 +31,10 @@ export const DOCUMENT_TYPES_FETCHED = 'DOCUMENT_TYPES_FETCHED';
 export const DOCUMENT_TYPES_FAILED = 'DOCUMENT_TYPES_FAILED';
 export const SALE_TYPES_FETCHED = 'SALE_TYPES_FETCHED';
 export const SALE_TYPES_FAILED = 'SALE_TYPES_FAILED';
+export const FINANCIAL_ENTITIES_FETCHED = 'FINACIAL_ENTITIES_FETCHED';
+export const FINANCIAL_ENTITIES_FAILED = 'FINACIAL_ENTITIES_FAILED';
+export const FINANCIAL_STATES_FETCHED = 'FINANCIAL_STATES_FETCHED';
+export const FINANCIAL_STATES_FAILED = 'FINANCIAL_STATES_FAILED';
 
 export const fetchCountries = () =>
     (dispatch) => token.through().then(auth => api({ url: '/meta/countries', headers: auth }).then(resp =>
@@ -77,3 +81,9 @@ export const fetchDocumentTypes = () =>
 export const fetchSaleTypes = () =>
     (dispatch) => token.through().then(auth => api({ url: '/meta/sale-types', headers: auth }).then(resp =>
         dispatch({ type: SALE_TYPES_FETCHED, payload: resp.data }), dispatch({ type: SALE_TYPES_FAILED })));
+export const fetchFinancialEntities = () =>
+    (dispatch) => token.through().then(auth => api({ url: '/meta/financial-entities', headers: auth }).then(resp =>
+        dispatch({ type: FINANCIAL_ENTITIES_FETCHED, payload: resp.data }), dispatch({ type: FINANCIAL_ENTITIES_FAILED })));
+export const fetchFinancialStates = () =>
+    (dispatch) => token.through().then(auth => api({ url: '/meta/financial-states', headers: auth }).then(resp =>
+        dispatch({ type: FINANCIAL_STATES_FETCHED, payload: resp.data }), dispatch({ type: FINANCIAL_STATES_FAILED })));

@@ -36,6 +36,17 @@ export const CUSTOMER_INSTALLATION_CREATING = 'CUSTOMER_INSTALLATION_CREATING';
 export const CUSTOMER_INSTALLATION_CREATION_FAILED = 'CUSTOMER_INSTALLATION_CREATION_FAILED';
 export const CUSTOMER_INSTALLATION_CLEAR = 'CUSTOMERS_INSTALLATION_CLEAR';
 
+export const CUSTOMER_FINANCIAL_INFO_CREATED = 'CUSTOMER_FINANCIAL_INFO_CREATED';
+export const CUSTOMER_FINANCIAL_INFO_CREATING = 'CUSTOMER_FINANCIAL_INFO_CREATING';
+export const CUSTOMER_FINANCIAL_INFO_CREATION_FAILED = 'CUSTOMER_FINANCIAL_INFO_CREATION_FAILED';
+export const CUSTOMER_FINANCIAL_INFO_UPDATING = 'CUSTOMER_FINANCIAL_INFO_UPDATING';
+export const CUSTOMER_FINANCIAL_INFO_UPDATED = 'CUSTOMER_FINANCIAL_INFO_UPDATED';
+export const CUSTOMER_FINANCIAL_INFO_UPDATE_FAILED = 'CUSTOMER_FINANCIAL_INFO_UPDATE_FAILED';
+export const CUSTOMER_FINANCIAL_INFO_CLEAR = 'CUSTOMER_FINANCIAL_INFO_CLEAR';
+export const CUSTOMER_INSTALLATION_STATUS_UPDATING = 'CUSTOMER_INSTALLATION_STATUS_UPDATING';
+export const CUSTOMER_INSTALLATION_STATUS_UPDATED = 'CUSTOMER_INSTALLATION_STATUS_UPDATED';
+export const CUSTOMER_INSTALLATION_STATUS__UPDATE_FAILED = 'CUSTOMER_INSTALLATION_STATUS__UPDATE_FAILED';
+
 export const CUSTOMER_DOCUMENT_FETCHED = 'CUSTOMER_DOCUMENT_FETCHED';
 export const CUSTOMER_DOCUMENT_FETCHING = 'CUSTOMER_DOCUMENT_FETCHING';
 export const CUSTOMER_DOCUMENT_FETCH_FAILED = 'CUSTOMER_DOCUMENT_FETCH_FAILED';
@@ -103,7 +114,7 @@ export const fetchCustomers = (success, fail) =>
         }));
     };
 
-export const fetchCustomer = (id, success, fail) =>
+export const fetchCustomer = (id, success, fail, useData) =>
     (dispatch) => {
         dispatch({ type: CUSTOMER_FETCHING });
         token.through().then(header => api({
@@ -112,7 +123,11 @@ export const fetchCustomer = (id, success, fail) =>
             headers: header,
         }).then(resp => {
             dispatch({ type: CUSTOMER_FETCHED, payload: resp.data });
-            success && success();
+            if (typeof useData !== 'undefined') {
+                success && success(resp.data);
+            } else {
+                success && success();
+            }
         }, err => {
             dispatch({ type: CUSTOMER_FETCH_FAILED, payload: err });
             fail && fail(err);
@@ -243,4 +258,40 @@ export const deleteCustomerDocument = (id, object_key, success, fail) =>
             dispatch({ type: CUSTOMER_DOCUMENT_DELETE_FAILED, payload: err });
             fail && fail(err);
         }));
+    };
+
+export const createCustomerFinancial = (data, success, fail) =>
+    (dispatch) => {
+        dispatch({ type: CUSTOMER_FINANCIAL_INFO_CREATING });
+        writeCustomer('POST', data, '/customers/installations/financing').then(resp => {
+            dispatch({ type: CUSTOMER_FINANCIAL_INFO_CREATED, payload: resp.data });
+            success && success(resp.data);
+        }, err => {
+            dispatch({ type: CUSTOMER_FINANCIAL_INFO_CREATION_FAILED, payload: err });
+            fail && fail(err);
+        });
+    };
+
+export const updateCustomerFinancial = (data, success, fail) =>
+    (dispatch) => {
+        dispatch({ type: CUSTOMER_FINANCIAL_INFO_UPDATING });
+        writeCustomer('PUT', data, `/customers/installations/financing/${data.installation_id}`).then(resp => {
+            dispatch({ type: CUSTOMER_FINANCIAL_INFO_UPDATED, payload: resp.data });
+            success && success(resp.data);
+        }, err => {
+            dispatch({ type: CUSTOMER_FINANCIAL_INFO_UPDATE_FAILED, payload: err });
+            fail && fail(err);
+        });
+    };
+
+export const updateInstallationStatus = (data, installation_id, success, fail) =>
+    (dispatch) => {
+        dispatch({ type: CUSTOMER_INSTALLATION_STATUS_UPDATING });
+        writeCustomer('PUT', data, `/customers/installations/status/${installation_id}`).then(resp => {
+            dispatch({ type: CUSTOMER_INSTALLATION_STATUS_UPDATED, payload: resp.data });
+            success && success(resp.data);
+        }, err => {
+            dispatch({ type: CUSTOMER_INSTALLATION_STATUS__UPDATE_FAILED, payload: err });
+            fail && fail(err);
+        });
     };

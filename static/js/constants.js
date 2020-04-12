@@ -31,6 +31,7 @@ export const ENDPOINTS = {
     CUSTOMERS_URL: '/clientes',
     CUSTOMER_PROJECTS_URL: '/clientes/proyectos',
     CUSTOMER_INSTALLATIONS_URL: '/clientes/proyectos/instalaciones',
+    CUSTOMER_FINANCIAL_INFO_URL: '/clientes/proyectos/financiamiento',
     COMPANY_URL: '/empresa',
     NOT_FOUND: '/error/404',
     NO_ACCESS: '/error/403',

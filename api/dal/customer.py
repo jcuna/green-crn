@@ -469,7 +469,7 @@ class InstallationStatus(db.Model, ModelIter):
                         return 'Instalacion'
                     return 'Cerrado'
                 return 'Negociación'
-            return 'Diseño'
+            return 'Levantamiendo'
         return 'Levantamiendo'
 
 

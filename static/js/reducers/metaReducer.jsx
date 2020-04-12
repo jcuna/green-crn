@@ -19,6 +19,8 @@ import {
     DOCUMENT_CATEGORIES_FETCHED,
     DOCUMENT_TYPES_FETCHED,
     SALE_TYPES_FETCHED,
+    FINANCIAL_ENTITIES_FETCHED,
+    FINANCIAL_STATES_FETCHED,
 } from '../actions/metaActions';
 
 const initState = {
@@ -82,6 +84,14 @@ const initState = {
         status: STATUS.PENDING,
         list: []
     },
+    financial_entities: {
+        status: STATUS.PENDING,
+        list: []
+    },
+    financial_states: {
+        status: STATUS.PENDING,
+        list: []
+    },
 };
 
 export default function metaReducer(state = initState, action) {
@@ -116,6 +126,10 @@ export default function metaReducer(state = initState, action) {
             return { ...state, document_types: { status: STATUS.COMPLETE, list: action.payload }};
         case SALE_TYPES_FETCHED:
             return { ...state, sale_types: { status: STATUS.COMPLETE, list: action.payload }};
+        case FINANCIAL_ENTITIES_FETCHED:
+            return { ...state, financial_entities: { status: STATUS.COMPLETE, list: action.payload }};
+        case FINANCIAL_STATES_FETCHED:
+            return { ...state, financial_states: { status: STATUS.COMPLETE, list: action.payload }};
         default:
             return state;
     }
