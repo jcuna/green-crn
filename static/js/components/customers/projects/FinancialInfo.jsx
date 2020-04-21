@@ -27,7 +27,7 @@ export default class FinancialInfo extends React.Component {
     constructor(props) {
         super(props);
 
-        const { match, customer, dispatch, history } = this.props;
+        const { match, customer, dispatch, history, editing } = this.props;
 
         this.financial_entity = React.createRef();
         this.financial_status = React.createRef();
@@ -38,7 +38,7 @@ export default class FinancialInfo extends React.Component {
             button: {
                 disabled: true,
                 className: 'col-6',
-                value: this.props.editing ? 'Actualizar' : 'Crear',
+                value: editing ? 'Actualizar' : 'Crear',
                 style: { width: '100%' },
             },
             currentEntity: '',
@@ -73,8 +73,8 @@ export default class FinancialInfo extends React.Component {
         } else if (typeof match.params.installation_id === 'undefined' && customer.current.id) {
             dispatch(clearCurrentCustomer());
         }
-        if (prevState.financial_entity_id !== entity_id) {
-            this.setState({ financial_entity_id: entity_id });
+        if (prevState.currentEntity !== entity_id) {
+            this.setState({ currentEntity: entity_id });
         }
     }
 
@@ -108,8 +108,10 @@ export default class FinancialInfo extends React.Component {
     }
 
     render() {
-        const { match, customer } = this.props;
-        if (!match.params.customer_id && customer.current.id) {
+        const { match, customer, meta } = this.props;
+
+        if (!match.params.customer_id && customer.current.id || meta.financial_states.status === STATUS.PENDING ||
+            meta.financial_entities.status === STATUS.PENDING) {
             return <Spinner/>;
         }
         return (
@@ -161,6 +163,7 @@ export default class FinancialInfo extends React.Component {
             return null;
         }
         return <FormGenerator
+            key={ 100 }
             formName={ 'new-tenant' }
             inlineSubmit={ true }
             onSubmit={ this.formSubmit }
@@ -173,7 +176,9 @@ export default class FinancialInfo extends React.Component {
     getFormElements(financing, meta) {
         const elements = [
             <div className='col-6 row-item' key={ 100 }>
+                <label>Entidad Financiera</label>
                 <Autocomplete
+                    key={ 200 }
                     name='financial_entity_id'
                     className='form-control '
                     title='Entidad Financiera'
@@ -187,6 +192,7 @@ export default class FinancialInfo extends React.Component {
                 className: 'col-6',
                 name: 'assigned_official',
                 title: 'Oficial Asignado',
+                label: 'Oficial Asignado',
                 placeholder: 'Oficial Asignado',
                 defaultValue: financing.assigned_official,
                 validate: ['required'],
@@ -197,6 +203,7 @@ export default class FinancialInfo extends React.Component {
                 className: 'col-6',
                 name: 'official_phone',
                 title: 'Telefono del Oficial',
+                label: 'Telefono del Oficial',
                 placeholder: 'Telefono del Oficial',
                 defaultValue: financing.official_phone,
                 validate: ['phone', 'required'],
@@ -207,6 +214,7 @@ export default class FinancialInfo extends React.Component {
                 className: 'col-6',
                 name: 'official_email',
                 title: 'Email del Oficial',
+                label: 'Email del Oficial',
                 placeholder: 'Email del Oficial',
                 defaultValue: financing.official_email,
                 validate: ['required', 'email'],
@@ -218,6 +226,7 @@ export default class FinancialInfo extends React.Component {
                 className: 'col-6',
                 name: 'request_date',
                 title: 'Fecha de Solicitud',
+                label: 'Fecha de Solicitud',
                 placeholder: 'Fecha de Solicitud',
                 defaultValue: financing.request_date ? toDatePicker(new Date(financing.request_date)) : '',
                 validate: ['required'],
@@ -229,6 +238,7 @@ export default class FinancialInfo extends React.Component {
                 className: 'col-6',
                 name: 'response_date',
                 title: 'Fecha de Respuesta',
+                label: 'Fecha de Respuesta',
                 placeholder: 'Fecha de Respuesta',
                 defaultValue: financing.response_date ? toDatePicker(new Date(financing.response_date)) : '',
                 validate: ['required'],
@@ -239,6 +249,7 @@ export default class FinancialInfo extends React.Component {
                 className: 'col-6',
                 name: 'requested_amount',
                 title: 'Cantidad Solicitada',
+                label: 'Cantidad Solicitada',
                 placeholder: 'Cantidad Solicitada',
                 defaultValue: financing.requested_amount,
                 validate: ['required', 'number'],
@@ -249,6 +260,7 @@ export default class FinancialInfo extends React.Component {
                 className: 'col-6',
                 name: 'approved_rate',
                 title: 'Taza aprovada',
+                label: 'Taza aprovada',
                 placeholder: 'Taza aprovada',
                 defaultValue: financing.approved_rate,
                 validate: ['required', 'number'],
@@ -259,6 +271,7 @@ export default class FinancialInfo extends React.Component {
                 className: 'col-6',
                 name: 'retention_percentage',
                 title: 'Porcentaje de Retención',
+                label: 'Retenciones',
                 placeholder: 'Retenciones',
                 defaultValue: financing.retention_percentage,
                 validate: ['required', 'number'],
@@ -269,6 +282,7 @@ export default class FinancialInfo extends React.Component {
                 className: 'col-6',
                 name: 'insurance',
                 title: 'Seguro',
+                label: 'Seguro',
                 placeholder: 'Seguro',
                 defaultValue: financing.insurance,
                 validate: ['required', 'number'],
@@ -279,6 +293,7 @@ export default class FinancialInfo extends React.Component {
                 className: 'col-6',
                 name: 'number_of_payments',
                 title: 'Número de Pagos',
+                label: 'Número de Pagos',
                 placeholder: 'Número de Pagos',
                 defaultValue: financing.number_of_payments,
                 validate: ['required', 'number'],
@@ -289,6 +304,7 @@ export default class FinancialInfo extends React.Component {
                 className: 'col-6',
                 name: 'payments_amount',
                 title: 'Cantidad de Pagos',
+                label: 'Cantidad de Pagos',
                 placeholder: 'Cantidad de Pagos',
                 defaultValue: financing.payments_amount,
                 validate: ['required', 'number'],
@@ -317,7 +333,7 @@ export default class FinancialInfo extends React.Component {
     }
     formSubmit(e, data) {
         const financial_data = {};
-        const { match } = this.props;
+        const { match, dispatch, history } = this.props;
         const proj = this.getCurrentProject();
         const { inst } = this.getCurrentInstallation(proj);
         const { financing } = this.getCurrentFinancing(inst);
@@ -338,20 +354,20 @@ export default class FinancialInfo extends React.Component {
         }
         financial_data.installation_id = match.params.installation_id;
         financial_data.financial_entity_id = this.state.currentEntity;
-        this.props.dispatch(action(financial_data, () => {
-            this.props.dispatch(clearCustomers());
-            this.props.dispatch(notifications(
+        dispatch(action(financial_data, () => {
+            dispatch(clearCustomers());
+            dispatch(notifications(
                 { type: ALERTS.SUCCESS, message: `Información financiera ${verb} satisfactoriamente` })
             );
-            this.props.dispatch(fetchCustomer(match.params.customer_id, Function, () => {
+            dispatch(fetchCustomer(match.params.customer_id, Function, () => {
                 history.push(ENDPOINTS.NOT_FOUND);
             }));
-            this.props.history.push(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${match.params.customer_id}/${match.params.project_id}/financiera/${ match.params.installation_id }#`);
+            history.push(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${match.params.customer_id}/${match.params.project_id}/financiera/${ match.params.installation_id }#`);
             this.setState({
                 button: { ...this.state.button, disabled: true }
             });
         }, () => {
-            this.props.dispatch(notifications({ type: ALERTS.DANGER, message: GENERIC_ERROR }));
+            dispatch(notifications({ type: ALERTS.DANGER, message: GENERIC_ERROR }));
         }));
     }
 
@@ -453,9 +469,11 @@ export default class FinancialInfo extends React.Component {
     setCurrentFinancialEntity(target) {
         if (typeof target.label !== 'undefined') {
             this.setState({ currentEntity: target.key });
+            this.onInputChange(target);
             return;
         }
         this.setState({ currentEntity: target.target.value });
+        this.onInputChange(target);
     }
 
     static propTypes = {

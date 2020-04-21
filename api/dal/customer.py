@@ -172,7 +172,7 @@ class FinancialEntity(db.Model, ModelIter):
 
     id = db.Column(SmallInteger, primary_key=True)
     name = db.Column(db.String(128, collation=configs.DB_COLLATION), unique=True, nullable=False)
-    primary_phone = db.Column(db.String(10, collation=configs.DB_COLLATION), nullable=False, unique=True)
+    primary_phone = db.Column(db.String(10, collation=configs.DB_COLLATION), nullable=False)
     secondary_phone = db.Column(db.String(10, collation=configs.DB_COLLATION), nullable=True)
 
 
@@ -469,7 +469,7 @@ class InstallationStatus(db.Model, ModelIter):
                         return 'Instalacion'
                     return 'Cerrado'
                 return 'Negociación'
-            return 'Levantamiendo'
+            return 'Diseño'
         return 'Levantamiendo'
 
 

@@ -6,7 +6,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import FormGenerator from '../../../utils/FromGenerator';
 import { hasAccess } from '../../../utils/config';
-import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, MONTHS, STATUS } from '../../../constants';
+//uncommnet MONTHS Wwhen history is enabled again
+import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, /*MONTHS,*/ STATUS } from '../../../constants';
 import {
     createCustomerInstallation,
     clearCustomersInstallation, fetchCustomer, clearCurrentCustomer, updateCustomerInstallation,
@@ -22,6 +23,7 @@ import '../../../../css/installation.scss';
 import Table from '../../../utils/Table';
 import '../../../utils/helpers';
 import SerialList from './SerialList';
+import Spinner from '../../../utils/Spinner';
 
 export default class Installation extends React.Component {
     constructor(props) {
@@ -147,6 +149,10 @@ export default class Installation extends React.Component {
     }
 
     render() {
+        const { meta } = this.props;
+        if (meta.sale_types.status === STATUS.PENDING) {
+            return <Spinner/>;
+        }
         return (
             <div>
                 <section className='widget'>
@@ -224,6 +230,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'installed_capacity',
                         title: 'Capacidad Instalada',
+                        label: 'Capacidad Instalada',
                         placeholder: 'Capacidad Instalada',
                         defaultValue: inst.installed_capacity,
                         validate: ['required', 'number'],
@@ -234,6 +241,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'egauge_url',
                         title: 'Egauge',
+                        label: 'Egauge',
                         placeholder: 'Egauge',
                         defaultValue: inst.egauge_url,
                         validate: ['required', 'regex:^http(s)?:\\/\\/[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&\'\\(\\)\\*\\+,;=.]+(?<!/)$'],
@@ -244,6 +252,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'egauge_serial',
                         title: 'Serial',
+                        label: 'Serial',
                         placeholder: 'Serial',
                         defaultValue: inst.egauge_serial,
                         validate: ['required'],
@@ -254,6 +263,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'egauge_mac',
                         title: 'Egauge MAC',
+                        label: 'Egauge MAC',
                         placeholder: 'Egauge MAC',
                         defaultValue: inst.egauge_mac,
                         validate: ['required', 'regex:^([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F])$'],
@@ -265,6 +275,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'start_date',
                         title: 'Fecha de Inicio',
+                        label: 'Fecha de Inicio',
                         placeholder: 'Fecha de Inicio',
                         defaultValue: inst.start_date ? toDatePicker(new Date(inst.start_date)) : '',
                         validate: ['required'],
@@ -275,6 +286,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'specific_yield',
                         title: 'Rendimiento Especifico:',
+                        label: 'Rendimiento Especifico',
                         placeholder: 'Rendimiento Especifico',
                         defaultValue: inst.specific_yield,
                         validate: ['required', 'number'],
@@ -285,6 +297,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'responsible_party',
                         title: 'Responsable',
+                        label: 'Responsable',
                         placeholder: 'Responsable',
                         defaultValue: inst.installed_capacity,
                         validate: ['required'],
@@ -295,11 +308,48 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'price_per_kwp',
                         title: 'Precio por kilowatt',
+                        label: 'Precio por kilowatt',
                         placeholder: 'Precio por kilowatt',
                         defaultValue: inst.installed_capacity,
                         validate: ['required', 'number'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
+                    },
+                    {
+                        className: 'col-6',
+                        name: 'installation_size',
+                        title: 'Tamaño de Instalación',
+                        label: 'Tamaño de Instalación',
+                        placeholder: 'Tamaño de Instalación',
+                        defaultValue: inst.installation_size,
+                        validate: ['required'],
+                        onChange: this.onInputChange,
+                        autoComplete: 'off',
+                        disabled: true,
+                    },
+                    {
+                        className: 'col-6',
+                        name: 'total_investment',
+                        title: 'Inversión Total',
+                        label: 'Inversión Total',
+                        placeholder: 'Inversión Total',
+                        defaultValue: inst.total_investment,
+                        validate: ['required'],
+                        onChange: this.onInputChange,
+                        autoComplete: 'off',
+                        disabled: true,
+                    },
+                    {
+                        className: 'col-6',
+                        name: 'annual_production',
+                        title: 'Producción Anual',
+                        label: 'Producción Anual',
+                        placeholder: 'Producción Anual',
+                        defaultValue: inst.annual_production,
+                        validate: ['required'],
+                        onChange: this.onInputChange,
+                        autoComplete: 'off',
+                        disabled: true,
                     },
                     {
                         formElement: 'select',
@@ -312,7 +362,7 @@ export default class Installation extends React.Component {
                         options: meta.sale_types.list.map(obj => ({ value: obj.id, label: obj.label })),
                         onChange: this.onInputChange,
                     },
-                    <div className='col-12 row' key={ 123 } >
+                    /*<div className='col-12 row' key={ 123 } >
                         <label> Datos Historicos  </label>
                         <div className='row' ref={ this.historyref }>
                             <div className='col-2 row-item'>
@@ -353,19 +403,20 @@ export default class Installation extends React.Component {
                                     placeholder='Generación'
                                     autoComplete='off' />
                             </div>
-                            {/*<div className='col-2 row-item'>*/}
-                            {/*    <button className='form-control'*/}
-                            {/*        name='consumption_value'*/}
-                            {/*        title='consumo'*/}
-                            {/*        placeholder='consumo'*/}
-                            {/*        // onChange={ this.onInputChange }*/}
-                            {/*        onClick={ this.addHistory }>*/}
-                            {/*        Añadir*/}
-                            {/*    </button>*/}
-                            {/*</div>*/}
+                            <div className='col-2 row-item'>
+                                <button className='form-control'
+                                    name='consumption_value'
+                                    title='consumo'
+                                    placeholder='consumo'
+                                    // onChange={ this.onInputChange }
+                                    onClick={ this.addHistory }>
+                                    Añadir
+                                </button>
+                            </div>
                         </div>
-                    </div>,
+                    </div>,*/
                     <div className='col-6 row' key={ 100 }>
+                        <h4 id='title' className='row col-12'>Inversores</h4>
                         <div className='col-5 row-item' >
                             <Autocomplete
                                 className='form-control'
@@ -388,6 +439,7 @@ export default class Installation extends React.Component {
                         <button type='button' className=' col-2 row-item btn-add' onClick={ this.addInverter }>{<FontAwesome type='fas fa-plus'/>}</button>
                     </div>,
                     <div className='col-6 row' key={ 200 }>
+                        <h4 id='title' className='row col-12'>Paneles</h4>
                         <div className='col-5 row-item' >
                             <Autocomplete
                                 className='form-control'
@@ -413,7 +465,6 @@ export default class Installation extends React.Component {
                     <div className='col-12' key={ 300 }>
                         <div className='row'>
                             <div className='col-6' key={ 400 }>
-                                <h4 id='title'>Inversores</h4>
                                 <div className='table table-responsive'>
                                     <table className='inverters' id='invertersTable'>
                                         <tbody>
@@ -424,7 +475,6 @@ export default class Installation extends React.Component {
                                 </div>
                             </div>
                             <div className='col-6' key={ 500 }>
-                                <h4 id='title'>Paneles</h4>
                                 <div className='table table-responsive'>
                                     <table className='inverters' id='panesTable'>
                                         <tbody>
@@ -561,6 +611,9 @@ export default class Installation extends React.Component {
             project_id: '',
             installed_capacity: '',
             sale_type: { id: 1 },
+            installation_size: 'Pendiente',
+            total_investment: 'Pendiente',
+            annual_production: 'Pendiente',
         }};
     }
 
@@ -647,6 +700,7 @@ export default class Installation extends React.Component {
                 targetList.push(result);
             }
             this.setState({ [localList]: targetList });
+            this.props.dispatch(clearNotifications());
             ref.current.value = '';
         }
     }

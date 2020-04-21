@@ -1,15 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import FormGenerator from '../../../utils/FromGenerator';
-import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, STATUS } from '../../../constants';
-import {
-    fetchFinancialEntities,
-    fetchFinancialStates
-} from '../../../actions/metaActions';
+import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR } from '../../../constants';
 import {
     fetchCustomer,
     clearCurrentCustomer,
-    clearCustomers, createCustomerFinancial, updateInstallationStatus
+    clearCustomers, updateInstallationStatus
 } from '../../../actions/customerAction';
 import { notifications } from '../../../actions/appActions';
 import { hasAccess } from '../../../utils/config';
@@ -18,11 +14,11 @@ import Table from '../../../utils/Table';
 import { dateToDatetimeString, friendlyDateEs, toDatePicker } from '../../../utils/helpers';
 import FontAwesome from '../../../utils/FontAwesome';
 
-export default class FinancialInfo extends React.Component {
+export default class Status extends React.Component {
     constructor(props) {
         super(props);
 
-        const { match, customer, dispatch, history } = this.props;
+        const { match, customer, dispatch, history, editing } = this.props;
 
         this.status = React.createRef();
 
@@ -32,7 +28,7 @@ export default class FinancialInfo extends React.Component {
             button: {
                 disabled: true,
                 className: 'col-6',
-                value: this.props.editing ? 'Actualizar' : 'Crear',
+                value: editing ? 'Actualizar' : 'Crear',
                 style: { width: '100%' },
             },
             currentEntity: '',
@@ -57,8 +53,8 @@ export default class FinancialInfo extends React.Component {
         if (prevProps.customer.current.id !== customer.current.id) {
             this.setState(this.fields);
         }
-        if (!prevProps.customer.current.id && this.props.match.params.installation_id && !customer.current.id) {
-            this.props.dispatch(fetchCustomer(this.props.match.params.installation_id));
+        if (!prevProps.customer.current.id && match.params.installation_id && !customer.current.id) {
+            dispatch(fetchCustomer(match.params.installation_id));
         } else if (typeof match.params.installation_id === 'undefined' && customer.current.id) {
             dispatch(clearCurrentCustomer());
         }
@@ -93,13 +89,7 @@ export default class FinancialInfo extends React.Component {
     }
 
     fetchMeta() {
-        const { meta, dispatch } = this.props;
-        if (meta.financial_entities.status === STATUS.PENDING) {
-            dispatch(fetchFinancialEntities());
-        }
-        if (meta.financial_states.status === STATUS.PENDING) {
-            dispatch(fetchFinancialStates());
-        }
+        // const { meta, dispatch } = this.props;
     }
 
     render() {
@@ -179,7 +169,7 @@ export default class FinancialInfo extends React.Component {
             {
                 className: 'col-6',
                 name: 'status',
-                title: 'Estado',
+                // title: 'Estado',
                 label: 'Estado',
                 ref: this.status,
                 defaultValue: status.status,
@@ -191,260 +181,262 @@ export default class FinancialInfo extends React.Component {
                 type: 'date',
                 className: 'col-6',
                 name: 'design_done',
-                title: 'Carpeta Movida',
+                // title: 'Carpeta Movida',
                 label: 'Carpeta Movida',
                 defaultValue: status.design_done ? toDatePicker(new Date(status.design_done)) : '',
                 onChange: this.onInputChange,
                 autoComplete: 'off',
+                disabled: statusLevel < 1
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'proposition_ready',
-                title: 'Propuesta Lista',
+                // title: 'Propuesta Lista',
                 label: 'Propuesta Lista',
                 defaultValue: status.proposition_ready ? toDatePicker(new Date(status.proposition_ready)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
+                disabled: statusLevel < 2
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'proposition_delivered',
-                title: 'Propuesta Entregada',
+                // title: 'Propuesta Entregada',
                 label: 'Propuesta Entregada',
                 defaultValue: status.proposition_delivered ? toDatePicker(new Date(status.proposition_delivered)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
+                disabled: statusLevel < 2
             },
             {
                 type: 'checkbox',
                 className: 'col-12 chk',
                 placeholder: 'Propuesta Aprovado',
                 onChange: this.onInputChange,
-                id: 'approved',
                 name: 'approved',
                 label: 'Propuesta Aprovada',
                 checked: status.approved,
-                disabled: statusLevel < 1
+                disabled: statusLevel < 3
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'documents_filed',
-                title: 'Recopilación de Documentos',
+                // title: 'Recopilación de Documentos',
                 label: 'Recopilación de Documentos',
                 defaultValue: status.documents_filed ? toDatePicker(new Date(status.documents_filed)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 2
+                disabled: statusLevel < 3
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'signed_contract',
-                title: 'Firma de Contrato',
+                // title: 'Firma de Contrato',
                 label: 'Firma de Contrato',
                 defaultValue: status.signed_contract ? toDatePicker(new Date(status.signed_contract)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 2
+                disabled: statusLevel < 3
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'annex_a',
-                title: 'Anexo A',
+                // title: 'Anexo A',
                 label: 'Anexo A',
                 defaultValue: status.annex_a ? toDatePicker(new Date(status.annex_a)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 2
+                disabled: statusLevel < 3
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'initial_payment',
-                title: 'Pago Inicial',
+                // title: 'Pago Inicial',
                 label: 'Pago Inicial',
                 defaultValue: status.initial_payment ? toDatePicker(new Date(status.initial_payment)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 2
+                disabled: statusLevel < 3
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'structural_installation',
-                title: 'Instalación de Estructura',
+                // title: 'Instalación de Estructura',
                 label: 'Instalación de Estructura',
                 defaultValue: status.structural_installation ? toDatePicker(new Date(status.structural_installation)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 3
+                disabled: statusLevel < 4
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'no_objection_letter',
-                title: 'Carta de No Objeción',
+                // title: 'Carta de No Objeción',
                 label: 'Carta de No Objeción',
                 defaultValue: status.no_objection_letter ? toDatePicker(new Date(status.no_objection_letter)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 3
+                disabled: statusLevel < 4
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'final_installation',
-                title: 'Instalación Final',
+                // title: 'Instalación Final',
                 label: 'Instalación Final',
                 defaultValue: status.final_installation ? toDatePicker(new Date(status.final_installation)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 3
+                disabled: statusLevel < 4
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'annex_b',
-                title: 'Anexo B',
+                // title: 'Anexo B',
                 label: 'Anexo B',
                 defaultValue: status.annex_b ? toDatePicker(new Date(status.annex_b)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 4
+                disabled: statusLevel < 5
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'distributor_supervision',
-                title: 'Supervisión Distribuidora',
+                // title: 'Supervisión Distribuidora',
                 label: 'Supervisión Distribuidora',
                 defaultValue: status.distributor_supervision ? toDatePicker(new Date(status.distributor_supervision)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 4
+                disabled: statusLevel < 5
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'in_interconnection_agreement',
-                title: 'Entrada Acuerdo de Interconexión',
+                // title: 'Entrada Acuerdo de Interconexión',
                 label: 'Entrada Acuerdo de Interconexión',
                 defaultValue: status.in_interconnection_agreement ? toDatePicker(new Date(status.in_interconnection_agreement)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 5
+                disabled: statusLevel < 6
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'out_interconnection_agreement',
-                title: 'Salida Acuerdo de Interconexion',
+                // title: 'Salida Acuerdo de Interconexion',
                 label: 'Salida Acuerdo de Interconexion',
                 defaultValue: status.out_interconnection_agreement ? toDatePicker(new Date(status.out_interconnection_agreement)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 5
+                disabled: statusLevel < 6
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'rc_policy',
-                title: 'Póliza RC',
+                // title: 'Póliza RC',
                 label: 'Póliza RC',
                 defaultValue: status.rc_policy ? toDatePicker(new Date(status.rc_policy)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 5
+                disabled: statusLevel < 6
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'in_metering_agreement',
-                title: 'Entrada Acuerdo de Medición Neta',
+                // title: 'Entrada Acuerdo de Medición Neta',
                 label: 'Entrada Acuerdo de Medición Neta',
                 defaultValue: status.in_metering_agreement ? toDatePicker(new Date(status.in_metering_agreement)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 5
+                disabled: statusLevel < 6
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'out_metering_agreement',
-                title: 'Salida Acuerdo de Interconexion',
+                // title: 'Salida Acuerdo de Interconexion',
                 label: 'Salida Acuerdo de Interconexion',
                 defaultValue: status.out_metering_agreement ? toDatePicker(new Date(status.out_metering_agreement)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 5
+                disabled: statusLevel < 6
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'metering_letter',
-                title: 'Carta Medidor',
+                // title: 'Carta Medidor',
                 label: 'Carta Medidor',
                 defaultValue: status.metering_letter ? toDatePicker(new Date(status.metering_letter)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 5
+                disabled: statusLevel < 6
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'metering_payment',
-                title: 'Pago Medidor',
+                // title: 'Pago Medidor',
                 label: 'Pago Medidor',
                 defaultValue: status.metering_payment ? toDatePicker(new Date(status.metering_payment)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 5
+                disabled: statusLevel < 6
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'meter_deployment',
-                title: 'Cambio Medidor',
+                // title: 'Cambio Medidor',
                 label: 'Cambio Medidor',
                 defaultValue: status.meter_deployment ? toDatePicker(new Date(status.meter_deployment)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 5
+                disabled: statusLevel < 6
             },
             {
                 type: 'date',
                 className: 'col-6',
                 name: 'service_start',
-                title: 'Encendido',
+                // title: 'Encendido',
                 label: 'Encendido',
                 defaultValue: status.service_start ? toDatePicker(new Date(status.service_start)) : '',
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 5
+                disabled: statusLevel < 6
             },
         ];
         return elements;
@@ -452,16 +444,12 @@ export default class FinancialInfo extends React.Component {
 
     formSubmit(e, data) {
         const status_data = {};
-        const { match } = this.props;
+        const { match, dispatch, history } = this.props;
         const proj = this.getCurrentProject();
         const { inst } = this.getCurrentInstallation(proj);
         const { status } = this.getCurrentStatus(inst);
-        let action = createCustomerFinancial;
-        let verb = 'creado';
-        if (match.params.installation_id && typeof status.id !== 'undefined') {
-            action = updateInstallationStatus;
-            verb = 'actualizado';
-        }
+        const action = updateInstallationStatus;
+
         Object.keys(this.fields).forEach(field => {
             if (typeof data[field] !== 'undefined') {
                 if (field === 'approved' && data[field].value !== '') {
@@ -472,20 +460,20 @@ export default class FinancialInfo extends React.Component {
                 }
             }
         });
-        this.props.dispatch(action(status_data, Number(match.params.installation_id), () => {
-            this.props.dispatch(clearCustomers());
-            this.props.dispatch(notifications(
-                { type: ALERTS.SUCCESS, message: `Estado de Instalación ${verb} satisfactoriamente` })
+        dispatch(action(status_data, Number(match.params.installation_id), () => {
+            dispatch(clearCustomers());
+            dispatch(notifications(
+                { type: ALERTS.SUCCESS, message: `Estado de Instalación actualizado satisfactoriamente` })
             );
-            this.props.dispatch(fetchCustomer(match.params.customer_id, this.updateStatus, () => {
+            dispatch(fetchCustomer(match.params.customer_id, this.updateStatus, () => {
                 history.push(ENDPOINTS.NOT_FOUND);
             }, true));
-            this.props.history.push(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${match.params.customer_id}/${match.params.project_id}/estado/${ match.params.installation_id }#`);
+            history.push(`${ ENDPOINTS.CUSTOMER_INSTALLATIONS_URL }/${match.params.customer_id}/${match.params.project_id}/estado/${ match.params.installation_id }#`);
             this.setState({
                 button: { ...this.state.button, disabled: true }
             });
         }, () => {
-            this.props.dispatch(notifications({ type: ALERTS.DANGER, message: GENERIC_ERROR }));
+            dispatch(notifications({ type: ALERTS.DANGER, message: GENERIC_ERROR }));
         }));
     }
 
@@ -599,16 +587,18 @@ export default class FinancialInfo extends React.Component {
                 return 0;
             case 'Levantamiendo':
                 return 1;
-            case 'Negociación':
+            case 'Diseño':
                 return 2;
-            case 'Cerrado':
+            case 'Negociación':
                 return 3;
-            case 'Instalacion':
+            case 'Cerrado':
                 return 4;
-            case 'Distribuidora':
+            case 'Instalacion':
                 return 5;
-            case 'Encendido':
+            case 'Distribuidora':
                 return 6;
+            case 'Encendido':
+                return 7;
             default:
                 return -1;
         }

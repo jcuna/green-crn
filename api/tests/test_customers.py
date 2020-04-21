@@ -313,7 +313,7 @@ def test_customer_data_has_installation_financial_info(client: FlaskClient, admi
     assert customer.json['customer_projects'][0]['installations'][0]['financing']['requested_amount'] == '1500000.00'
     assert customer.json['customer_projects'][0]['installations'][0]['financing']['payments_amount'] == '50000.00'
     assert customer.json['customer_projects'][0]['installations'][0]['financing']['status']['label'] == 'INICIADO'
-    assert customer.json['customer_projects'][0]['installations'][0]['financing']['financial_entity']['name'] == 'Banco Popular Dominicano'
+    assert customer.json['customer_projects'][0]['installations'][0]['financing']['financial_entity']['name'] == 'BANCO MULTIPLE ACTIVO DOMINICANA, S. A.'
 
 def test_update_installation_financial_info(client: FlaskClient, admin_login):
     from dal.customer import Installation
