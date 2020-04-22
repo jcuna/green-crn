@@ -489,7 +489,6 @@ export default class FinancialInfo extends React.Component {
                 button: { ...this.state.button, disabled: false }
             });
             this.financial_entity.current.input.current.value = target.label;
-            debugger;
             return;
         }
         this.setState({
