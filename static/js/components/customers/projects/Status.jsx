@@ -210,7 +210,7 @@ export default class Status extends React.Component {
                 //  validate: ['required'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
-                disabled: statusLevel < 2
+                disabled: statusLevel < 3
             },
             {
                 type: 'checkbox',
@@ -445,9 +445,9 @@ export default class Status extends React.Component {
     formSubmit(e, data) {
         const status_data = {};
         const { match, dispatch, history } = this.props;
-        const proj = this.getCurrentProject();
-        const { inst } = this.getCurrentInstallation(proj);
-        const { status } = this.getCurrentStatus(inst);
+        // const proj = this.getCurrentProject();
+        // const { inst } = this.getCurrentInstallation(proj);
+        // const { status } = this.getCurrentStatus(inst);
         const action = updateInstallationStatus;
 
         Object.keys(this.fields).forEach(field => {

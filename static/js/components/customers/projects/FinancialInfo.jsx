@@ -21,7 +21,6 @@ import Spinner from '../../../utils/Spinner';
 import Table from '../../../utils/Table';
 import Autocomplete from '../../../utils/Autocomplete';
 import { dateToDatetimeString, friendlyDateEs, toDatePicker } from '../../../utils/helpers';
-// import { dateToDatetimeString, friendlyDateEs, toDatePicker } from '../../../utils/helpers';
 
 export default class FinancialInfo extends React.Component {
     constructor(props) {
@@ -42,6 +41,7 @@ export default class FinancialInfo extends React.Component {
                 style: { width: '100%' },
             },
             currentEntity: '',
+            currentEntityName: '',
         };
         if (typeof match.params.customer_id !== 'undefined' && customer.current.id !== Number(match.params.customer_id)) {
             dispatch(fetchCustomer(match.params.customer_id, Function, () => {
@@ -63,7 +63,13 @@ export default class FinancialInfo extends React.Component {
         const proj = this.getCurrentProject();
         const { inst } = this.getCurrentInstallation(proj);
         const { financing } = this.getCurrentFinancing(inst);
-        const entity_id = typeof financing.financial_entity !== 'undefined' ? financing.financial_entity.id : 1;
+        let entity_id = '';
+
+        if (this.state.currentEntity === '') {
+            entity_id = typeof financing.financial_entity !== 'undefined' ? financing.financial_entity.id : 1;
+        } else {
+            entity_id = this.state.currentEntity;
+        }
 
         if (prevProps.customer.current.id !== customer.current.id) {
             this.setState(this.fields);
@@ -73,8 +79,20 @@ export default class FinancialInfo extends React.Component {
         } else if (typeof match.params.installation_id === 'undefined' && customer.current.id) {
             dispatch(clearCurrentCustomer());
         }
-        if (prevState.currentEntity !== entity_id) {
-            this.setState({ currentEntity: entity_id });
+        if (prevState.currentEntity !== Number(entity_id)) {
+            this.setState({ currentEntity: Number(entity_id) });
+        }
+        if (this.financial_entity.current !== null && typeof financing.financial_entity !== 'undefined' && this.state.currentEntityName === '') {
+            this.financial_entity.current.input.current.value = financing.financial_entity.name;
+        }
+    }
+    componentDidMount() {
+        const proj = this.getCurrentProject();
+        const { inst } = this.getCurrentInstallation(proj);
+        const { financing } = this.getCurrentFinancing(inst);
+
+        if (this.financial_entity.current !== null && typeof financing.financial_entity !== 'undefined') {
+            this.financial_entity.current.input.current.value = financing.financial_entity.name;
         }
     }
 
@@ -263,7 +281,7 @@ export default class FinancialInfo extends React.Component {
                 label: 'Taza aprovada',
                 placeholder: 'Taza aprovada',
                 defaultValue: financing.approved_rate,
-                validate: ['required', 'number'],
+                validate: ['required', 'number', 'length:1length:4'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
             },
@@ -274,7 +292,7 @@ export default class FinancialInfo extends React.Component {
                 label: 'Retenciones',
                 placeholder: 'Retenciones',
                 defaultValue: financing.retention_percentage,
-                validate: ['required', 'number'],
+                validate: ['required', 'number', 'length:1length:4'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
             },
@@ -285,7 +303,7 @@ export default class FinancialInfo extends React.Component {
                 label: 'Seguro',
                 placeholder: 'Seguro',
                 defaultValue: financing.insurance,
-                validate: ['required', 'number'],
+                validate: ['required', 'number', 'length:1length:8'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
             },
@@ -296,7 +314,7 @@ export default class FinancialInfo extends React.Component {
                 label: 'Número de Pagos',
                 placeholder: 'Número de Pagos',
                 defaultValue: financing.number_of_payments,
-                validate: ['required', 'number'],
+                validate: ['required', 'number', 'length:1length:4'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
             },
@@ -307,7 +325,7 @@ export default class FinancialInfo extends React.Component {
                 label: 'Cantidad de Pagos',
                 placeholder: 'Cantidad de Pagos',
                 defaultValue: financing.payments_amount,
-                validate: ['required', 'number'],
+                validate: ['required', 'number', 'length:1length:8'],
                 onChange: this.onInputChange,
                 autoComplete: 'off',
             },
@@ -323,9 +341,6 @@ export default class FinancialInfo extends React.Component {
             defaultValue: financing.status.id,
             options: meta.financial_states.list.map(obj => ({ value: obj.id, label: obj.label })),
         });
-        if (this.financial_entity.current !== null && typeof financing.financial_entity !== 'undefined') {
-            this.financial_entity.current.input.current.value = financing.financial_entity.name;
-        }
         if (this.financial_status.current !== null && typeof financing.status.id !== 'undefined') {
             this.financial_status.current.value = financing.status.id;
         }
@@ -468,12 +483,21 @@ export default class FinancialInfo extends React.Component {
 
     setCurrentFinancialEntity(target) {
         if (typeof target.label !== 'undefined') {
-            this.setState({ currentEntity: target.key });
-            this.onInputChange(target);
+            this.setState({
+                currentEntity: target.key,
+                currentEntityName: target.label,
+                button: { ...this.state.button, disabled: false }
+            });
+            this.financial_entity.current.input.current.value = target.label;
+            debugger;
             return;
         }
-        this.setState({ currentEntity: target.target.value });
-        this.onInputChange(target);
+        this.setState({
+            currentEntity: target.target.value,
+            currentEntityName: target.target.label,
+            button: { ...this.state.button, disabled: false }
+        });
+        this.financial_entity.current.input.current.value = target.label;
     }
 
     static propTypes = {

@@ -33,8 +33,10 @@ export default class Installation extends React.Component {
 
         this.panel_select = React.createRef();
         this.panel_serial = React.createRef();
+        this.panel_serial_view = React.createRef();
         this.inverter_select = React.createRef();
         this.inverter_serial = React.createRef();
+        this.inverter_serial_view = React.createRef();
         this.historyref = React.createRef();
 
         this.state = {
@@ -233,7 +235,7 @@ export default class Installation extends React.Component {
                         label: 'Capacidad Instalada',
                         placeholder: 'Capacidad Instalada',
                         defaultValue: inst.installed_capacity,
-                        validate: ['required', 'number'],
+                        validate: ['required', 'number', 'length:1length:5'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
                     },
@@ -289,7 +291,7 @@ export default class Installation extends React.Component {
                         label: 'Rendimiento Especifico',
                         placeholder: 'Rendimiento Especifico',
                         defaultValue: inst.specific_yield,
-                        validate: ['required', 'number'],
+                        validate: ['required', 'number', 'length:1length:4'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
                     },
@@ -557,7 +559,6 @@ export default class Installation extends React.Component {
             state[target.name] = validate[target.name].value;
         }
         let valid = true;
-
         Object.keys(this.fields).forEach(key => valid = typeof validate[key] === 'undefined' || valid && validate[key].isValid);
         if (target.name === 'egauge_url' && String(validate.egauge_url.value).substring(0, 6).toUpperCase() !== 'HTTPS:') {
             this.props.dispatch(notifications({ type: ALERTS.WARNING, message: 'Es recomendable ingresar una dirección segura ( https ) a menos que no sea posible' }));
@@ -699,7 +700,10 @@ export default class Installation extends React.Component {
             if (targetList.indexOf(result) === -1) {
                 targetList.push(result);
             }
-            this.setState({ [localList]: targetList });
+
+            this.setState({ [localList]: targetList,
+                button: { ...this.state.button, disabled: false }
+            });
             this.props.dispatch(clearNotifications());
             ref.current.value = '';
         }
@@ -812,15 +816,15 @@ export default class Installation extends React.Component {
         });
     }
 
-    viewPanelSerials({ target: { parentElement: { parentElement }}}) {
+    viewPanelSerials() {
         const { panels } = this.state;
-        const model = panels.find(panel => panel.id === Number(parentElement.getAttribute('data-id')));
+        const model = panels.find(panel => panel.id === Number(this.panel_serial_view.current.getAttribute('data-id')));
         this.viewModelSerials(model, this.removePanelSerial);
     }
 
-    viewInverterSerials({ target: { parentElement: { parentElement }}}) {
+    viewInverterSerials() {
         const { inverters } = this.state;
-        const model = inverters.find(inverter => inverter.id === Number(parentElement.getAttribute('data-id')));
+        const model = inverters.find(inverter => inverter.id === Number(this.inverter_serial_view.current.getAttribute('data-id')));
         this.viewModelSerials(model, this.removeInverterSerial);
     }
 
@@ -836,7 +840,7 @@ export default class Installation extends React.Component {
         );
     }
 
-    renderModelTable(readOnly, list, viewSerial) {
+    renderModelTable(readOnly, list, viewSerial, viewSerialRef) {
         return list.map((model, index) => {
             const { id, label, quantity } = model; //destructuring
             if (!readOnly) {
@@ -844,7 +848,7 @@ export default class Installation extends React.Component {
                     <tr key={ index }>
                         <td>{label}</td>
                         <td>{quantity}</td>
-                        <td data-id={ id } onClick={ viewSerial }>
+                        <td data-id={ id } ref={ viewSerialRef } onClick={ viewSerial }>
                             {<FontAwesome className='delete-icon' type='fas fa-eye'/>}
                         </td>
                     </tr>
@@ -861,11 +865,11 @@ export default class Installation extends React.Component {
     }
 
     renderInverterTable(readOnly) {
-        return this.renderModelTable(readOnly, this.state.inverters, this.viewInverterSerials);
+        return this.renderModelTable(readOnly, this.state.inverters, this.viewInverterSerials, this.inverter_serial_view);
     }
 
     renderPanelTable(readOnly) {
-        return this.renderModelTable(readOnly, this.state.panels, this.viewPanelSerials);
+        return this.renderModelTable(readOnly, this.state.panels, this.viewPanelSerials, this.panel_serial_view);
     }
 
     renderSummaryTable(readOnly) {
