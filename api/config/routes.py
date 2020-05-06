@@ -31,6 +31,8 @@ def register():
         'meta.InverterModels@inverter_models_url': '/meta/inverter-models',
         'meta.DocumentCategories@document_categories_url': '/meta/document-categories',
         'meta.SaleTypes@sale_types_url': '/meta/sale-types',
+        'meta.FinancialEntities@financial_entities_url': '/meta/financial-entities',
+        'meta.FinancialStates@financial_states_url': '/meta/financial-states',
 
         'customers.Customers@customers_url': '/customers|/customers/<int:customer_id>',
         'customers.CustomerProjects@customer_projects_url': '/customers/projects|/customers/projects/<int:project_id>',
@@ -71,4 +73,6 @@ default_access = {
     'views.meta.DocumentCategories': ['read'],
     'views.meta.DocumentTypes': ['read'],
     'views.meta.SaleTypes': ['read'],
+    'views.meta.FinancialEntities': ['read'],
+    'views.meta.FinancialStates': ['read'],
 }

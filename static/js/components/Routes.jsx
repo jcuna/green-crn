@@ -54,7 +54,7 @@ export default class Routes extends React.Component {
                     render={ props => this.getComponent(ProjectSumary, props, false, ep.CUSTOMER_PROJECTS_URL) }
                 />
                 <Route
-                    exact path={ `${ ep.CUSTOMER_INSTALLATIONS_URL }/:customer_id([0-9]+)?/:project_id([0-9]+)?/:action(info|nuevo|docs|instalacion)?/:installation_id([0-9]+)?` }
+                    exact path={ `${ ep.CUSTOMER_INSTALLATIONS_URL }/:customer_id([0-9]+)?/:project_id([0-9]+)?/:action(info|nuevo|docs|instalacion|financiera|estado)?/:installation_id([0-9]+)?` }
                     render={ props => this.getComponent(InstallationSumary, props, false, ep.CUSTOMER_INSTALLATIONS_URL) }
                 />
 

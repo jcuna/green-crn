@@ -186,7 +186,7 @@ class FormGenerator extends React.Component {
         const children = [];
 
         if (element.label && labelBefore) {
-            children.push(React.createElement('label', { htmlFor: element.name, key: 1 }, element.label));
+            children.push(React.createElement('label', { htmlFor: element.name, key: key + 1 }, element.label));
         }
         children.push(React.createElement(
             formElement, {
@@ -213,6 +213,7 @@ class FormGenerator extends React.Component {
         if (element.label && !labelBefore) {
             children.push(React.createElement('label', { htmlFor: element.name, key: key + 1 }, element.label));
         }
+
         return <div key={ key } className={ FormGenerator.getParentClassName(element, isMultiCol) }>{ children }</div>;
     }
 

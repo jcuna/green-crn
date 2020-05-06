@@ -25,6 +25,7 @@ import { notifications } from '../../../actions/appActions';
 import InstallationList from './InstallationList';
 import Table from '../../../utils/Table';
 import { normalize } from '../../../utils/helpers';
+import Spinner from '../../../utils/Spinner';
 
 export default class Project extends React.Component {
     constructor(props) {
@@ -113,6 +114,12 @@ export default class Project extends React.Component {
     }
 
     render() {
+        const { meta } = this.props;
+        if (meta.countries.status === STATUS.PENDING || meta.rates.status === STATUS.PENDING || meta.project_types.status === STATUS.PENDING ||
+            meta.transformers.status === STATUS.PENDING || meta.tr_capacities.status === STATUS.PENDING || meta.phases.status === STATUS.PENDING ||
+            meta.tensions.status === STATUS.PENDING) {
+            return <Spinner/>;
+        }
         return (
             <div>
                 <section className='widget'>
@@ -153,6 +160,7 @@ export default class Project extends React.Component {
         if (typeof proj.id === 'undefined' && typeof match.params.project_id !== 'undefined') {
             return null;
         }
+
         return <FormGenerator
             formName={ 'new-tenant' }
             inlineSubmit={ true }
@@ -163,6 +171,7 @@ export default class Project extends React.Component {
                     className: 'col-6',
                     name: 'name',
                     title: 'Nombre',
+                    label: 'Nombre',
                     placeholder: 'Nombre',
                     defaultValue: proj.name,
                     validate: 'required',
@@ -173,6 +182,7 @@ export default class Project extends React.Component {
                     className: 'col-6',
                     name: 'address',
                     title: 'Dirección',
+                    label: 'Dirección',
                     placeholder: 'Dirección',
                     defaultValue: proj.address,
                     validate: 'required',
@@ -183,6 +193,7 @@ export default class Project extends React.Component {
                     className: 'col-6',
                     name: 'lat',
                     title: 'Latitud',
+                    label: 'Latitud',
                     placeholder: 'Latitud',
                     defaultValue: proj.lat,
                     validate: ['required', 'number'],
@@ -193,6 +204,7 @@ export default class Project extends React.Component {
                     className: 'col-6',
                     name: 'long',
                     title: 'Longitud',
+                    label: 'Longitud',
                     placeholder: 'Longitud',
                     defaultValue: proj.long,
                     validate: ['required', 'number'],
@@ -225,6 +237,7 @@ export default class Project extends React.Component {
                     className: 'col-6',
                     name: 'nic',
                     title: 'NIC',
+                    label: 'NIC',
                     placeholder: 'NIC',
                     defaultValue: proj.nic,
                     validate: ['required', 'number'],
@@ -235,6 +248,7 @@ export default class Project extends React.Component {
                     className: 'col-6',
                     name: 'nic_title',
                     title: 'Titular',
+                    label: 'Titular',
                     placeholder: 'Titular',
                     defaultValue: proj.nic_title,
                     validate: ['required'],
@@ -245,6 +259,7 @@ export default class Project extends React.Component {
                     className: 'col-6',
                     name: 'circuit',
                     title: 'Circuito',
+                    label: 'Circuito',
                     placeholder: 'Circuito',
                     defaultValue: proj.circuit,
                     validate: ['required'],
@@ -255,6 +270,7 @@ export default class Project extends React.Component {
                     className: 'col-6',
                     name: 'ct',
                     title: 'CT',
+                    label: 'CT',
                     placeholder: 'CT',
                     defaultValue: proj.ct,
                     validate: ['required'],

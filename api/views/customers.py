@@ -309,7 +309,6 @@ class InstallationFinances(API):
 
 
 class InstallationProgressStatus(API):
-
     @token_required
     @access_required
     def put(self, installation_id):

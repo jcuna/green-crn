@@ -6,7 +6,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import FormGenerator from '../../../utils/FromGenerator';
 import { hasAccess } from '../../../utils/config';
-import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, MONTHS, STATUS } from '../../../constants';
+//uncommnet MONTHS Wwhen history is enabled again
+import { ACCESS_TYPES, ALERTS, ENDPOINTS, GENERIC_ERROR, /*MONTHS,*/ STATUS } from '../../../constants';
 import {
     createCustomerInstallation,
     clearCustomersInstallation, fetchCustomer, clearCurrentCustomer, updateCustomerInstallation,
@@ -22,6 +23,7 @@ import '../../../../css/installation.scss';
 import Table from '../../../utils/Table';
 import '../../../utils/helpers';
 import SerialList from './SerialList';
+import Spinner from '../../../utils/Spinner';
 
 export default class Installation extends React.Component {
     constructor(props) {
@@ -31,8 +33,10 @@ export default class Installation extends React.Component {
 
         this.panel_select = React.createRef();
         this.panel_serial = React.createRef();
+        this.panel_serial_view = React.createRef();
         this.inverter_select = React.createRef();
         this.inverter_serial = React.createRef();
+        this.inverter_serial_view = React.createRef();
         this.historyref = React.createRef();
 
         this.state = {
@@ -147,6 +151,10 @@ export default class Installation extends React.Component {
     }
 
     render() {
+        const { meta } = this.props;
+        if (meta.sale_types.status === STATUS.PENDING) {
+            return <Spinner/>;
+        }
         return (
             <div>
                 <section className='widget'>
@@ -224,9 +232,10 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'installed_capacity',
                         title: 'Capacidad Instalada',
+                        label: 'Capacidad Instalada',
                         placeholder: 'Capacidad Instalada',
                         defaultValue: inst.installed_capacity,
-                        validate: ['required', 'number'],
+                        validate: ['required', 'number', 'length:1length:5'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
                     },
@@ -234,6 +243,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'egauge_url',
                         title: 'Egauge',
+                        label: 'Egauge',
                         placeholder: 'Egauge',
                         defaultValue: inst.egauge_url,
                         validate: ['required', 'regex:^http(s)?:\\/\\/[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&\'\\(\\)\\*\\+,;=.]+(?<!/)$'],
@@ -244,6 +254,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'egauge_serial',
                         title: 'Serial',
+                        label: 'Serial',
                         placeholder: 'Serial',
                         defaultValue: inst.egauge_serial,
                         validate: ['required'],
@@ -254,6 +265,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'egauge_mac',
                         title: 'Egauge MAC',
+                        label: 'Egauge MAC',
                         placeholder: 'Egauge MAC',
                         defaultValue: inst.egauge_mac,
                         validate: ['required', 'regex:^([0-9a-fA-F][0-9a-fA-F]:){5}([0-9a-fA-F][0-9a-fA-F])$'],
@@ -265,6 +277,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'start_date',
                         title: 'Fecha de Inicio',
+                        label: 'Fecha de Inicio',
                         placeholder: 'Fecha de Inicio',
                         defaultValue: inst.start_date ? toDatePicker(new Date(inst.start_date)) : '',
                         validate: ['required'],
@@ -275,9 +288,10 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'specific_yield',
                         title: 'Rendimiento Especifico:',
+                        label: 'Rendimiento Especifico',
                         placeholder: 'Rendimiento Especifico',
                         defaultValue: inst.specific_yield,
-                        validate: ['required', 'number'],
+                        validate: ['required', 'number', 'length:1length:4'],
                         onChange: this.onInputChange,
                         autoComplete: 'off',
                     },
@@ -285,6 +299,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'responsible_party',
                         title: 'Responsable',
+                        label: 'Responsable',
                         placeholder: 'Responsable',
                         defaultValue: inst.installed_capacity,
                         validate: ['required'],
@@ -295,6 +310,7 @@ export default class Installation extends React.Component {
                         className: 'col-6',
                         name: 'price_per_kwp',
                         title: 'Precio por kilowatt',
+                        label: 'Precio por kilowatt',
                         placeholder: 'Precio por kilowatt',
                         defaultValue: inst.installed_capacity,
                         validate: ['required', 'number'],
@@ -302,17 +318,53 @@ export default class Installation extends React.Component {
                         autoComplete: 'off',
                     },
                     {
+                        className: 'col-6',
+                        name: 'installation_size',
+                        title: 'Tamaño de Instalación',
+                        label: 'Tamaño de Instalación',
+                        placeholder: 'Tamaño de Instalación',
+                        defaultValue: inst.installation_size,
+                        validate: ['required'],
+                        onChange: this.onInputChange,
+                        autoComplete: 'off',
+                        disabled: true,
+                    },
+                    {
+                        className: 'col-6',
+                        name: 'total_investment',
+                        title: 'Inversión Total',
+                        label: 'Inversión Total',
+                        placeholder: 'Inversión Total',
+                        defaultValue: inst.total_investment,
+                        validate: ['required'],
+                        onChange: this.onInputChange,
+                        autoComplete: 'off',
+                        disabled: true,
+                    },
+                    {
+                        className: 'col-6',
+                        name: 'annual_production',
+                        title: 'Producción Anual',
+                        label: 'Producción Anual',
+                        placeholder: 'Producción Anual',
+                        defaultValue: inst.annual_production,
+                        validate: ['required'],
+                        onChange: this.onInputChange,
+                        autoComplete: 'off',
+                        disabled: true,
+                    },
+                    {
                         formElement: 'select',
                         className: 'col-6',
                         name: 'sale_type_id',
                         title: 'Tipo de Venta',
                         label: 'Tipo de Venta',
-                        defaultValue: 1, //meta.sale_types.distributor.id || 1,
+                        defaultValue: inst.sale_type.id || 1,
                         validate: ['required'],
                         options: meta.sale_types.list.map(obj => ({ value: obj.id, label: obj.label })),
                         onChange: this.onInputChange,
                     },
-                    <div className='col-12 row' key={ 123 } >
+                    /*<div className='col-12 row' key={ 123 } >
                         <label> Datos Historicos  </label>
                         <div className='row' ref={ this.historyref }>
                             <div className='col-2 row-item'>
@@ -353,19 +405,20 @@ export default class Installation extends React.Component {
                                     placeholder='Generación'
                                     autoComplete='off' />
                             </div>
-                            {/*<div className='col-2 row-item'>*/}
-                            {/*    <button className='form-control'*/}
-                            {/*        name='consumption_value'*/}
-                            {/*        title='consumo'*/}
-                            {/*        placeholder='consumo'*/}
-                            {/*        // onChange={ this.onInputChange }*/}
-                            {/*        onClick={ this.addHistory }>*/}
-                            {/*        Añadir*/}
-                            {/*    </button>*/}
-                            {/*</div>*/}
+                            <div className='col-2 row-item'>
+                                <button className='form-control'
+                                    name='consumption_value'
+                                    title='consumo'
+                                    placeholder='consumo'
+                                    // onChange={ this.onInputChange }
+                                    onClick={ this.addHistory }>
+                                    Añadir
+                                </button>
+                            </div>
                         </div>
-                    </div>,
+                    </div>,*/
                     <div className='col-6 row' key={ 100 }>
+                        <h4 id='title' className='row col-12'>Inversores</h4>
                         <div className='col-5 row-item' >
                             <Autocomplete
                                 className='form-control'
@@ -385,9 +438,10 @@ export default class Installation extends React.Component {
                                 autoComplete='off'
                                 onKeyPress={ this.addInverter } />
                         </div>
-                        <button type='button' className=' col-2 row-item btn-add'>{<FontAwesome type='fas fa-plus' onClick={ this.addInverter }/>}</button>
+                        <button type='button' className=' col-2 row-item btn-add' onClick={ this.addInverter }>{<FontAwesome type='fas fa-plus'/>}</button>
                     </div>,
                     <div className='col-6 row' key={ 200 }>
+                        <h4 id='title' className='row col-12'>Paneles</h4>
                         <div className='col-5 row-item' >
                             <Autocomplete
                                 className='form-control'
@@ -408,12 +462,11 @@ export default class Installation extends React.Component {
                                 onKeyPress={ this.addPanel }
                             />
                         </div>
-                        <button type='button' className=' col-2 row-item btn-add'>{<FontAwesome type='fas fa-plus' onClick={ this.addPanel }/>}</button>
+                        <button type='button' className=' col-2 row-item btn-add' onClick={ this.addPanel }>{<FontAwesome type='fas fa-plus'/>}</button>
                     </div>,
                     <div className='col-12' key={ 300 }>
                         <div className='row'>
                             <div className='col-6' key={ 400 }>
-                                <h4 id='title'>Inversores</h4>
                                 <div className='table table-responsive'>
                                     <table className='inverters' id='invertersTable'>
                                         <tbody>
@@ -424,7 +477,6 @@ export default class Installation extends React.Component {
                                 </div>
                             </div>
                             <div className='col-6' key={ 500 }>
-                                <h4 id='title'>Paneles</h4>
                                 <div className='table table-responsive'>
                                     <table className='inverters' id='panesTable'>
                                         <tbody>
@@ -507,7 +559,6 @@ export default class Installation extends React.Component {
             state[target.name] = validate[target.name].value;
         }
         let valid = true;
-
         Object.keys(this.fields).forEach(key => valid = typeof validate[key] === 'undefined' || valid && validate[key].isValid);
         if (target.name === 'egauge_url' && String(validate.egauge_url.value).substring(0, 6).toUpperCase() !== 'HTTPS:') {
             this.props.dispatch(notifications({ type: ALERTS.WARNING, message: 'Es recomendable ingresar una dirección segura ( https ) a menos que no sea posible' }));
@@ -560,6 +611,10 @@ export default class Installation extends React.Component {
             specific_yield: '',
             project_id: '',
             installed_capacity: '',
+            sale_type: { id: 1 },
+            installation_size: 'Pendiente',
+            total_investment: 'Pendiente',
+            annual_production: 'Pendiente',
         }};
     }
 
@@ -645,7 +700,11 @@ export default class Installation extends React.Component {
             if (targetList.indexOf(result) === -1) {
                 targetList.push(result);
             }
-            this.setState({ [localList]: targetList });
+
+            this.setState({ [localList]: targetList,
+                button: { ...this.state.button, disabled: false }
+            });
+            this.props.dispatch(clearNotifications());
             ref.current.value = '';
         }
     }
@@ -757,17 +816,15 @@ export default class Installation extends React.Component {
         });
     }
 
-    viewPanelSerials({ target: { parentElement: { parentElement }}}) {
+    viewPanelSerials() {
         const { panels } = this.state;
-        const model = panels.find(panel => panel.id === Number(parentElement.getAttribute('data-id')));
-        console.log(model.serials);
+        const model = panels.find(panel => panel.id === Number(this.panel_serial_view.current.getAttribute('data-id')));
         this.viewModelSerials(model, this.removePanelSerial);
     }
 
-    viewInverterSerials({ target: { parentElement: { parentElement }}}) {
+    viewInverterSerials() {
         const { inverters } = this.state;
-        const model = inverters.find(inverter => inverter.id === Number(parentElement.getAttribute('data-id')));
-        console.log(model.serials);
+        const model = inverters.find(inverter => inverter.id === Number(this.inverter_serial_view.current.getAttribute('data-id')));
         this.viewModelSerials(model, this.removeInverterSerial);
     }
 
@@ -783,7 +840,7 @@ export default class Installation extends React.Component {
         );
     }
 
-    renderModelTable(readOnly, list, viewSerial) {
+    renderModelTable(readOnly, list, viewSerial, viewSerialRef) {
         return list.map((model, index) => {
             const { id, label, quantity } = model; //destructuring
             if (!readOnly) {
@@ -791,7 +848,7 @@ export default class Installation extends React.Component {
                     <tr key={ index }>
                         <td>{label}</td>
                         <td>{quantity}</td>
-                        <td data-id={ id } onClick={ viewSerial }>
+                        <td data-id={ id } ref={ viewSerialRef } onClick={ viewSerial }>
                             {<FontAwesome className='delete-icon' type='fas fa-eye'/>}
                         </td>
                     </tr>
@@ -808,11 +865,11 @@ export default class Installation extends React.Component {
     }
 
     renderInverterTable(readOnly) {
-        return this.renderModelTable(readOnly, this.state.inverters, this.viewInverterSerials);
+        return this.renderModelTable(readOnly, this.state.inverters, this.viewInverterSerials, this.inverter_serial_view);
     }
 
     renderPanelTable(readOnly) {
-        return this.renderModelTable(readOnly, this.state.panels, this.viewPanelSerials);
+        return this.renderModelTable(readOnly, this.state.panels, this.viewPanelSerials, this.panel_serial_view);
     }
 
     renderSummaryTable(readOnly) {
