@@ -1,0 +1,158 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Pipeline Stack
+
+
+Parameters:
+
+  RepoName:
+    Default: ''
+    Description: Name of the application repo
+    Type: String
+
+  Realm:
+    Description: Name of the realm or client preferred name. Used to identify multiple instances of the app in the same account
+    Type: String
+    AllowedPattern: ^[a-zA-Z0-9]*$
+
+  GitHubOwner:
+    Type: String
+
+  Branch:
+    Default: master
+    Description: The default branch to use for triggering the pipeline
+    Type: String
+
+Resources:
+
+  S3BuildsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${Realm}-${Repo}-artifacts-${AWS::AccountId}'
+
+  AssetsBucketPolicy: # IMPORTANT - Do not change this resource name
+    DependsOn:
+      - S3BuildsBucket
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Sub '${Realm}-${Repo}-artifacts-${AWS::AccountId}'
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 's3:*'
+            Effect: 'Allow'
+            Resource:
+              - !Sub 'arn:aws:s3:::${S3AssetsBucket}'
+              - !Sub 'arn:aws:s3:::${S3AssetsBucket}/*'
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+          - Action:
+              - 's3:*'
+            Effect: 'Allow'
+            Principal:
+              AWS: !Sub '${AWS::AccountId}'
+            Resource:
+              - !Sub 'arn:aws:s3:::${S3AssetsBucket}'
+              - !Sub 'arn:aws:s3:::${S3AssetsBucket}/*'
+
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codepipeline.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  CodebuildPipeline:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      ServiceRole: !GetAtt CodePipelineRole.Arn
+      Name: !Sub '${Realm}-${Repo}-parameters'
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/python:3.7.1
+        EnvironmentVariables:
+          - Name: Repo
+            Value: !Ref RepoName
+            Type: PLAINTEXT
+          - Name: BuildsBucket
+            Value: !Ref S3BuildsBucket
+            Type: PLAINTEXT
+      Source:
+        Type: CODEPIPELINE
+        # BuildSpec: aws/buildspec.yml
+      TimeoutInMinutes: 5
+
+  AppPipeline:
+    Type: 'AWS::CodePipeline::Pipeline'
+    Properties:
+      Name: github-events-pipeline
+      RoleArn: !GetAtt
+        - CodePipelineRole
+        - Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: SourceAction
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Version: 1
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                Owner: !Ref GitHubOwner
+                Repo: !Ref RepoName
+                Branch: !Ref Branch
+                OAuthToken: {{resolve:secretsmanager:GreenCRN/GitHub:SecretString:github}}
+                PollForSourceChanges: false
+              RunOrder: 1
+#        - Name: Beta
+#          Actions:
+#            - Name: BetaAction
+#              InputArtifacts:
+#                - Name: SourceOutput
+#              ActionTypeId:
+#                Category: Deploy
+#                Owner: AWS
+#                Version: 1
+#                Provider: CodeDeploy
+#              Configuration:
+#                ApplicationName: !Ref ApplicationName
+#                DeploymentGroupName: !Ref BetaFleet
+#              RunOrder: 1
+      ArtifactStore:
+        Type: S3
+        Location: !Ref S3BuildsBucket
+
+
+  GitHubPipelineWebhook:
+    Type: AWS::CodePipeline::Webhook
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: {{resolve:secretsmanager:greencrn/github:SecretString:github}}
+      Filters:
+        - JsonPath: "$.ref"
+          MatchEquals: refs/heads/{Branch}
+      TargetPipeline: !Ref AppPipeline
+      TargetAction: SourceAction
+      Name: AppPipelineWebhook
+      TargetPipelineVersion: !GetAtt AppPipeline.Version
+      RegisterWithThirdParty: true
+
+
+Outputs:
+  S3AssetsBucket:
+    Value: "S3BuildsBucket"
+    Export:
+      Name: !Sub '${Realm}:S3AssetsBucket'
