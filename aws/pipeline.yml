@@ -24,6 +24,20 @@ Parameters:
 
 Resources:
 
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codepipeline.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
   S3BuildsBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -32,11 +46,20 @@ Resources:
   AssetsBucketPolicy: # IMPORTANT - Do not change this resource name
     DependsOn:
       - S3BuildsBucket
+      - CodePipelineRole
     Type: AWS::S3::BucketPolicy
     Properties:
       Bucket: !Sub '${Realm}-${Repo}-artifacts-${AWS::AccountId}'
       PolicyDocument:
         Statement:
+          - Action:
+              - 's3:*'
+            Effect: 'Allow'
+            Resource:
+              - !Sub 'arn:aws:s3:::${S3AssetsBucket}'
+              - !Sub 'arn:aws:s3:::${S3AssetsBucket}/*'
+            Principal:
+              AWS: !GetAtt 'CodePipelineRole.Arn'
           - Action:
               - 's3:*'
             Effect: 'Allow'
@@ -53,20 +76,6 @@ Resources:
             Resource:
               - !Sub 'arn:aws:s3:::${S3AssetsBucket}'
               - !Sub 'arn:aws:s3:::${S3AssetsBucket}/*'
-
-  CodePipelineRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          Effect: Allow
-          Principal:
-            Service: codepipeline.amazonaws.com
-          Action: sts:AssumeRole
-      Path: /
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AdministratorAccess
 
   CodebuildPipeline:
     Type: AWS::CodeBuild::Project
