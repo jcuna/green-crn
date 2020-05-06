@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Database Stack
+
+
+Parameters:
+
+  Realm:
+    Description: Name of the realm or client preferred name. Used to identify multiple instances of the app in the same account
+    Type: String
+    AllowedPattern: ^[a-zA-Z0-9]*$
+
+  ProjectName:
+    Default: GreenCRN
+    Type: String
+
+Resources:
+
+  DBRandomPassword:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '{ProjectName}/Password/${Realm}'
+      GenerateSecretString:
+        SecretStringTemplate: !Sub '{"username": "${Realm}-user"}'
+        GenerateStringKey: 'password'
+        ExcludePunctuation: true
+
+  DatabaseCluster:
+    #    DependsOn:
+    #      - DbSecurityGroup
+    Type: AWS::RDS::DBCluster
+    Properties:
+      DatabaseName: !Sub '${Realm}-${ProjectName}-DB'
+      Engine: aurora-postgresql
+      EngineMode: serverless
+      EngineVersion: 11.6
+      MasterUsername: !Sub '{{resolve:secretsmanager:${DBRandomPassword}:SecretString:username}}'
+      MasterUserPassword: !Sub '{{resolve:secretsmanager:${DBRandomPassword}:SecretString:password}}'
+      BackupRetentionPeriod: 15
+      PreferredBackupWindow: 02:00-03:00
+      PreferredMaintenanceWindow: mon:03:00-mon:04:00
+      SourceRegion: !Ref 'AWS::Region'
+
+
+Outputs:
+
+  DatabaseEndpoint:
+    Value: !Sub '${DatabaseCluster.Endpoint.Address}:${DatabaseCluster.Endpoint.Port}'
+    Export:
+      Name: !Sub '${Realm}:DatabaseEndpoint'
+
+  DatabasePW:
+    Value: !Sub '{{resolve:secretsmanager:${DBRandomPassword}:SecretString:password}}'
+    Export:
+      Name: !Sub '${Realm}:DatabasePassword'
+
+  DatabaseUser:
+    Value: !Sub '{{resolve:secretsmanager:${DBRandomPassword}:SecretString:username}}'
+    Export:
+      Name: !Sub '${Realm}:DatabaseUsername'
