@@ -149,7 +149,7 @@ Resources:
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: {{resolve:secretsmanager:greencrn/github:SecretString:github}}
+        SecretToken: {{resolve:secretsmanager:GreenCRN/Webhook:SecretString:github}}
       Filters:
         - JsonPath: "$.ref"
           MatchEquals: refs/heads/{Branch}
