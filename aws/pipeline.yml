@@ -156,31 +156,31 @@ Resources:
                 Extract: 'true'
                 BucketName: !Sub '${Realm}-${RepoName}-artifacts-${AWS::AccountId}'
               RunOrder: 1
-        - Resources:
-            - Actions:
-                - Name: Database
-                  ActionTypeId:
-                    Category: Deploy
-                    Owner: AWS
-                    Provider: CloudFormation
-                    Version: 1
-                  Configuration:
-                    RoleArn: !GetAtt 'CodePipelineRole.Arn'
-                    StackName: !Sub '{AWS::StackName}Database'
-                    ActionMode: CREATE_UPDATE
-                    Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
-                    OutputFileName: database_outputs.json
-                    ParameterOverrides: |
-                      {
-                        "Realm": {"Fn::Ref": "Realm"},
-                        "ProjectName": {"Fn::Ref": "ProjectName"},
-                      }
-                    TemplatePath: !Sub '${RepoName}::aws/database.yml'
-                  InputArtifacts:
-                    - Name: SourceOutput
-                  OutputArtifacts:
-                    - Name: !Sub Database
-                  RunOrder: 1
+        - Name: Resource
+          Actions:
+            - Name: Database
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              Configuration:
+                RoleArn: !GetAtt 'CodePipelineRole.Arn'
+                StackName: !Sub '{AWS::StackName}Database'
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
+                OutputFileName: database_outputs.json
+                ParameterOverrides: |
+                  {
+                    "Realm": {"Fn::Ref": "Realm"},
+                    "ProjectName": {"Fn::Ref": "ProjectName"},
+                  }
+                TemplatePath: !Sub '${RepoName}::aws/database.yml'
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: !Sub Database
+              RunOrder: 1
 
       ArtifactStore:
         Type: S3
