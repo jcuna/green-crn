@@ -38,6 +38,20 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AdministratorAccess
 
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codebuild.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
   S3BuildsBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -80,7 +94,7 @@ Resources:
   CodebuildPipeline:
     Type: AWS::CodeBuild::Project
     Properties:
-      ServiceRole: !GetAtt CodePipelineRole.Arn
+      ServiceRole: !GetAtt CodeBuildRole.Arn
       Name: !Sub '${Realm}-${RepoName}-parameters'
       Artifacts:
         Type: CODEPIPELINE
@@ -101,7 +115,7 @@ Resources:
       TimeoutInMinutes: 5
 
   AppPipeline:
-    Type: 'AWS::CodePipeline::Pipeline'
+    Type: AWS::CodePipeline::Pipeline
     Properties:
       Name: github-events-pipeline
       RoleArn: !GetAtt
@@ -125,6 +139,22 @@ Resources:
                 OAuthToken: '{{resolve:secretsmanager:GreenCRN/GitHub:SecretString:github}}'
                 PollForSourceChanges: false
               RunOrder: 1
+        - Name: Extract
+          Actions:
+            - InputArtifacts:
+                - Name: SourceOutput
+              Name: !Sub '${RepoName}_source'
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: S3
+              Configuration:
+                ObjectKey: !Sub '${RepoName}_source'
+                Extract: 'true'
+                BucketName: !Sub '${Realm}-${RepoName}-artifacts-${AWS::AccountId}'
+              RunOrder: 1
+
 #        - Name: Beta
 #          Actions:
 #            - Name: BetaAction
