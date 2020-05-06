@@ -41,7 +41,7 @@ Resources:
   S3BuildsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub '${Realm}-${Repo}-artifacts-${AWS::AccountId}'
+      BucketName: !Sub '${Realm}-${RepoName}-artifacts-${AWS::AccountId}'
 
   AssetsBucketPolicy: # IMPORTANT - Do not change this resource name
     DependsOn:
@@ -49,23 +49,23 @@ Resources:
       - CodePipelineRole
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Sub '${Realm}-${Repo}-artifacts-${AWS::AccountId}'
+      Bucket: !Sub '${Realm}-${RepoName}-artifacts-${AWS::AccountId}'
       PolicyDocument:
         Statement:
           - Action:
               - 's3:*'
             Effect: 'Allow'
             Resource:
-              - !Sub 'arn:aws:s3:::${S3AssetsBucket}'
-              - !Sub 'arn:aws:s3:::${S3AssetsBucket}/*'
+              - !Sub 'arn:aws:s3:::${S3BuildsBucket}'
+              - !Sub 'arn:aws:s3:::${S3BuildsBucket}/*'
             Principal:
               AWS: !GetAtt 'CodePipelineRole.Arn'
           - Action:
               - 's3:*'
             Effect: 'Allow'
             Resource:
-              - !Sub 'arn:aws:s3:::${S3AssetsBucket}'
-              - !Sub 'arn:aws:s3:::${S3AssetsBucket}/*'
+              - !Sub 'arn:aws:s3:::${S3BuildsBucket}'
+              - !Sub 'arn:aws:s3:::${S3BuildsBucket}/*'
             Principal:
               AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
           - Action:
@@ -74,14 +74,14 @@ Resources:
             Principal:
               AWS: !Sub '${AWS::AccountId}'
             Resource:
-              - !Sub 'arn:aws:s3:::${S3AssetsBucket}'
-              - !Sub 'arn:aws:s3:::${S3AssetsBucket}/*'
+              - !Sub 'arn:aws:s3:::${S3BuildsBucket}'
+              - !Sub 'arn:aws:s3:::${S3BuildsBucket}/*'
 
   CodebuildPipeline:
     Type: AWS::CodeBuild::Project
     Properties:
       ServiceRole: !GetAtt CodePipelineRole.Arn
-      Name: !Sub '${Realm}-${Repo}-parameters'
+      Name: !Sub '${Realm}-${RepoName}-parameters'
       Artifacts:
         Type: CODEPIPELINE
       Environment:
@@ -89,7 +89,7 @@ Resources:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/python:3.7.1
         EnvironmentVariables:
-          - Name: Repo
+          - Name: RepoName
             Value: !Ref RepoName
             Type: PLAINTEXT
           - Name: BuildsBucket
@@ -122,7 +122,7 @@ Resources:
                 Owner: !Ref GitHubOwner
                 Repo: !Ref RepoName
                 Branch: !Ref Branch
-                OAuthToken: {{resolve:secretsmanager:GreenCRN/GitHub:SecretString:github}}
+                OAuthToken: '{{resolve:secretsmanager:GreenCRN/GitHub:SecretString:github}}'
                 PollForSourceChanges: false
               RunOrder: 1
 #        - Name: Beta
@@ -149,7 +149,7 @@ Resources:
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: {{resolve:secretsmanager:GreenCRN/Webhook:SecretString:github}}
+        SecretToken: '{{resolve:secretsmanager:GreenCRN/Webhook:SecretString:github}}'
       Filters:
         - JsonPath: "$.ref"
           MatchEquals: refs/heads/{Branch}
@@ -161,7 +161,7 @@ Resources:
 
 
 Outputs:
-  S3AssetsBucket:
-    Value: "S3BuildsBucket"
+  S3BuildsBucket:
+    Value: !Ref S3BuildsBucket
     Export:
-      Name: !Sub '${Realm}:S3AssetsBucket'
+      Name: !Sub '${Realm}:S3BuildsBucket'
