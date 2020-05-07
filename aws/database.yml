@@ -18,7 +18,7 @@ Resources:
   DBRandomPassword:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Name: !Sub '{ProjectName}/Password/${Realm}'
+      Name: !Sub '${ProjectName}/Password/${Realm}'
       GenerateSecretString:
         SecretStringTemplate: !Sub '{"username": "${Realm}-user"}'
         GenerateStringKey: 'password'
