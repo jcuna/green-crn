@@ -36,21 +36,13 @@ Resources:
         Statement:
           Effect: Allow
           Principal:
-            Service: codepipeline.amazonaws.com
-          Action: sts:AssumeRole
-      Path: /
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AdministratorAccess
-
-  CodeBuildRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          Effect: Allow
-          Principal:
-            Service: codebuild.amazonaws.com
+            Service:
+              - ssm.amazonaws.com
+              - codebuild.amazonaws.com
+              - lambda.amazonaws.com
+              - s3.amazonaws.com
+              - cloudformation.amazonaws.com
+              - codepipeline.amazonaws.com
           Action: sts:AssumeRole
       Path: /
       ManagedPolicyArns:
@@ -94,19 +86,11 @@ Resources:
             Resource:
               - !Sub 'arn:aws:s3:::${S3BuildsBucket}'
               - !Sub 'arn:aws:s3:::${S3BuildsBucket}/*'
-          - Action:
-              - 's3:*'
-            Effect: 'Allow'
-            Principal:
-              AWS: !GetAtt CodeBuildRole.Arn
-            Resource:
-              - !Sub 'arn:aws:s3:::${S3BuildsBucket}'
-              - !Sub 'arn:aws:s3:::${S3BuildsBucket}/*'
 
   ParametersCodeBuild:
     Type: AWS::CodeBuild::Project
     Properties:
-      ServiceRole: !GetAtt CodeBuildRole.Arn
+      ServiceRole: !GetAtt CodePipelineRole.Arn
       Name: !Sub '${Realm}-${RepoName}-parameters'
       Artifacts:
         Type: CODEPIPELINE
