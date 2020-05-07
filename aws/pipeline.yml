@@ -227,7 +227,7 @@ Resources:
         - JsonPath: "$.ref"
           MatchEquals: refs/heads/{Branch}
       TargetPipeline: !Ref AppPipeline
-      TargetAction: Sources
+      TargetAction: !Ref ProjectName
       Name: AppPipelineWebhook
       TargetPipelineVersion: !GetAtt AppPipeline.Version
       RegisterWithThirdParty: true
