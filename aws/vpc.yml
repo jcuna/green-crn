@@ -4,11 +4,6 @@ Description: Pipeline Stack
 
 Parameters:
 
-  RepoName:
-    Default: ''
-    Description: Name of the application repo
-    Type: String
-
   Realm:
     Description: Name of the realm or client preferred name. Used to identify multiple instances of the app in the same account
     Type: String

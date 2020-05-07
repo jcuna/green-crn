@@ -127,7 +127,7 @@ Resources:
     DependsOn:
       - ParametersCodeBuild
     Properties:
-      Name: github-events-pipeline
+      Name: !Sub '${Realm}-pipeline'
       RoleArn: !GetAtt 'CodePipelineRole.Arn'
       Stages:
         - Name: Sources
@@ -213,6 +213,29 @@ Resources:
 
         - Name: Resources
           Actions:
+            - Name: VPC
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              Configuration:
+                RoleArn: !GetAtt 'CodePipelineRole.Arn'
+                StackName: !Sub '${AWS::StackName}Vpc'
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
+                OutputFileName: vpc_outputs.json
+                ParameterOverrides: |
+                  {
+                    "Realm": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "Realm"]}
+                  }
+                TemplatePath: SourceOutput::aws/vpc.yml
+              InputArtifacts:
+                - Name: ParameterArtifacts
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: VpcArtifacts
+              RunOrder: 1
             - Name: Database
               ActionTypeId:
                 Category: Deploy
@@ -236,7 +259,7 @@ Resources:
                 - Name: SourceOutput
               OutputArtifacts:
                 - Name: DatabaseArtifacts
-              RunOrder: 1
+              RunOrder: 2
 
       ArtifactStore:
         Type: S3
@@ -263,3 +286,8 @@ Outputs:
     Value: !Ref S3BuildsBucket
     Export:
       Name: !Sub '${Realm}:S3BuildsBucket'
+
+  CodePipelineRole:
+    Value: !GetAtt 'CodePipelineRole.Arn'
+    Export:
+      Name: !Sub '${Realm}:CodePipelineRole'
