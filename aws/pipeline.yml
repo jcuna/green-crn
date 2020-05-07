@@ -94,6 +94,14 @@ Resources:
             Resource:
               - !Sub 'arn:aws:s3:::${S3BuildsBucket}'
               - !Sub 'arn:aws:s3:::${S3BuildsBucket}/*'
+          - Action:
+              - 's3:*'
+            Effect: 'Allow'
+            Principal:
+              AWS: !GetAtt CodeBuildRole.Arn
+            Resource:
+              - !Sub 'arn:aws:s3:::${S3BuildsBucket}'
+              - !Sub 'arn:aws:s3:::${S3BuildsBucket}/*'
 
   ParametersCodeBuild:
     Type: AWS::CodeBuild::Project
