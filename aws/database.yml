@@ -25,7 +25,7 @@ Resources:
     Properties:
       Name: !Sub '${ProjectName}/Password/${Realm}'
       GenerateSecretString:
-        SecretStringTemplate: !Sub '{"username": "${Realm}-user"}'
+        SecretStringTemplate: !Sub '{"username": "${Realm}_user"}'
         GenerateStringKey: 'password'
         ExcludePunctuation: true
 
