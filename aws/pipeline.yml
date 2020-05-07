@@ -95,7 +95,7 @@ Resources:
               - !Sub 'arn:aws:s3:::${S3BuildsBucket}'
               - !Sub 'arn:aws:s3:::${S3BuildsBucket}/*'
 
-  CodebuildPipeline:
+  ParametersCodeBuild:
     Type: AWS::CodeBuild::Project
     Properties:
       ServiceRole: !GetAtt CodeBuildRole.Arn
@@ -113,9 +113,21 @@ Resources:
           - Name: BuildsBucket
             Value: !Ref S3BuildsBucket
             Type: PLAINTEXT
+          - Name: ProjectName
+            Value: !Ref ProjectName
+            Type: PLAINTEXT
+          - Name: Realm
+            Value: !Ref Realm
+            Type: PLAINTEXT
+          - Name: GitHubOwner
+            Value: !Ref GitHubOwner
+            Type: PLAINTEXT
+          - Name: Branch
+            Value: !Ref Branch
+            Type: PLAINTEXT
       Source:
         Type: CODEPIPELINE
-        # BuildSpec: aws/buildspec.yml
+        BuildSpec: aws/parameters_buildspec.yml
       TimeoutInMinutes: 5
 
   AppPipeline:
@@ -158,6 +170,23 @@ Resources:
                 BucketName: !Sub '${Realm}-${RepoName}-artifacts-${AWS::AccountId}'
               RunOrder: 1
 
+        - Name: Parameters
+          Actions:
+            - InputArtifacts:
+                - Name: SourceOutput
+              Name: Detection
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              OutputArtifacts:
+                - Name: ParameterArtifacts
+              RoleArn: !GetAtt 'CodePipelineRole.Arn'
+              Configuration:
+                ProjectName: !Sub '${Realm}-${RepoName}-parameters'
+              RunOrder: 1
+
         - Name: CodePipeline
           Actions:
             - Name: !Sub '${ProjectName}Pipeline'
@@ -175,11 +204,11 @@ Resources:
                 TemplatePath: SourceOutput::aws/pipeline.yml'
                 ParameterOverrides: |
                   {
-                    "RepoName": {"Fn::Ref": "ProjectName"},
-                    "Realm": {"Fn::Ref": "Realm"},
-                    "GitHubOwner": {"Fn::Ref": "GitHubOwner"},
-                    "Branch": {"Fn::Ref": "Branch"},
-                    "ProjectName": {"Fn::Ref": "ProjectName"}
+                    "RepoName": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "RepoName"]},
+                    "Realm": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "Realm"]},
+                    "GitHubOwner": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "GitHubOwner"]},
+                    "Branch": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "Branch"]},
+                    "ProjectName": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "ProjectName"]}
                   }
               InputArtifacts:
                 - Name: SourceOutput
@@ -203,8 +232,8 @@ Resources:
                 OutputFileName: database_outputs.json
                 ParameterOverrides: |
                   {
-                    "Realm": {"Fn::Ref": "Realm"},
-                    "ProjectName": {"Fn::Ref": "ProjectName"}
+                    "Realm": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "Realm"]},
+                    "ProjectName": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "ProjectName"]}
                   }
                 TemplatePath: SourceOutput::aws/database.yml'
               InputArtifacts:

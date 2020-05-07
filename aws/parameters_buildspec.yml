@@ -1,0 +1,37 @@
+version: 0.2
+
+env:
+  variables:
+    BUILDSPEC: parameters_buildspec.yml
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.7
+    commands:
+      - echo "Environment Variables..."
+      - printenv
+
+  pre_build:
+    commands:
+      - echo "pre-Build Steps..."
+
+  build:
+    commands:
+      - ls -la
+      ### CodePipeline Inputs ###
+      - printf '#!/bin/bash\ncat > parameters.json << EOF \n{"RepoName": "$1","ProjectName": "$2","Realm": "$3","GitHubOwner": "$4","Branch": "$5"}\n' > parameters.sh
+      - chmod +x parameters.sh
+      - ./parameters.sh ${RepoName} ${ProjectName} ${Realm} ${GitHubOwner} ${Branch}
+      - cat parameters.json
+      - mkdir inputs
+      - cp parameters.json inputs/
+  post_build:
+    commands:
+      - echo "post-Build Steps..."
+
+artifacts:
+
+  files:
+    - inputs/**/*
+  discard-paths: no
