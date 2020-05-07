@@ -126,7 +126,7 @@ Resources:
       Stages:
         - Name: Source
           Actions:
-            - Name: SourceAction
+            - Name: !Ref ProjectName
               ActionTypeId:
                 Category: Source
                 Owner: ThirdParty
@@ -141,11 +141,9 @@ Resources:
                 OAuthToken: '{{resolve:secretsmanager:${ProjectName}/GitHub:SecretString:github}}'
                 PollForSourceChanges: false
               RunOrder: 1
-        - Name: Extract
-          Actions:
-            - InputArtifacts:
+            - Name: !Sub 'Extract${ProjectName}'
+              InputArtifacts:
                 - Name: SourceOutput
-              Name: !Sub '${RepoName}_source'
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -155,8 +153,37 @@ Resources:
                 ObjectKey: !Sub '${RepoName}_source'
                 Extract: 'true'
                 BucketName: !Sub '${Realm}-${RepoName}-artifacts-${AWS::AccountId}'
+              RunOrder: 2
+        - Name: CodePipeline
+          Actions:
+            - Name: !Sub '${ProjectName}Pipeline'
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              Configuration:
+                RoleArn: !GetAtt 'CodePipelineRole.Arn'
+                StackName: !Ref AWS::StackName
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
+                OutputFileName: pipeline_outputs.json
+                TemplatePath: !Sub '${RepoName}::aws/pipeline.yml'
+                ParameterOverrides: |
+                  {
+                    "RepoName": {"Fn::Ref": "ProjectName"},
+                    "Realm": {"Fn::Ref": "Realm"},
+                    "GitHubOwner": {"Fn::Ref": "GitHubOwner"},
+                    "Branch": {"Fn::Ref": "Branch"},
+                    "ProjectName": {"Fn::Ref": "ProjectName"}
+                  }
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: PipelineArtifacts
               RunOrder: 1
-        - Name: Resource
+
+        - Name: Resources
           Actions:
             - Name: Database
               ActionTypeId:
@@ -173,13 +200,13 @@ Resources:
                 ParameterOverrides: |
                   {
                     "Realm": {"Fn::Ref": "Realm"},
-                    "ProjectName": {"Fn::Ref": "ProjectName"},
+                    "ProjectName": {"Fn::Ref": "ProjectName"}
                   }
                 TemplatePath: !Sub '${RepoName}::aws/database.yml'
               InputArtifacts:
                 - Name: SourceOutput
               OutputArtifacts:
-                - Name: !Sub Database
+                - Name: database.json
               RunOrder: 1
 
       ArtifactStore:
