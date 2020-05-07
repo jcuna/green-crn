@@ -138,7 +138,7 @@ Resources:
                 Owner: !Ref GitHubOwner
                 Repo: !Ref RepoName
                 Branch: !Ref Branch
-                OAuthToken: '{{resolve:secretsmanager:${ProjectName}/GitHub:SecretString:github}}'
+                OAuthToken: !Sub '{{resolve:secretsmanager:${ProjectName}/GitHub:SecretString:github}}'
                 PollForSourceChanges: false
               RunOrder: 1
             - Name: !Sub 'Extract${ProjectName}'
@@ -218,7 +218,7 @@ Resources:
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: '{{resolve:secretsmanager:${ProjectName}/Webhook:SecretString:github}}'
+        SecretToken: !Sub '{{resolve:secretsmanager:${ProjectName}/Webhook:SecretString:github}}'
       Filters:
         - JsonPath: "$.ref"
           MatchEquals: refs/heads/{Branch}
