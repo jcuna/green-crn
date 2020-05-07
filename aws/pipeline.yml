@@ -203,7 +203,7 @@ Resources:
                 ActionMode: CREATE_UPDATE
                 Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
                 OutputFileName: pipeline_outputs.json
-                TemplatePath: SourceOutput::aws/pipeline.yml'
+                TemplatePath: SourceOutput::aws/pipeline.yml
                 ParameterOverrides: |
                   {
                     "RepoName": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "RepoName"]},
@@ -238,7 +238,7 @@ Resources:
                     "Realm": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "Realm"]},
                     "ProjectName": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "ProjectName"]}
                   }
-                TemplatePath: SourceOutput::aws/database.yml'
+                TemplatePath: SourceOutput::aws/database.yml
               InputArtifacts:
                 - Name: ParameterArtifacts
                 - Name: SourceOutput
