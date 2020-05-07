@@ -34,7 +34,7 @@ Resources:
     Properties:
       MasterUsername: !Sub '{{resolve:secretsmanager:${DBRandomPassword}:SecretString:username}}'
       MasterUserPassword: !Sub '{{resolve:secretsmanager:${DBRandomPassword}:SecretString:password}}'
-      DatabaseName: !Sub '${Realm}-${ProjectName}-DB'
+      DatabaseName: !Sub '${Realm}${ProjectName}DB'
       DBClusterIdentifier: !Sub ${Realm}-postgresql-cluster
       Engine: aurora-postgresql
       EngineVersion: '11.6'
