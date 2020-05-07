@@ -14,9 +14,9 @@ Parameters:
     Type: String
 
   DbInstanceType:
-    Default: db.t3.small
+    Default: db.t3.medium
     Type: String
-    AllowedValues: [db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge, db.m5.large, db.m5.xlarge]
+    AllowedValues: [db.t3.medium, db.t3.large, db.t3.xlarge, db.m5.large, db.m5.xlarge]
 
 Resources:
 
