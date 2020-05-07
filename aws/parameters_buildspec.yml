@@ -18,9 +18,8 @@ phases:
 
   build:
     commands:
-      - printf '#!/bin/bash\ncat > parameters.json << EOF \n{"RepoName": "$1","ProjectName": "$2","Realm": "$3","GitHubOwner": "$4","Branch": "$5"}\n' > parameters.sh
-      - chmod +x parameters.sh
-      - ./parameters.sh ${RepoName} ${ProjectName} ${Realm} ${GitHubOwner} ${Branch}
+      - chmod +x aws/parameters.sh
+      - ./aws/parameters.sh ${RepoName} ${ProjectName} ${Realm} ${GitHubOwner} ${Branch}
       - cat parameters.json
       - mkdir inputs
       - cp parameters.json inputs/
