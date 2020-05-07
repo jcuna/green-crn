@@ -18,8 +18,6 @@ phases:
 
   build:
     commands:
-      - ls -la
-      ### CodePipeline Inputs ###
       - printf '#!/bin/bash\ncat > parameters.json << EOF \n{"RepoName": "$1","ProjectName": "$2","Realm": "$3","GitHubOwner": "$4","Branch": "$5"}\n' > parameters.sh
       - chmod +x parameters.sh
       - ./parameters.sh ${RepoName} ${ProjectName} ${Realm} ${GitHubOwner} ${Branch}
