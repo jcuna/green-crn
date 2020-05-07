@@ -124,7 +124,7 @@ Resources:
       Name: github-events-pipeline
       RoleArn: !GetAtt 'CodePipelineRole.Arn'
       Stages:
-        - Name: Source
+        - Name: Sources
           Actions:
             - Name: !Ref ProjectName
               ActionTypeId:
@@ -141,19 +141,23 @@ Resources:
                 OAuthToken: !Sub '{{resolve:secretsmanager:${ProjectName}/GitHub:SecretString:github}}'
                 PollForSourceChanges: false
               RunOrder: 1
+
+        - ExtractSources:
+          Actions:
             - Name: !Sub 'Extract${ProjectName}'
-              InputArtifacts:
-                - Name: SourceOutput
-              ActionTypeId:
-                Category: Deploy
-                Owner: AWS
-                Version: 1
-                Provider: S3
-              Configuration:
-                ObjectKey: !Sub '${RepoName}_source'
-                Extract: 'true'
-                BucketName: !Sub '${Realm}-${RepoName}-artifacts-${AWS::AccountId}'
-              RunOrder: 2
+                InputArtifacts:
+                  - Name: SourceOutput
+                ActionTypeId:
+                  Category: Deploy
+                  Owner: AWS
+                  Version: 1
+                  Provider: S3
+                Configuration:
+                  ObjectKey: !Sub '${RepoName}_source'
+                  Extract: 'true'
+                  BucketName: !Sub '${Realm}-${RepoName}-artifacts-${AWS::AccountId}'
+                RunOrder: 1
+
         - Name: CodePipeline
           Actions:
             - Name: !Sub '${ProjectName}Pipeline'
