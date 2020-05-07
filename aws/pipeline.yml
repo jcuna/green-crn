@@ -145,18 +145,18 @@ Resources:
         - ExtractSources:
           Actions:
             - Name: !Sub 'Extract${ProjectName}'
-                InputArtifacts:
-                  - Name: SourceOutput
-                ActionTypeId:
-                  Category: Deploy
-                  Owner: AWS
-                  Version: 1
-                  Provider: S3
-                Configuration:
-                  ObjectKey: !Sub '${RepoName}_source'
-                  Extract: 'true'
-                  BucketName: !Sub '${Realm}-${RepoName}-artifacts-${AWS::AccountId}'
-                RunOrder: 1
+              InputArtifacts:
+                - Name: SourceOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: S3
+              Configuration:
+                ObjectKey: !Sub '${RepoName}_source'
+                Extract: 'true'
+                BucketName: !Sub '${Realm}-${RepoName}-artifacts-${AWS::AccountId}'
+              RunOrder: 1
 
         - Name: CodePipeline
           Actions:
