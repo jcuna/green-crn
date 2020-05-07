@@ -206,7 +206,7 @@ Resources:
               InputArtifacts:
                 - Name: SourceOutput
               OutputArtifacts:
-                - Name: database.json
+                - Name: DatabaseArtifacts
               RunOrder: 1
 
       ArtifactStore:
