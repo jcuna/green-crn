@@ -221,7 +221,7 @@ Resources:
                 Version: 1
               Configuration:
                 RoleArn: !GetAtt 'CodePipelineRole.Arn'
-                StackName: !Sub '{AWS::StackName}Database'
+                StackName: !Sub '${AWS::StackName}Database'
                 ActionMode: CREATE_UPDATE
                 Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
                 OutputFileName: database_outputs.json
