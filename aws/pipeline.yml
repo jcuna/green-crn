@@ -142,7 +142,7 @@ Resources:
                 PollForSourceChanges: false
               RunOrder: 1
 
-        - ExtractSources:
+        - Name: ExtractSources
           Actions:
             - Name: !Sub 'Extract${ProjectName}'
               InputArtifacts:
