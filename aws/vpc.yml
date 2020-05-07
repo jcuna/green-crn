@@ -210,12 +210,6 @@ Outputs:
     Export:
       Name: !Sub '${Realm}:VPC'
 
-  VPCID:
-    Description: A reference to the created VPC
-    Value: !Ref VPC
-    Export:
-      Name: !Sub '${Realm}:VPC'
-
   PublicSubnet1:
     Description: A reference to the public subnet in the 1st Availability Zone
     Value: !Ref PublicSubnet1
