@@ -13,6 +13,11 @@ Parameters:
     Default: GreenCRN
     Type: String
 
+  DbInstanceType:
+    Default: db.t3.small
+    Type: String
+    AllowedValues: [db.t3.small, db.t3.medium, db.t3.large, db.t3.xlarge, db.m5.large, db.m5.xlarge]
+
 Resources:
 
   DBRandomPassword:
@@ -25,21 +30,31 @@ Resources:
         ExcludePunctuation: true
 
   DatabaseCluster:
-    #    DependsOn:
-    #      - DbSecurityGroup
     Type: AWS::RDS::DBCluster
     Properties:
-      DatabaseName: !Sub '${Realm}-${ProjectName}-DB'
-      Engine: aurora-postgresql
-      EngineMode: serverless
-      EngineVersion: 11.6
       MasterUsername: !Sub '{{resolve:secretsmanager:${DBRandomPassword}:SecretString:username}}'
       MasterUserPassword: !Sub '{{resolve:secretsmanager:${DBRandomPassword}:SecretString:password}}'
+      DatabaseName: !Sub '${Realm}-${ProjectName}-DB'
+      DBClusterIdentifier: !Sub ${Realm}-postgresql-cluster
+      Engine: aurora-postgresql
+      EngineVersion: '11.6'
+      DBClusterParameterGroupName: default.aurora-postgresql11
       BackupRetentionPeriod: 15
       PreferredBackupWindow: 02:00-03:00
       PreferredMaintenanceWindow: mon:03:00-mon:04:00
       SourceRegion: !Ref 'AWS::Region'
       DBSubnetGroupName: !Ref DatabaseSubnetGroup
+      EnableCloudwatchLogsExports:
+        - postgresql
+
+  RDSDBInstance1:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: aurora-postgresql-instance1
+      Engine: aurora-postgresql
+      DBClusterIdentifier: !Ref DatabaseCluster
+      PubliclyAccessible: 'true'
+      DBInstanceClass: !Ref DbInstanceType
 
   DatabaseSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
