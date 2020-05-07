@@ -132,6 +132,8 @@ Resources:
 
   AppPipeline:
     Type: AWS::CodePipeline::Pipeline
+    DependsOn:
+      - ParametersCodeBuild
     Properties:
       Name: github-events-pipeline
       RoleArn: !GetAtt 'CodePipelineRole.Arn'
