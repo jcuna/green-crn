@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Database Stack
+
+
+Parameters:
+
+  Realm:
+    Description: Name of the realm or client preferred name. Used to identify multiple instances of the app in the same account
+    Type: String
+    AllowedPattern: ^[a-zA-Z0-9]*$
+
+
+Resources:
+
+  MyRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${Realm}-repository'
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+              "rules": [
+                  {
+                      "rulePriority": 1,
+                      "description": "Keep only most recent 5 images, expire all others",
+                      "selection": {
+                          "tagStatus": "any",
+                          "countType": "imageCountMoreThan",
+                          "countNumber": 5
+                      },
+                      "action": {
+                          "type": "expire"
+                      }
+                  }
+              ]
+          }
+      RepositoryPolicyText:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowPushPull
+            Effect: Allow
+            Principal:
+              AWS:
+                - Fn::ImportValue: !Sub '${Realm}:CodePipelineRole'
+            Action:
+              - 'ecr:GetDownloadUrlForLayer'
+              - 'ecr:BatchGetImage'
+              - 'ecr:BatchCheckLayerAvailability'
+              - 'ecr:PutImage'
+              - 'ecr:InitiateLayerUpload'
+              - 'ecr:UploadLayerPart'
+              - 'ecr:CompleteLayerUpload'
