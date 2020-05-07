@@ -7,3 +7,4 @@ cat > parameters.json << EOF
 	"GitHubOwner": "$4",
 	"Branch": "$5"
 }
+EOF

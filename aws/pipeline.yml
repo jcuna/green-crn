@@ -213,6 +213,7 @@ Resources:
                     "ProjectName": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "ProjectName"]}
                   }
               InputArtifacts:
+                - Name: ParameterArtifacts
                 - Name: SourceOutput
               OutputArtifacts:
                 - Name: PipelineArtifacts
@@ -239,6 +240,7 @@ Resources:
                   }
                 TemplatePath: SourceOutput::aws/database.yml'
               InputArtifacts:
+                - Name: ParameterArtifacts
                 - Name: SourceOutput
               OutputArtifacts:
                 - Name: DatabaseArtifacts
