@@ -42,6 +42,12 @@ Resources:
             Principal:
               AWS:
                 - Fn::ImportValue: !Sub '${Realm}:CodePipelineRole'
+                - !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+              Service:
+                - codebuild.amazonaws.com
+                - ecs.amazonaws.com
+                - lambda.amazonaws.com
+                - codepipeline.amazonaws.com
             Action:
               - 'ecr:GetDownloadUrlForLayer'
               - 'ecr:BatchGetImage'

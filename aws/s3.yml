@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Provisions apps static site content
+
+
+Parameters:
+
+  Realm:
+    Description: Name of the realm or client preferred name. Used to identify multiple instances of the app in the same account
+    Type: String
+    AllowedPattern: ^[a-zA-Z0-9]*$
+
+  DomainName:
+    Default: master
+    Description: The apps domain
+    Type: String
+
+Resources:
+  AppStaticSiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${Realm}.${DomainName}'
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+
+  AppStaticSiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AppStaticSiteBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AdPublicReadForGetBucketObjectsdPerm
+            Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:GetObject'
+            Resource:
+              - !Sub 'arn:aws:s3:::${AppStaticSiteBucket}/*'
+          - Action:
+              - 's3:*'
+            Effect: 'Allow'
+            Resource:
+              - !Sub 'arn:aws:s3:::${AppStaticSiteBucket}/'
+              - !Sub 'arn:aws:s3:::${AppStaticSiteBucket}/*'
+            Principal:
+              AWS:
+                - Fn::ImportValue: !Sub '${Realm}:CodePipelineRole'
+          - Action:
+              - 's3:*'
+            Effect: 'Allow'
+            Resource:
+              - !Sub 'arn:aws:s3:::${AppStaticSiteBucket}/'
+              - !Sub 'arn:aws:s3:::${AppStaticSiteBucket}/*'
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+
+Outputs:
+  AppStaticSiteBucket:
+    Value: !Ref AppStaticSiteBucket
+    Export:
+      Name: !Sub '${Realm}:AppStaticSiteBucket'

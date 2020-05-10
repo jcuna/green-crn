@@ -26,6 +26,10 @@ Parameters:
     Default: GreenCRN
     Type: String
 
+  DomainName:
+    Type: String
+
+
 Resources:
 
   CodePipelineRole:
@@ -78,26 +82,19 @@ Resources:
               - !Sub 'arn:aws:s3:::${S3BuildsBucket}/*'
             Principal:
               AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
-          - Action:
-              - 's3:*'
-            Effect: 'Allow'
-            Principal:
-              AWS: !Sub '${AWS::AccountId}'
-            Resource:
-              - !Sub 'arn:aws:s3:::${S3BuildsBucket}'
-              - !Sub 'arn:aws:s3:::${S3BuildsBucket}/*'
 
-  ParametersCodeBuild:
+
+  CodeBuild:
     Type: AWS::CodeBuild::Project
     Properties:
       ServiceRole: !GetAtt CodePipelineRole.Arn
-      Name: !Sub '${Realm}-${RepoName}-parameters'
+      Name: !Sub '${Realm}-${RepoName}-codebuild'
       Artifacts:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/python:3.7.1
+        Image: aws/codebuild/standard:2.0
         EnvironmentVariables:
           - Name: RepoName
             Value: !Ref RepoName
@@ -117,15 +114,19 @@ Resources:
           - Name: Branch
             Value: !Ref Branch
             Type: PLAINTEXT
+          - Name: Domain
+            Value: !Ref DomainName
+            Type: PLAINTEXT
+
       Source:
         Type: CODEPIPELINE
-        BuildSpec: aws/parameters_buildspec.yml
+        BuildSpec: aws/buildspec.yml
       TimeoutInMinutes: 5
 
   AppPipeline:
     Type: AWS::CodePipeline::Pipeline
     DependsOn:
-      - ParametersCodeBuild
+      - CodeBuild
     Properties:
       Name: !Sub '${Realm}-pipeline'
       RoleArn: !GetAtt 'CodePipelineRole.Arn'
@@ -164,23 +165,6 @@ Resources:
                 BucketName: !Sub '${Realm}-${RepoName}-artifacts-${AWS::AccountId}'
               RunOrder: 1
 
-        - Name: Parameters
-          Actions:
-            - InputArtifacts:
-                - Name: SourceOutput
-              Name: Detection
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Provider: CodeBuild
-                Version: 1
-              OutputArtifacts:
-                - Name: ParameterArtifacts
-              RoleArn: !GetAtt 'CodePipelineRole.Arn'
-              Configuration:
-                ProjectName: !Sub '${Realm}-${RepoName}-parameters'
-              RunOrder: 1
-
         - Name: CodePipeline
           Actions:
             - Name: !Sub '${ProjectName}Pipeline'
@@ -196,16 +180,16 @@ Resources:
                 Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
                 OutputFileName: pipeline_outputs.json
                 TemplatePath: SourceOutput::aws/pipeline.yml
-                ParameterOverrides: |
+                ParameterOverrides: !Sub |
                   {
-                    "RepoName": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "RepoName"]},
-                    "Realm": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "Realm"]},
-                    "GitHubOwner": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "GitHubOwner"]},
-                    "Branch": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "Branch"]},
-                    "ProjectName": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "ProjectName"]}
+                    "RepoName": "${RepoName}",
+                    "Realm": "${Realm}",
+                    "GitHubOwner": "${GitHubOwner}",
+                    "Branch": "${Branch}",
+                    "ProjectName": "${ProjectName}",
+                    "DomainName": "${DomainName}"
                   }
               InputArtifacts:
-                - Name: ParameterArtifacts
                 - Name: SourceOutput
               OutputArtifacts:
                 - Name: PipelineArtifacts
@@ -225,16 +209,37 @@ Resources:
                 ActionMode: CREATE_UPDATE
                 Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
                 OutputFileName: vpc_outputs.json
-                ParameterOverrides: |
+                ParameterOverrides: !Sub |
                   {
-                    "Realm": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "Realm"]}
+                    "Realm": "${Realm}"
                   }
                 TemplatePath: SourceOutput::aws/vpc.yml
               InputArtifacts:
-                - Name: ParameterArtifacts
                 - Name: SourceOutput
               OutputArtifacts:
                 - Name: VpcArtifacts
+              RunOrder: 1
+            - Name: ImageRepo
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              Configuration:
+                RoleArn: !GetAtt 'CodePipelineRole.Arn'
+                StackName: !Sub '${AWS::StackName}ImageRepo'
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
+                OutputFileName: ecr_outputs.json
+                ParameterOverrides: !Sub |
+                  {
+                    "Realm": "${Realm}"
+                  }
+                TemplatePath: SourceOutput::aws/ecr.yml
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: EcrArtifacts
               RunOrder: 1
             - Name: Database
               ActionTypeId:
@@ -248,18 +253,81 @@ Resources:
                 ActionMode: CREATE_UPDATE
                 Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
                 OutputFileName: database_outputs.json
-                ParameterOverrides: |
+                ParameterOverrides: !Sub |
                   {
-                    "Realm": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "Realm"]},
-                    "ProjectName": {"Fn::GetParam" : ["ParameterArtifacts", "inputs/parameters.json", "ProjectName"]}
+                    "Realm": "${Realm}",
+                    "ProjectName": "${ProjectName}"
                   }
                 TemplatePath: SourceOutput::aws/database.yml
               InputArtifacts:
-                - Name: ParameterArtifacts
                 - Name: SourceOutput
               OutputArtifacts:
                 - Name: DatabaseArtifacts
               RunOrder: 2
+            - Name: StaticSiteBucket
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              Configuration:
+                RoleArn: !GetAtt 'CodePipelineRole.Arn'
+                StackName: !Sub '${AWS::StackName}StaticSiteBucket'
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
+                OutputFileName: static_site_bucket_outputs.json
+                ParameterOverrides: !Sub |
+                  {
+                    "Realm": "${Realm}",
+                    "DomainName": "${DomainName}"
+                  }
+                TemplatePath: SourceOutput::aws/s3.yml
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: StaticSiteArtifacts
+              RunOrder: 2
+
+            - Name: CDN
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              Configuration:
+                RoleArn: !GetAtt 'CodePipelineRole.Arn'
+                StackName: !Sub '${AWS::StackName}CloudFrontDistribution'
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
+                OutputFileName: cloudfront_distribution_outputs.json
+                ParameterOverrides: !Sub |
+                  {
+                    "Realm": "${Realm}",
+                    "DomainName": "${DomainName}"
+                  }
+                TemplatePath: SourceOutput::aws/cloudfront.yml
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: CloudFrontArtifacts
+              RunOrder: 3
+
+        - Name: AppCodeBuild
+          Actions:
+            - InputArtifacts:
+                - Name: SourceOutput
+              Name: Detection
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              OutputArtifacts:
+                - Name: CodeBuildArtifacts
+              RoleArn: !GetAtt 'CodePipelineRole.Arn'
+              Configuration:
+                ProjectName: !Sub '${Realm}-${RepoName}-parameters'
+              RunOrder: 1
 
       ArtifactStore:
         Type: S3

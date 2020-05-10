@@ -5,6 +5,7 @@ cat > parameters.json << EOF
 	"ProjectName": "$2",
 	"Realm": "$3",
 	"GitHubOwner": "$4",
-	"Branch": "$5"
+	"Branch": "$5",
+	"DomainName": "$6"
 }
 EOF

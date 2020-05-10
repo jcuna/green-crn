@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Provisions cloudfront distribution
+
+
+Parameters:
+
+  Realm:
+    Description: Name of the realm or client preferred name. Used to identify multiple instances of the app in the same account
+    Type: String
+    AllowedPattern: ^[a-zA-Z0-9]*$
+
+  DomainName:
+    Default: master
+    Description: The apps domain
+    Type: String
+
+  ProjectName:
+    Default: GreenCRN
+    Type: String
+
+Resources:
+
+  AppCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        IPV6Enabled: true
+        HttpVersion: http2
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 0
+            ErrorCode: 400
+          - ErrorCachingMinTTL: 1
+            ErrorCode: 403
+          - ErrorCachingMinTTL: 5
+            ErrorCode: 500
+#        ViewerCertificate:
+#          AcmCertificateArn: !Sub 'arn:aws:acm:${CmpCertZoneID}:${AWS::AccountId}:certificate/${CmpConsCertID}'
+#          SslSupportMethod: sni-only
+        #        Aliases:
+        #          - !Sub '${Realm}.${DomainName}'
+        DefaultCacheBehavior:
+          Compress: true
+          TargetOriginId: S3StaticOrigin
+          ViewerProtocolPolicy: redirect-to-https
+          ForwardedValues:
+            QueryString: true
+        CacheBehaviors:
+          - AllowedMethods: ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+            CachedMethods: ["GET", "HEAD", "OPTIONS"]
+            ForwardedValues:
+              Headers:
+                - Access-Control-Request-Headers
+                - Access-Control-Request-Method
+                - Origin
+                - Authorization
+                - Accept
+                - Referer
+              Cookies:
+                Forward: all
+              QueryString: true
+            PathPattern: 'api/*'
+            TargetOriginId: APIOrigin
+            ViewerProtocolPolicy: redirect-to-https
+            DefaultTTL: 0
+          - AllowedMethods:
+              - HEAD
+              - GET
+            CachedMethods:
+              - HEAD
+              - GET
+            Compress: true
+            ForwardedValues:
+              Headers:
+                - Accept
+                - Referer
+                - Athorization
+                - Content-Type
+              Cookies:
+                Forward: all
+              QueryString: true
+            PathPattern: '*'
+            TargetOriginId: S3StaticOrigin
+            ViewerProtocolPolicy: redirect-to-https
+            DefaultTTL: 900
+        Origins:
+          - DomainName: !Sub
+              - |
+                {
+                  '${Bucket}.s3-website.${AWS::Region}.amazonaws.com'
+                }
+              - Bucket:
+                  Fn::ImportValue: !Sub '${Realm}:AppStaticSiteBucket'
+
+            Id: S3StaticOrigin
+            CustomOriginConfig:
+              HTTPSPort: 443
+              HTTPPort: 80
+              OriginProtocolPolicy: http-only
+              OriginSSLProtocols:
+                - TLSv1
+                - TLSv1.1
+                - TLSv1.2
+#          - DomainName: !Sub '${CmpApiGateway}.execute-api.${AWS::Region}.amazonaws.com'
+#            OriginPath: !Sub '/${CmpStageName}'
+#            Id: APIConsOrigin
+#            CustomOriginConfig:
+#              HTTPSPort: 443
+#              HTTPPort: 80
+#              OriginProtocolPolicy: https-only
+#              OriginSSLProtocols:
+#                - TLSv1
+#                - TLSv1.1
+#                - TLSv1.2
+#            OriginCustomHeaders:
+#              - HeaderName: 'X-From-CDN'
+#                HeaderValue: CmpApiBehindCF
+
+Outputs:
+  AppCfUrl:
+    Value: !Join [ '', [ 'https://', !GetAtt 'AppCloudFrontDistribution.DomainName' ] ]
