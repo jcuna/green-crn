@@ -37,13 +37,13 @@ Resources:
             Action:
               - 's3:GetObject'
             Resource:
-              - !Sub 'arn:aws:s3:::${AppStaticSiteBucket}/*'
+              - !Join ['', [!GetAtt AppStaticSiteBucket.Arn, '/*']]
           - Action:
               - 's3:*'
             Effect: 'Allow'
             Resource:
-              - !Sub 'arn:aws:s3:::${AppStaticSiteBucket}/'
-              - !Sub 'arn:aws:s3:::${AppStaticSiteBucket}/*'
+              - !GetAtt AppStaticSiteBucket.Arn
+              - !Join ['', [!GetAtt AppStaticSiteBucket.Arn, '/*']]
             Principal:
               AWS:
                 - Fn::ImportValue: !Sub '${Realm}:CodePipelineRole'
@@ -51,8 +51,8 @@ Resources:
               - 's3:*'
             Effect: 'Allow'
             Resource:
-              - !Sub 'arn:aws:s3:::${AppStaticSiteBucket}/'
-              - !Sub 'arn:aws:s3:::${AppStaticSiteBucket}/*'
+              - !GetAtt AppStaticSiteBucket.Arn
+              - !Join ['', [!GetAtt AppStaticSiteBucket.Arn, '/*']]
             Principal:
               AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
 
