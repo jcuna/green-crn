@@ -46,22 +46,22 @@ Resources:
           ForwardedValues:
             QueryString: true
         CacheBehaviors:
-          - AllowedMethods: ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-            CachedMethods: ["GET", "HEAD", "OPTIONS"]
-            ForwardedValues:
-              Headers:
-                - Access-Control-Request-Headers
-                - Access-Control-Request-Method
-                - Origin
-                - Authorization
-                - Accept
-                - Referer
-              Cookies:
-                Forward: all
-              QueryString: true
-            PathPattern: 'api/*'
-            TargetOriginId: APIOrigin
-            ViewerProtocolPolicy: redirect-to-https
+#          - AllowedMethods: ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+#            CachedMethods: ["GET", "HEAD", "OPTIONS"]
+#            ForwardedValues:
+#              Headers:
+#                - Access-Control-Request-Headers
+#                - Access-Control-Request-Method
+#                - Origin
+#                - Authorization
+#                - Accept
+#                - Referer
+#              Cookies:
+#                Forward: all
+#              QueryString: true
+#            PathPattern: 'api/*'
+#            TargetOriginId: APIOrigin
+#            ViewerProtocolPolicy: redirect-to-https
             DefaultTTL: 0
           - AllowedMethods:
               - HEAD

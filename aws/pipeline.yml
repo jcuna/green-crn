@@ -316,7 +316,7 @@ Resources:
           Actions:
             - InputArtifacts:
                 - Name: SourceOutput
-              Name: Detection
+              Name: AppBuild
               ActionTypeId:
                 Category: Build
                 Owner: AWS
