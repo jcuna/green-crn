@@ -21,20 +21,24 @@ phases:
   pre_build:
     commands:
       - echo "pre-Build Steps..."
+      - $(aws ecr get-login --no-include-email)
+      - IMG_NAME="green-crn-engine"
+      - REPO_URI=${AccountId}.dkr.ecr.${AWS_REGION}.amazonaws.com/${Realm}-repository/${IMG_NAME}
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - export IMAGE_TAG=${COMMIT_HASH:=latest}
+      - printf "Commit - $COMMIT_HASH"
+      - printf "Image tag - $IMAGE_TAG"
 
   build:
     commands:
-      - chmod +x aws/parameters.sh
-      - ./aws/parameters.sh ${RepoName} ${ProjectName} ${Realm} ${GitHubOwner} ${Branch} ${DomainName}
-      - cat parameters.json
-      - mkdir inputs
-      - cp parameters.json inputs/
+      - echo "Post build steps"
+
   post_build:
     commands:
       - echo "post-Build Steps..."
 
-artifacts:
-
-  files:
-    - inputs/**/*
-  discard-paths: no
+#artifacts:
+#
+#  files:
+#    - inputs/**/*
+#  discard-paths: no
