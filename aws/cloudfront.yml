@@ -86,9 +86,7 @@ Resources:
         Origins:
           - DomainName: !Sub
               - |
-                {
-                  '${Bucket}.s3-website.${AWS::Region}.amazonaws.com'
-                }
+                '${Bucket}.s3-website.${AWS::Region}.amazonaws.com'
               - Bucket:
                   Fn::ImportValue: !Sub '${Realm}:AppStaticSiteBucket'
 
