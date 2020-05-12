@@ -62,7 +62,7 @@ Resources:
 #            PathPattern: 'api/*'
 #            TargetOriginId: APIOrigin
 #            ViewerProtocolPolicy: redirect-to-https
-            DefaultTTL: 0
+#            DefaultTTL: 0
           - AllowedMethods:
               - HEAD
               - GET
