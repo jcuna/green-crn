@@ -60,22 +60,22 @@ Resources:
   AppAssetsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub '${Realm}.${DomainName}.assets'
+      BucketName: !Sub '${Realm}-assets.${DomainName}'
 
   AppProgrammaticUser:
     Type: AWS::IAM::User
     Properties:
       UserName: !Sub '${Realm}-user'
       Policies:
-#        - PolicyName: AccessAssetsBucket
-#          PolicyDocument:
-#            Version: '2012-10-17'
-#            Statement:
-#              - Effect: Allow
-#                Action: 's3:*'
-#                Resource:
-#                  - !GetAtt AppAssetsBucket.Arn
-#                  - !Join ['', [!GetAtt AppAssetsBucket.Arn, '/*']]
+        - PolicyName: AccessAssetsBucket
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 's3:*'
+                Resource:
+                  - !GetAtt AppAssetsBucket.Arn
+                  - !Join ['', [!GetAtt AppAssetsBucket.Arn, '/*']]
         - PolicyName: AccessToCloudWatch
           PolicyDocument:
             Version: '2012-10-17'
