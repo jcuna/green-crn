@@ -326,7 +326,7 @@ Resources:
                 - Name: CodeBuildArtifacts
               RoleArn: !GetAtt 'CodePipelineRole.Arn'
               Configuration:
-                ProjectName: !Sub '${Realm}-${RepoName}-parameters'
+                ProjectName: !Sub '${Realm}-${RepoName}-codebuild'
               RunOrder: 1
 
       ArtifactStore:
