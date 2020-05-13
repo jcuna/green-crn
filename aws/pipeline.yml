@@ -94,6 +94,7 @@ Resources:
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
+        PrivilegedMode : true
         Image: aws/codebuild/standard:2.0
         EnvironmentVariables:
           - Name: RepoName
