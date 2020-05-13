@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Pipeline Stack
+
+
+Parameters:
+
+  RepoName:
+    Default: ''
+    Description: Name of the application repo
+    Type: String
+
+  Realm:
+    Description: Name of the realm or client preferred name. Used to identify multiple instances of the app in the same account
+    Type: String
+    AllowedPattern: ^[a-zA-Z0-9]*$
+
+  GitHubOwner:
+    Type: String
+
+  Branch:
+    Default: master
+    Description: The default branch to use for triggering the pipeline
+    Type: String
+
+  ProjectName:
+    Default: GreenCRN
+    Type: String
+
+  DomainName:
+    Type: String
+
+  S3BuildsBucket:
+    Type: String
+
+  CodePipelineRole:
+    Type: String
+
+
+Resources:
+
+  CodeBuild:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      ServiceRole: !Ref CodePipelineRole
+      Name: !Sub '${Realm}-${RepoName}-codebuild'
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        PrivilegedMode : true
+        Image: aws/codebuild/standard:2.0
+        EnvironmentVariables:
+          - Name: RepoName
+            Value: !Ref RepoName
+            Type: PLAINTEXT
+          - Name: BuildsBucket
+            Value: !Ref S3BuildsBucket
+            Type: PLAINTEXT
+          - Name: ProjectName
+            Value: !Ref ProjectName
+            Type: PLAINTEXT
+          - Name: Realm
+            Value: !Ref Realm
+            Type: PLAINTEXT
+          - Name: GitHubOwner
+            Value: !Ref GitHubOwner
+            Type: PLAINTEXT
+          - Name: Branch
+            Value: !Ref Branch
+            Type: PLAINTEXT
+          - Name: DomainName
+            Value: !Ref DomainName
+            Type: PLAINTEXT
+          - Name: StaticSiteBucket
+            Value:
+              Fn::ImportValue: !Sub '${Realm}:AppStaticSiteBucket'
+            Type: PLAINTEXT
+          - Name: AssetsBucket
+            Value:
+              Fn::ImportValue: !Sub '${Realm}:AppAssetsBucket'
+            Type: PLAINTEXT
+          - Name: AccessKeyId
+            Value:
+              Fn::ImportValue: !Sub '${Realm}:AccessKeyId'
+            Type: PLAINTEXT
+          - Name: SecretAccessKey
+            Value:
+              Fn::ImportValue: !Sub '${Realm}:SecretAccessKey'
+            Type: PLAINTEXT
+
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: aws/buildspec.yml
+      TimeoutInMinutes: 5

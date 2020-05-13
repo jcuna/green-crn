@@ -83,67 +83,8 @@ Resources:
             Principal:
               AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
 
-
-  CodeBuild:
-    Type: AWS::CodeBuild::Project
-    Properties:
-      ServiceRole: !GetAtt CodePipelineRole.Arn
-      Name: !Sub '${Realm}-${RepoName}-codebuild'
-      Artifacts:
-        Type: CODEPIPELINE
-      Environment:
-        Type: LINUX_CONTAINER
-        ComputeType: BUILD_GENERAL1_SMALL
-        PrivilegedMode : true
-        Image: aws/codebuild/standard:2.0
-        EnvironmentVariables:
-          - Name: RepoName
-            Value: !Ref RepoName
-            Type: PLAINTEXT
-          - Name: BuildsBucket
-            Value: !Ref S3BuildsBucket
-            Type: PLAINTEXT
-          - Name: ProjectName
-            Value: !Ref ProjectName
-            Type: PLAINTEXT
-          - Name: Realm
-            Value: !Ref Realm
-            Type: PLAINTEXT
-          - Name: GitHubOwner
-            Value: !Ref GitHubOwner
-            Type: PLAINTEXT
-          - Name: Branch
-            Value: !Ref Branch
-            Type: PLAINTEXT
-          - Name: Domain
-            Value: !Ref DomainName
-            Type: PLAINTEXT
-          - Name: StaticSiteBucket
-            Value:
-              Fn::ImportValue: !Sub '${Realm}:AppStaticSiteBucket'
-            Type: PLAINTEXT
-          - Name: AssetsBucket
-            Value:
-              Fn::ImportValue: !Sub '${Realm}:AppAssetsBucket'
-            Type: PLAINTEXT
-          - Name: AccessKeyId
-            Value:
-              Fn::ImportValue: !Sub '${Realm}:AccessKeyId'
-            Type: PLAINTEXT
-          - Name: SecretAccessKey
-            Value:
-              Fn::ImportValue: !Sub '${Realm}:SecretAccessKey'
-            Type: PLAINTEXT
-
-      Source:
-        Type: CODEPIPELINE
-        BuildSpec: aws/buildspec.yml
-      TimeoutInMinutes: 5
-
   AppPipeline:
     Type: AWS::CodePipeline::Pipeline
-    DependsOn:
-      - CodeBuild
     Properties:
       Name: !Sub '${Realm}-pipeline'
       RoleArn: !GetAtt 'CodePipelineRole.Arn'
@@ -329,7 +270,37 @@ Resources:
                 - Name: CloudFrontArtifacts
               RunOrder: 3
 
-        - Name: AppCodeBuild
+            - Name: CodeBuildResource
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              Configuration:
+                RoleArn: !GetAtt 'CodePipelineRole.Arn'
+                StackName: !Sub '${AWS::StackName}AppCodeBuild'
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_IAM,CAPABILITY_AUTO_EXPAND,CAPABILITY_NAMED_IAM
+                OutputFileName: codebuild_outputs.json
+                ParameterOverrides: !Sub |
+                  {
+                    "RepoName": "${RepoName}",
+                    "Realm": "${Realm}",
+                    "GitHubOwner": "${GitHubOwner}",
+                    "Branch": "${Branch}",
+                    "ProjectName": "${ProjectName}",
+                    "DomainName": "${DomainName}",
+                    "S3BuildsBucket": "${S3BuildsBucket}",
+                    "CodePipelineRole": "${CodePipelineRole.Arn}"
+                  }
+                TemplatePath: SourceOutput::aws/codebuild.yml
+              InputArtifacts:
+                - Name: SourceOutput
+              OutputArtifacts:
+                - Name: CodebuildArtifacts
+              RunOrder: 3
+
+        - Name: BuildApp
           Actions:
             - InputArtifacts:
                 - Name: SourceOutput
@@ -337,10 +308,10 @@ Resources:
               ActionTypeId:
                 Category: Build
                 Owner: AWS
-                Provider: CodeBuild
+                Provider: BuildApp
                 Version: 1
               OutputArtifacts:
-                - Name: CodeBuildArtifacts
+                - Name: BuildAppArtifacts
               RoleArn: !GetAtt 'CodePipelineRole.Arn'
               Configuration:
                 ProjectName: !Sub '${Realm}-${RepoName}-codebuild'
