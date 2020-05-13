@@ -7,7 +7,7 @@ env:
 phases:
   install:
     runtime-versions:
-      docker: 18
+      python: 3.7
     commands:
       - echo "Environment Variables..."
       - printenv
