@@ -118,6 +118,22 @@ Resources:
           - Name: Domain
             Value: !Ref DomainName
             Type: PLAINTEXT
+          - Name: StaticSiteBucket
+            Value:
+              Fn::ImportValue: !Sub '${Realm}:AppStaticSiteBucket'
+            Type: PLAINTEXT
+          - Name: AssetsBucket
+            Value:
+              Fn::ImportValue: !Sub '${Realm}:AppAssetsBucket'
+            Type: PLAINTEXT
+          - Name: AccessKeyId
+            Value:
+              Fn::ImportValue: !Sub '${Realm}:AccessKeyId'
+            Type: PLAINTEXT
+          - Name: SecretAccessKey
+            Value:
+              Fn::ImportValue: !Sub '${Realm}:SecretAccessKey'
+            Type: PLAINTEXT
 
       Source:
         Type: CODEPIPELINE

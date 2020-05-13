@@ -31,7 +31,10 @@ phases:
 
   build:
     commands:
-      - echo "Post build steps"
+      - echo "build steps"
+      - cd static
+      - npm run build
+      - aws s3 sync public s3://${StaticSiteBucket}
 
   post_build:
     commands:

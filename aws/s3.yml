@@ -56,8 +56,94 @@ Resources:
             Principal:
               AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
 
+  AppAssetsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${Realm}.${DomainName}.assets'
+
+  AppProgramaticUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Sub '${Realm}-user'
+      Policies:
+        - PolicyName: AccessAssetsBucket
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 's3:*'
+                Resource:
+                  - !GetAtt AppAssetsBucket.Arn
+                  - !Join ['', [!GetAtt AppAssetsBucket.Arn, '/*']]
+        - PolicyName: AccessToCloudWatch
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'logs:DescribeLogStreams'
+                Resource: '*'
+
+  AppUserAccessKeys:
+    DependsOn:
+      - AppProgramaticUser
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref AppProgramaticUser
+
+  AppAssetsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AppAssetsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 's3:*'
+            Effect: 'Allow'
+            Resource:
+              - !GetAtt AppAssetsBucket.Arn
+              - !Join ['', [!GetAtt AppAssetsBucket.Arn, '/*']]
+            Principal:
+              AWS:
+                - Fn::ImportValue: !Sub '${Realm}:CodePipelineRole'
+          - Action:
+              - 's3:*'
+            Effect: 'Allow'
+            Resource:
+              - !GetAtt AppAssetsBucket.Arn
+              - !Join ['', [!GetAtt AppAssetsBucket.Arn, '/*']]
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+          - Action:
+              - 's3:*'
+            Effect: 'Allow'
+            Resource:
+              - !GetAtt AppAssetsBucket.Arn
+              - !Join ['', [!GetAtt AppAssetsBucket.Arn, '/*']]
+            Principal:
+              AWS: !GetAtt 'AppProgramaticUser.Arn'
+
 Outputs:
   AppStaticSiteBucket:
     Value: !Ref AppStaticSiteBucket
     Export:
       Name: !Sub '${Realm}:AppStaticSiteBucket'
+
+  AppAssetsBucket:
+    Value: !Ref AppStaticSiteBucket
+    Export:
+      Name: !Sub '${Realm}:AppAssetsBucket'
+
+  AccessKeyId:
+    Value: !Ref AppUserAccessKeys
+    Export:
+      Name: !Sub '${Realm}:AccessKeyId'
+
+  SecretAccessKey:
+    Value: !GetAtt 'AppUserAccessKeys.SecretAccessKey'
+    Export:
+      Name: !Sub '${Realm}:SecretAccessKey'
