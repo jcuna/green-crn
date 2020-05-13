@@ -300,22 +300,20 @@ Resources:
                 - Name: CodebuildArtifacts
               RunOrder: 3
 
-        - Name: BuildApp
-          Actions:
-            - InputArtifacts:
-                - Name: SourceOutput
-              Name: AppBuild
+            - Name: AppBuild
               ActionTypeId:
                 Category: Build
                 Owner: AWS
                 Provider: BuildApp
                 Version: 1
+              InputArtifacts:
+                - Name: SourceOutput
               OutputArtifacts:
                 - Name: BuildAppArtifacts
               RoleArn: !GetAtt 'CodePipelineRole.Arn'
               Configuration:
                 ProjectName: !Sub '${Realm}-${RepoName}-codebuild'
-              RunOrder: 1
+              RunOrder: 4
 
       ArtifactStore:
         Type: S3
