@@ -15,6 +15,7 @@ Parameters:
     Type: String
 
 Resources:
+
   AppStaticSiteBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -61,20 +62,20 @@ Resources:
     Properties:
       BucketName: !Sub '${Realm}.${DomainName}.assets'
 
-  AppProgramaticUser:
+  AppProgrammaticUser:
     Type: AWS::IAM::User
     Properties:
       UserName: !Sub '${Realm}-user'
       Policies:
-        - PolicyName: AccessAssetsBucket
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action: 's3:*'
-                Resource:
-                  - !GetAtt AppAssetsBucket.Arn
-                  - !Join ['', [!GetAtt AppAssetsBucket.Arn, '/*']]
+#        - PolicyName: AccessAssetsBucket
+#          PolicyDocument:
+#            Version: '2012-10-17'
+#            Statement:
+#              - Effect: Allow
+#                Action: 's3:*'
+#                Resource:
+#                  - !GetAtt AppAssetsBucket.Arn
+#                  - !Join ['', [!GetAtt AppAssetsBucket.Arn, '/*']]
         - PolicyName: AccessToCloudWatch
           PolicyDocument:
             Version: '2012-10-17'
@@ -89,10 +90,10 @@ Resources:
 
   AppUserAccessKeys:
     DependsOn:
-      - AppProgramaticUser
+      - AppProgrammaticUser
     Type: AWS::IAM::AccessKey
     Properties:
-      UserName: !Ref AppProgramaticUser
+      UserName: !Ref AppProgrammaticUser
 
   AppAssetsBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -125,7 +126,7 @@ Resources:
               - !GetAtt AppAssetsBucket.Arn
               - !Join ['', [!GetAtt AppAssetsBucket.Arn, '/*']]
             Principal:
-              AWS: !GetAtt 'AppProgramaticUser.Arn'
+              AWS: !GetAtt 'AppProgrammaticUser.Arn'
 
 Outputs:
   AppStaticSiteBucket:

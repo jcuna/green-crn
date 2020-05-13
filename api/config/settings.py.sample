@@ -29,7 +29,7 @@ CACHE_CONFIG = {
     'CACHE_KEY_PREFIX': 'local_dev',
 }
 
-TIME_ZONE = 'America/New_York'
+TIME_ZONE = ${timeZone}
 # the following entry is used to test external urls for dev environments.
 # this is used to test receipts upload functionality via smart phone
 # make sure to include protocol http cs https.
