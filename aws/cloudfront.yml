@@ -85,10 +85,10 @@ Resources:
             DefaultTTL: 900
         Origins:
           - DomainName: !Sub
-              - |
-                ${Bucket}.s3-website.${AWS::Region}.amazonaws.com
-              - Bucket:
-                  Fn::ImportValue: !Sub '${Realm}:AppStaticSiteBucket'
+            - |
+              ${Bucket}.s3-website.${AWS::Region}.amazonaws.com
+            - Bucket:
+                Fn::ImportValue: !Sub '${Realm}:AppStaticSiteBucket'
 
             Id: S3StaticOrigin
             CustomOriginConfig:
