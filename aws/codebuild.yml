@@ -88,7 +88,6 @@ Resources:
             Value:
               Fn::ImportValue: !Sub '${Realm}:SecretAccessKey'
             Type: PLAINTEXT
-
       Source:
         Type: CODEPIPELINE
         BuildSpec: aws/buildspec.yml
