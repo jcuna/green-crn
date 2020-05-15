@@ -1,5 +1,5 @@
 SECRET_KEY = '{SecretKey}' # create with Fernet.generate_key().decode()
-SQLALCHEMY_DATABASE_URI = 'postgresql://{DbUser}:{DbPw}@{Db_EndPoint}/{DbName}'
+SQLALCHEMY_DATABASE_URI = 'postgresql://{DbUser}:{DbPw}@{DbEndPoint}/{DbName}'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ENGINE_OPTIONS = {
     'pool_recycle': True
@@ -10,12 +10,12 @@ APP_ENV = 'production'
 DEBUG = False
 
 # for prod we use smtp:
-MAIL_SERVER = 'localhost'
-MAIL_PORT = 25
+MAIL_SERVER = '{mailServer}'
+MAIL_PORT = {mailPort}
 MAIL_USE_TLS = True
 MAIL_USE_SSL = False
-MAIL_USERNAME = 'username'
-MAIL_PASSWORD = 'password'
+MAIL_USERNAME = '{mailUsername}'
+MAIL_PASSWORD = 'mailPassword'
 MAIL_MAX_EMAILS = None
 MAIL_ASCII_ATTACHMENTS = False
 
@@ -29,7 +29,7 @@ CACHE_CONFIG = {
     'CACHE_KEY_PREFIX': 'local_dev',
 }
 
-TIME_ZONE = ${timeZone}
+TIME_ZONE = '{timeZone}'
 # the following entry is used to test external urls for dev environments.
 # this is used to test receipts upload functionality via smart phone
 # make sure to include protocol http cs https.
@@ -37,7 +37,7 @@ EXTERNAL_DEV_URL = 'http://10.0.0.23:8000'
 
 AWS_ACCESS_KEY_ID = '{AccessKeyId}'
 AWS_SECRET_ACCESS_KEY = '{SecretAccessKey}'
-UPLOAD_FILE_BUCKET = '{UploadFileBucket}'
+UPLOAD_FILE_BUCKET = '{AssetsBucket}'
 
 EGAUGE_USER = '{egaugeUser}'
 EGAUGE_PASSWORD = '{egaugePassword}'

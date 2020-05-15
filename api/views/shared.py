@@ -307,3 +307,9 @@ class RunWidget(API):
             query = query.filter(sql_op(*all_conditions))
 
         return query
+
+
+class Health(API):
+
+    def get(self):
+        return {'status': 'ok'}

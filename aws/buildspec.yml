@@ -22,25 +22,40 @@ phases:
     commands:
       - echo "pre-Build Steps..."
       - $(aws ecr get-login --no-include-email)
-      - IMG_NAME="green-crn-engine"
-      - REPO_URI=${AccountId}.dkr.ecr.${AWS_REGION}.amazonaws.com/${Realm}-repository/${IMG_NAME}
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - export IMAGE_TAG=${COMMIT_HASH:=latest}
       - printf "Commit - $COMMIT_HASH"
       - printf "Image tag - $IMAGE_TAG"
+      - cp api/config/settings.py.sample api/config/settings.py
+      - sed -i "s/{DbUser}/$DatabaseUser/" src/config/settings.py
+      - sed -i "s/{DbPw}/$DatabasePW/" src/config/settings.py
+      - sed -i "s/{DbEndPoint}/$DatabaseEndpoint/" src/config/settings.py
+      - sed -i "s/{DbName}/$DbName/" src/config/settings.py
+      - sed -i "s/{mailServer}/smtp.gmail.com/" src/config/settings.py
+      - sed -i "s/{mailPort}/587/" src/config/settings.py
+      - sed -i "s/{timeZone}/America/Santo_Domingo/" src/config/settings.py
+      - sed -i "s/{AccessKeyId}/$AccessKeyId/" src/config/settings.py
+      - sed -i "s/{SecretAccessKey}/$SecretAccessKey/" src/config/settings.py
+      - sed -i "s/{UploadFileBucket}/$AssetsBucket/" src/config/settings.py
+
 
   build:
     commands:
       - echo "build steps"
+      - IMG_NAME="${ProjectName}:${Realm}"
+      - REPO_URI=${AccountId}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMG_NAME}
+      - docker build -t ${IMG_NAME} -f docker/prod.Dockerfile .
+      - docker tag ${IMG_NAME} ${REPO_URI}
       - cd static
       - npm install webpack-cli -g
       - npm install
       - npm run build
-      - aws s3 sync public s3://${StaticSiteBucket}
 
   post_build:
     commands:
       - echo "post-Build Steps..."
+      - aws s3 sync public s3://${StaticSiteBucket}
+      - docker push ${REPO_URI}
 
 #artifacts:
 #

@@ -2,7 +2,7 @@ FROM python:3.7.4-alpine
 MAINTAINER Jon Cuna <jcuna@joncuna.com>
 
 COPY ./api /usr/src/app
-COPY ./docker/supervisord.conf /etc/supervisord.conf
+COPY ./docker/supervisord.queue.conf /etc/supervisord.conf
 WORKDIR /usr/src/app
 
 RUN mkdir -p /usr/src/app/log

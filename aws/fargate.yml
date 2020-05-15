@@ -12,13 +12,16 @@ Parameters:
   ProjectName:
     Type: String
 
+  ContainerPort:
+    Type: Number
+    Default: 5000
 
 Resources:
 
   Cluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: !Join ['', [!Ref Realm, Cluster]]
+      ClusterName: !Sub '${Realm}-cluster'
 
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -26,7 +29,7 @@ Resources:
     DependsOn: LogGroup
     Properties:
       # Name of the task definition. Subsequent versions of the task definition are grouped together under this name.
-      Family: !Join ['', [!Ref Realm, TaskDefinition]]
+      Family: !Sub 'ecs-${Realm}'
       # awsvpc is required for Fargate
       NetworkMode: awsvpc
       RequiresCompatibilities:
@@ -51,7 +54,8 @@ Resources:
       TaskRoleArn: !Ref TaskRole
       ContainerDefinitions:
         - Name: !Ref Realm
-          Image: !Ref Image
+          Command: '/bin/sh -c ./run.sh'
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ProjectName}:${Realm}'
           PortMappings:
             - ContainerPort: !Ref ContainerPort
           # Send logs to CloudWatch Logs
@@ -66,7 +70,7 @@ Resources:
   ExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Join ['', [!Ref Realm, ExecutionRole]]
+      RoleName: !Sub '${Realm}-execution-role'
       AssumeRolePolicyDocument:
         Statement:
           - Effect: Allow
@@ -80,7 +84,7 @@ Resources:
   TaskRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Join ['', [!Ref Realm, TaskRole]]
+      RoleName: !Sub '${Realm}-task-role'
       AssumeRolePolicyDocument:
         Statement:
           - Effect: Allow
@@ -96,7 +100,7 @@ Resources:
   AutoScalingRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Join ['', [!Ref Realm, AutoScalingRole]]
+      RoleName: !Sub '${Realm}-autoscaling-role'
       AssumeRolePolicyDocument:
         Statement:
           - Effect: Allow
@@ -109,23 +113,39 @@ Resources:
   ContainerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: !Join ['', [!Ref Realm, ContainerSecurityGroup]]
-      VpcId: !Ref VPC
+      GroupDescription: !Sub '${Realm}-container-security-group'
+      VpcId:
+        Fn::ImportValue: !Sub '${Realm}:VPC'
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: !Ref ContainerPort
           ToPort: !Ref ContainerPort
           SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
+
   LoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: !Join ['', [!Ref Realm, LoadBalancerSecurityGroup]]
-      VpcId: !Ref VPC
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: !Ref LoadBalancerPort
-          ToPort: !Ref LoadBalancerPort
-          CidrIp: 0.0.0.0/0
+      GroupDescription: !Sub '${Realm}-load-balancer-security-group'
+      VpcId: !Sub '${Realm}:VPC'
+      SecurityGroupEgress:
+        # Allow all outbound from ALB to private subnet
+        - IpProtocol: '-1'
+          CidrIp: '0.0.0.0/0'
+          Description: Allow all outbound from containers
+        SecurityGroupIngress:
+          # Allow public 80
+          - IpProtocol: tcp
+            FromPort: 80
+            ToPort: 80
+            CidrIp: '0.0.0.0/0'
+            Description: public port 80
+          # Allow public 443
+          - IpProtocol: tcp
+            FromPort: 443
+            ToPort: 443
+            CidrIp: '0.0.0.0/0'
+            Description: public port 443
+
   Service:
     Type: AWS::ECS::Service
     # This dependency is needed so that the load balancer is setup correctly in time
@@ -138,7 +158,7 @@ Resources:
       DeploymentConfiguration:
         MinimumHealthyPercent: 100
         MaximumPercent: 200
-      DesiredCount: 2
+      DesiredCount: 1
       # This may need to be adjusted if the container takes a while to start up
       HealthCheckGracePeriodSeconds: 30
       LaunchType: FARGATE
@@ -146,12 +166,13 @@ Resources:
         - ContainerName: !Ref Realm
           ContainerPort: !Ref ContainerPort
           TargetGroupArn: !Ref TargetGroup
+
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckIntervalSeconds: 10
       # will look for a 200 status code by default unless specified otherwise
-      HealthCheckPath: !Ref HealthCheckPath
+      HealthCheckPath: /api/v1.0/status
       HealthCheckTimeoutSeconds: 5
       UnhealthyThresholdCount: 2
       HealthyThresholdCount: 2
@@ -162,7 +183,8 @@ Resources:
         - Key: deregistration_delay.timeout_seconds
           Value: 60 # default is 300
       TargetType: ip
-      VpcId: !Ref VPC
+      VpcId: !Sub '${Realm}:VPC'
+
   ListenerHTTPS:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -170,10 +192,11 @@ Resources:
         - TargetGroupArn: !Ref TargetGroup
           Type: forward
       LoadBalancerArn: !Ref LoadBalancer
-      Port: !Ref LoadBalancerPort
+      Port: 443
       Protocol: HTTPS
-      Certificates:
-        - CertificateArn: !Ref Certificate
+#      Certificates:
+#        - CertificateArn: !Ref Certificate
+
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -181,53 +204,59 @@ Resources:
         # this is the default, but is specified here in case it needs to be changed
         - Key: idle_timeout.timeout_seconds
           Value: 60
-      Name: !Join ['', [!Ref Realm, LoadBalancer]]
+      Name: !Sub '${Realm}:load-balancer'
       # "internal" is also an option
       Scheme: internet-facing
       SecurityGroups:
         - !Ref LoadBalancerSecurityGroup
       Subnets:
-        - !Ref SubnetA
-        - !Ref SubnetB
-  DNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneName: !Join ['', [!Ref HostedZoneName, .]]
-      Name: !Join ['', [!Ref Subdomain, ., !Ref HostedZoneName, .]]
-      Type: A
-      AliasTarget:
-        DNSName: !GetAtt LoadBalancer.DNSName
-        HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
+        - !Sub '${Realm}:PublicSubnet1'
+        - !Sub '${Realm}:PublicSubnet2'
+
+#  DNSRecord:
+#    Type: AWS::Route53::RecordSet
+#    Properties:
+#      HostedZoneName: !Join ['', [!Ref HostedZoneName, .]]
+#      Name: !Join ['', [!Ref Subdomain, ., !Ref HostedZoneName, .]]
+#      Type: A
+#      AliasTarget:
+#        DNSName: !GetAtt LoadBalancer.DNSName
+#        HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
+
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Join ['', [/ecs/, !Ref Realm, TaskDefinition]]
-  AutoScalingTarget:
-    Type: AWS::ApplicationAutoScaling::ScalableTarget
-    Properties:
-      MinCapacity: !Ref MinContainers
-      MaxCapacity: !Ref MaxContainers
-      ResourceId: !Join ['/', [service, !Ref Cluster, !GetAtt Service.Name]]
-      ScalableDimension: ecs:service:DesiredCount
-      ServiceNamespace: ecs
-      # "The Amazon Resource Name (ARN) of an AWS Identity and Access Management (IAM) role that allows Application Auto Scaling to modify your scalable target."
-      RoleARN: !GetAtt AutoScalingRole.Arn
-  AutoScalingPolicy:
-    Type: AWS::ApplicationAutoScaling::ScalingPolicy
-    Properties:
-      PolicyName: !Join ['', [!Ref ServiceName, AutoScalingPolicy]]
-      PolicyType: TargetTrackingScaling
-      ScalingTargetId: !Ref AutoScalingTarget
-      TargetTrackingScalingPolicyConfiguration:
-        PredefinedMetricSpecification:
-          PredefinedMetricType: ECSServiceAverageCPUUtilization
-        ScaleInCooldown: 10
-        ScaleOutCooldown: 10
-        # Keep things at or lower than 50% CPU utilization, for example
-        TargetValue: !Ref AutoScalingTargetValue
+      LogGroupName: !Sub '/ecs/${Realm}'
+
+#  AutoScalingTarget:
+#    Type: AWS::ApplicationAutoScaling::ScalableTarget
+#    Properties:
+#      MinCapacity: 1
+#      MaxCapacity: 2
+#      ResourceId: !Join ['/', [service, !Ref Cluster, !GetAtt Service.Name]]
+#      ScalableDimension: ecs:service:DesiredCount
+#      ServiceNamespace: ecs
+#      # "The Amazon Resource Name (ARN) of an AWS Identity and Access Management (IAM) role that allows Application Auto Scaling to modify your scalable target."
+#      RoleARN: !GetAtt AutoScalingRole.Arn
+#
+#  AutoScalingPolicy:
+#    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+#    Properties:
+#      PolicyName: !Sub '${Realm}-autoscaling-policy'
+#      PolicyType: TargetTrackingScaling
+#      ScalingTargetId: !Ref AutoScalingTarget
+#      TargetTrackingScalingPolicyConfiguration:
+#        PredefinedMetricSpecification:
+#          PredefinedMetricType: ECSServiceAverageCPUUtilization
+#        ScaleInCooldown: 10
+#        ScaleOutCooldown: 10
+#        # Keep things at or lower than 50% CPU utilization, for example
+#        TargetValue: !Ref AutoScalingTargetValue
 
 
 Outputs:
   Endpoint:
     Description: Endpoint
-    Value: !Join ['', ['https://', !Ref DNSRecord]]
+    Value: !GetAtt 'LoadBalancer.DNSName'
+    Export:
+      Name: !Sub '${Realm}:FargateEndpoint'

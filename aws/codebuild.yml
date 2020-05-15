@@ -88,6 +88,21 @@ Resources:
             Value:
               Fn::ImportValue: !Sub '${Realm}:SecretAccessKey'
             Type: PLAINTEXT
+          - Name: DatabaseEndpoint
+            Value:
+              Fn::ImportValue: !Sub '${Realm}:DatabaseEndpoint'
+            Type: PLAINTEXT
+          - Name: DatabasePW
+            Value:
+              Fn::ImportValue: !Sub '${Realm}:DatabasePassword'
+            Type: PLAINTEXT
+          - Name: DatabaseUser
+            Value:
+              Fn::ImportValue: !Sub '${Realm}:DatabaseUsername'
+            Type: PLAINTEXT
+          - Name: DbName
+            Value: !Sub '${Realm}${ProjectName}DB'
+            Type: PLAINTEXT
       Source:
         Type: CODEPIPELINE
         BuildSpec: aws/buildspec.yml

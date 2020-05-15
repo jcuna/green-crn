@@ -46,23 +46,40 @@ Resources:
           ForwardedValues:
             QueryString: true
         CacheBehaviors:
-#          - AllowedMethods: ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-#            CachedMethods: ["GET", "HEAD", "OPTIONS"]
-#            ForwardedValues:
-#              Headers:
-#                - Access-Control-Request-Headers
-#                - Access-Control-Request-Method
-#                - Origin
-#                - Authorization
-#                - Accept
-#                - Referer
-#              Cookies:
-#                Forward: all
-#              QueryString: true
-#            PathPattern: 'api/*'
-#            TargetOriginId: APIOrigin
-#            ViewerProtocolPolicy: redirect-to-https
-#            DefaultTTL: 0
+          - AllowedMethods: ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+            CachedMethods: ["GET", "HEAD", "OPTIONS"]
+            ForwardedValues:
+              Headers:
+                - Access-Control-Request-Headers
+                - Access-Control-Request-Method
+                - Origin
+                - Authorization
+                - Accept
+                - Referer
+              Cookies:
+                Forward: all
+              QueryString: true
+            PathPattern: 'api/*'
+            TargetOriginId: APIOrigin
+            ViewerProtocolPolicy: redirect-to-https
+            DefaultTTL: 0
+          - AllowedMethods: ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+            CachedMethods: ["GET", "HEAD", "OPTIONS"]
+            ForwardedValues:
+              Headers:
+                - Access-Control-Request-Headers
+                - Access-Control-Request-Method
+                - Origin
+                - Authorization
+                - Accept
+                - Referer
+              Cookies:
+                Forward: all
+              QueryString: true
+            PathPattern: 'ws/*'
+            TargetOriginId: WebSocketOrigin
+            ViewerProtocolPolicy: redirect-to-https
+            DefaultTTL: 0
           - AllowedMethods:
               - HEAD
               - GET
@@ -98,20 +115,35 @@ Resources:
                 - TLSv1
                 - TLSv1.1
                 - TLSv1.2
-#          - DomainName: !Sub '${CmpApiGateway}.execute-api.${AWS::Region}.amazonaws.com'
-#            OriginPath: !Sub '/${CmpStageName}'
-#            Id: APIConsOrigin
-#            CustomOriginConfig:
-#              HTTPSPort: 443
-#              HTTPPort: 80
-#              OriginProtocolPolicy: https-only
-#              OriginSSLProtocols:
-#                - TLSv1
-#                - TLSv1.1
-#                - TLSv1.2
-#            OriginCustomHeaders:
-#              - HeaderName: 'X-From-CDN'
-#                HeaderValue: CmpApiBehindCF
+          - DomainName:
+              Fn::ImportValue: !Sub '${Realm}:FargateEndpoint'
+            Id: APIOrigin
+            CustomOriginConfig:
+              HTTPSPort: 443
+              HTTPPort: 80
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols:
+                - TLSv1
+                - TLSv1.1
+                - TLSv1.2
+            OriginCustomHeaders:
+              - HeaderName: 'X-From-CDN'
+                HeaderValue: !Sub '${ProjectName}-API'
+          - DomainName:
+              Fn::ImportValue: !Sub '${Realm}:FargateEndpoint'
+            Id: WebSocketOrigin
+            OriginPath: '/socket.io'
+            CustomOriginConfig:
+              HTTPSPort: 443
+              HTTPPort: 80
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols:
+                - TLSv1
+                - TLSv1.1
+                - TLSv1.2
+            OriginCustomHeaders:
+              - HeaderName: 'X-From-CDN'
+                HeaderValue: !Sub '${ProjectName}-WebSocket'
 
 Outputs:
   AppCfUrl:
