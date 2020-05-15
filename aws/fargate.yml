@@ -12,6 +12,9 @@ Parameters:
   ProjectName:
     Type: String
 
+  DomainName:
+    Type: String
+
   ContainerPort:
     Type: Number
     Default: 5000
@@ -132,19 +135,19 @@ Resources:
         - IpProtocol: '-1'
           CidrIp: '0.0.0.0/0'
           Description: Allow all outbound from containers
-        SecurityGroupIngress:
-          # Allow public 80
-          - IpProtocol: tcp
-            FromPort: 80
-            ToPort: 80
-            CidrIp: '0.0.0.0/0'
-            Description: public port 80
-          # Allow public 443
-          - IpProtocol: tcp
-            FromPort: 443
-            ToPort: 443
-            CidrIp: '0.0.0.0/0'
-            Description: public port 443
+      SecurityGroupIngress:
+        # Allow public 80
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: '0.0.0.0/0'
+          Description: public port 80
+        # Allow public 443
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: '0.0.0.0/0'
+          Description: public port 443
 
   Service:
     Type: AWS::ECS::Service
