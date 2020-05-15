@@ -268,7 +268,7 @@ Resources:
               InputArtifacts:
                 - Name: SourceOutput
               OutputArtifacts:
-                - Name: StaticSiteArtifacts
+                - Name: ApiArtifacts
               RunOrder: 2
 
             - Name: CDN
