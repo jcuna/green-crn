@@ -129,7 +129,8 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: !Sub '${Realm}-load-balancer-security-group'
-      VpcId: !Sub '${Realm}:VPC'
+      VpcId:
+        Fn::ImportValue: !Sub '${Realm}:VPC'
       SecurityGroupEgress:
         # Allow all outbound from ALB to private subnet
         - IpProtocol: '-1'
@@ -186,7 +187,8 @@ Resources:
         - Key: deregistration_delay.timeout_seconds
           Value: 60 # default is 300
       TargetType: ip
-      VpcId: !Sub '${Realm}:VPC'
+      VpcId:
+        Fn::ImportValue: !Sub '${Realm}:VPC'
 
   ListenerHTTPS:
     Type: AWS::ElasticLoadBalancingV2::Listener
