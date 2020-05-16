@@ -155,7 +155,7 @@ Resources:
     Type: AWS::ECS::Service
     # This dependency is needed so that the load balancer is setup correctly in time
     DependsOn:
-      - ListenerHTTPS
+      - ListenerHTTP
     Properties:
       ServiceName: !Ref Realm
       Cluster: !Ref Cluster
@@ -191,15 +191,15 @@ Resources:
       VpcId:
         Fn::ImportValue: !Sub '${Realm}:VPC'
 
-  ListenerHTTPS:
+  ListenerHTTP:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
         - TargetGroupArn: !Ref TargetGroup
           Type: forward
       LoadBalancerArn: !Ref LoadBalancer
-      Port: 443
-      Protocol: HTTPS
+      Port: 80
+      Protocol: HTTP
 #      Certificates:
 #        - CertificateArn: !Ref Certificate
 
