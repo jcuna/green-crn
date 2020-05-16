@@ -215,8 +215,8 @@ Resources:
       SecurityGroups:
         - !Ref LoadBalancerSecurityGroup
       Subnets:
-        - !Sub '${Realm}:PublicSubnet1'
-        - !Sub '${Realm}:PublicSubnet2'
+        - Fn::ImportValue: !Sub '${Realm}:PublicSubnet1'
+        - Fn::ImportValue: !Sub '${Realm}:PublicSubnet2'
 
 #  DNSRecord:
 #    Type: AWS::Route53::RecordSet
