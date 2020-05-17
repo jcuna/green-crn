@@ -199,7 +199,7 @@ Resources:
           AssignPublicIp: ENABLED
           Subnets:
             - Fn::ImportValue: !Sub '${Realm}:PublicSubnet1'
-            - Fn::ImportValu:e !Sub '${Realm}:PublicSubnet1'
+            - Fn::ImportValue: !Sub '${Realm}:PublicSubnet2'
           SecurityGroups:
             - !GetAtt FargateTaskSecurityGroup.GroupId
       LoadBalancers:
