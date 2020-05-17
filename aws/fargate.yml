@@ -101,18 +101,18 @@ Resources:
       #   -
 
   # A role needed for auto scaling
-#  AutoScalingRole:
-#    Type: AWS::IAM::Role
-#    Properties:
-#      RoleName: !Sub '${Realm}-autoscaling-role'
-#      AssumeRolePolicyDocument:
-#        Statement:
-#          - Effect: Allow
-#            Principal:
-#              Service: ecs-tasks.amazonaws.com
-#            Action: 'sts:AssumeRole'
-#      ManagedPolicyArns:
-#        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole'
+  #  AutoScalingRole:
+  #    Type: AWS::IAM::Role
+  #    Properties:
+  #      RoleName: !Sub '${Realm}-autoscaling-role'
+  #      AssumeRolePolicyDocument:
+  #        Statement:
+  #          - Effect: Allow
+  #            Principal:
+  #              Service: ecs-tasks.amazonaws.com
+  #            Action: 'sts:AssumeRole'
+  #      ManagedPolicyArns:
+  #        - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole'
 
   ContainerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -151,6 +151,32 @@ Resources:
           CidrIp: '0.0.0.0/0'
           Description: public port 443
 
+  FargateTaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${Level}-${ParentRepo}-fargate
+      GroupDescription: !Sub ${Level}-${ParentRepo} security group
+      VpcId: !Sub '${Realm}:VPC'
+      SecurityGroupEgress:
+        # Allow all outbound from containers
+        -
+          IpProtocol: '-1'
+          CidrIp: '0.0.0.0/0'
+          Description: Allow all outbound from containers
+      SecurityGroupIngress:
+        # Allow ALB to connect to containers
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          SourceSecurityGroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
+          Description: Allows ALB access to port 9000
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
+          Description: Allows ALB access to port 80
+
+
   Service:
     Type: AWS::ECS::Service
     # This dependency is needed so that the load balancer is setup correctly in time
@@ -167,6 +193,14 @@ Resources:
       # This may need to be adjusted if the container takes a while to start up
       HealthCheckGracePeriodSeconds: 30
       LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - Fn::ImportValue: !Sub '${Realm}:PublicSubnet1'
+            - Fn::ImportValu:e !Sub '${Realm}:PublicSubnet1'
+          SecurityGroups:
+            - !GetAtt FargateTaskSecurityGroup.GroupId
       LoadBalancers:
         - ContainerName: !Ref Realm
           ContainerPort: !Ref ContainerPort
@@ -200,8 +234,8 @@ Resources:
       LoadBalancerArn: !Ref LoadBalancer
       Port: 80
       Protocol: HTTP
-#      Certificates:
-#        - CertificateArn: !Ref Certificate
+  #      Certificates:
+  #        - CertificateArn: !Ref Certificate
 
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -219,15 +253,15 @@ Resources:
         - Fn::ImportValue: !Sub '${Realm}:PublicSubnet1'
         - Fn::ImportValue: !Sub '${Realm}:PublicSubnet2'
 
-#  DNSRecord:
-#    Type: AWS::Route53::RecordSet
-#    Properties:
-#      HostedZoneName: !Join ['', [!Ref HostedZoneName, .]]
-#      Name: !Join ['', [!Ref Subdomain, ., !Ref HostedZoneName, .]]
-#      Type: A
-#      AliasTarget:
-#        DNSName: !GetAtt LoadBalancer.DNSName
-#        HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
+  #  DNSRecord:
+  #    Type: AWS::Route53::RecordSet
+  #    Properties:
+  #      HostedZoneName: !Join ['', [!Ref HostedZoneName, .]]
+  #      Name: !Join ['', [!Ref Subdomain, ., !Ref HostedZoneName, .]]
+  #      Type: A
+  #      AliasTarget:
+  #        DNSName: !GetAtt LoadBalancer.DNSName
+  #        HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
 
   LogGroup:
     Type: AWS::Logs::LogGroup
