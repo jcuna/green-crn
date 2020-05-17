@@ -156,7 +156,8 @@ Resources:
     Properties:
       GroupName: !Sub '${Realm}-fargate-security-group'
       GroupDescription: !Sub ${Realm}-fargate security group
-      VpcId: !Sub '${Realm}:VPC'
+      VpcId:
+        Fn::ImportValue: !Sub '${Realm}:VPC'
       SecurityGroupEgress:
         # Allow all outbound from containers
         -
