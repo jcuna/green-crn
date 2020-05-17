@@ -154,8 +154,8 @@ Resources:
   FargateTaskSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub ${Level}-${ParentRepo}-fargate
-      GroupDescription: !Sub ${Level}-${ParentRepo} security group
+      GroupName: !Sub '${Realm}-fargate-security-group'
+      GroupDescription: !Sub ${Realm}-fargate security group
       VpcId: !Sub '${Realm}:VPC'
       SecurityGroupEgress:
         # Allow all outbound from containers
