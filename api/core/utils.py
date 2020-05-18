@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-import queue
+
 import pytz
 import boto3
 from flask import Flask
@@ -12,7 +12,7 @@ from urllib import parse
 from requests.auth import HTTPDigestAuth
 import xmltodict
 
-from logging.handlers import QueueHandler, QueueListener, TimedRotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 from config import configs
 
 
@@ -24,7 +24,7 @@ def configure_loggers(app: Flask):
 
         boto3.set_stream_logger('', level + logging.DEBUG)
 
-        app_logger = get_logger('app', True)
+        app_logger = get_logger('app')
 
         # combine these loggers into app/root loggers
         for logger in [app.logger, logging.getLogger('gunicorn')]:
@@ -35,10 +35,10 @@ def configure_loggers(app: Flask):
         db_logging = logging.getLogger('sqlalchemy')
         db_logging.propagate = False
         db_logging.setLevel(logging.INFO)
-        db_logging.handlers = get_logger('sql', True).handlers
+        db_logging.handlers = get_logger('sql').handlers
 
 
-def get_logger(name, non_blocking=False):
+def get_logger(name):
     """
     return a logger with default settings
 
@@ -52,20 +52,12 @@ def get_logger(name, non_blocking=False):
     level = logging.DEBUG if configs.DEBUG else logging.INFO
     logger.setLevel(level)
 
-    file_handler = create_file_log_handler(name)
-
-    if non_blocking:
-        log_queue = queue.Queue(-1)
-        async_handler = QueueHandler(log_queue)
-        # instantiate a listener
-        listener = QueueListener(log_queue, file_handler)
-        # attach custom handler to root logger
-        logger.addHandler(async_handler)
-        # start the listener
-        listener.start()
+    if configs.APP_ENV == 'production':
+        handler = logging.StreamHandler()
     else:
-        logger.addHandler(file_handler)
+        handler = create_file_log_handler(name)
 
+    logger.addHandler(handler)
     return logger
 
 

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 cd ${APP_PATH}
 
@@ -17,6 +17,5 @@ if [ "$APP_ENV" = "development" ]; then
         sleep 2
     done
 else
-    export APP_ENV='production'
     gunicorn --worker-class eventlet --bind :5000 wsgi:app --log-level info
 fi

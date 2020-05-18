@@ -23,10 +23,12 @@ phases:
       - echo "pre-Build Steps..."
       - $(aws ecr get-login --no-include-email)
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - APP_SECRET=$(aws secretsmanager get-secret-value --secret-id ${ProjectName}/AppSecret/${Realm} | jq --raw-output '.SecretString' | jq -r .app_secret)
       - export IMAGE_TAG=${COMMIT_HASH:=latest}
       - printf "Commit - $COMMIT_HASH"
       - printf "Image tag - $IMAGE_TAG"
       - cp api/config/settings.py.sample api/config/settings.py
+      - sed -i "s/{SecretKey}/$APP_SECRET/" api/config/settings.py
       - sed -i "s/{DbUser}/$DatabaseUser/" api/config/settings.py
       - sed -i "s/{DbPw}/$DatabasePW/" api/config/settings.py
       - sed -i "s/{DbEndPoint}/$DatabaseEndpoint/" api/config/settings.py

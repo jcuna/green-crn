@@ -5,6 +5,8 @@ COPY ./api /usr/src/app
 COPY ./docker/supervisord.queue.conf /etc/supervisord.conf
 WORKDIR /usr/src/app
 
+RUN python -m pip install --upgrade pip
+
 RUN mkdir -p /usr/src/app/log
 
 
