@@ -167,15 +167,10 @@ Resources:
       SecurityGroupIngress:
         # Allow ALB to connect to containers
         - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
+          FromPort: 5000
+          ToPort: 5000
           SourceSecurityGroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
-          Description: Allows ALB access to port 9000
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          SourceSecurityGroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
-          Description: Allows ALB access to port 80
+          Description: Allows ALB access to port 5000
 
 
   Service:
