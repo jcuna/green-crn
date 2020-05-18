@@ -41,7 +41,7 @@ phases:
   build:
     commands:
       - echo "build steps"
-      - IMG_NAME="${Realm}:latest"
+      - IMG_NAME="${Realm}-repository:latest"
       - REPO_URI=${AccountId}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMG_NAME}
       - docker build -t ${IMG_NAME} -f docker/prod.Dockerfile .
       - docker tag ${IMG_NAME} ${REPO_URI}

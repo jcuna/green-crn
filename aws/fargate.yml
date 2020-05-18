@@ -59,7 +59,7 @@ Resources:
         - Name: !Ref Realm
           Command:
             - '/bin/sh -c ./run.sh'
-          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Realm}:latest'
+          Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Realm}-repository:latest'
           PortMappings:
             - ContainerPort: !Ref ContainerPort
           # Send logs to CloudWatch Logs
