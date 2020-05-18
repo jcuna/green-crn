@@ -51,6 +51,9 @@ Resources:
         PrivilegedMode : true
         Image: aws/codebuild/standard:2.0
         EnvironmentVariables:
+          - Name: AccountId
+            Value: !Ref AWS::AccountId
+            Type: PLAINTEXT
           - Name: RepoName
             Value: !Ref RepoName
             Type: PLAINTEXT
