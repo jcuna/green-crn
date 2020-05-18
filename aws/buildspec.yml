@@ -33,7 +33,7 @@ phases:
       - sed -i "s/{DbName}/$DbName/" api/config/settings.py
       - sed -i "s/{mailServer}/smtp.gmail.com/" api/config/settings.py
       - sed -i "s/{mailPort}/587/" api/config/settings.py
-      - sed -i "s/{timeZone}/America/Santo_Domingo/" api/config/settings.py
+      - sed -i "s@{timeZone}@America/Santo_Domingo@" api/config/settings.py
       - sed -i "s/{AccessKeyId}/$AccessKeyId/" api/config/settings.py
       - sed -i "s/{SecretAccessKey}/$SecretAccessKey/" api/config/settings.py
       - sed -i "s/{UploadFileBucket}/$AssetsBucket/" api/config/settings.py
