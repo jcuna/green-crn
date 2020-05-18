@@ -17,7 +17,9 @@ from config import configs
 
 
 def configure_loggers(app: Flask):
-    if hasattr(configs, 'TESTING') and configs.TESTING:
+    if configs.APP_ENV == 'production':
+        logging.basicConfig()
+    elif hasattr(configs, 'TESTING') and configs.TESTING:
         return
     elif len(app.logger.handlers) == 0 or isinstance(app.logger.handlers[0], logging.StreamHandler):
         level = logging.DEBUG if app.debug else logging.INFO
@@ -52,18 +54,20 @@ def get_logger(name):
     level = logging.DEBUG if configs.DEBUG else logging.INFO
     logger.setLevel(level)
 
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     if configs.APP_ENV == 'production':
         handler = logging.StreamHandler()
     else:
         handler = create_file_log_handler(name)
 
+    handler.setFormatter(formatter)
+    handler.setLevel(level)
     logger.addHandler(handler)
     return logger
 
 
 def create_file_log_handler(name):
     handler = TimedRotatingFileHandler(log_path + name + '.log', when='midnight', backupCount=2)
-    handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     return handler
 
 
