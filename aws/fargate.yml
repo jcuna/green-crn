@@ -57,6 +57,9 @@ Resources:
       TaskRoleArn: !Ref TaskRole
       ContainerDefinitions:
         - Name: !Ref Realm
+          EntryPoint:
+            - 'sh'
+            - '-c'
           Command:
             - '/bin/sh -c ./run.sh'
           Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Realm}-repository:latest'
