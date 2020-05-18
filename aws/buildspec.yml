@@ -27,17 +27,16 @@ phases:
       - printf "Commit - $COMMIT_HASH"
       - printf "Image tag - $IMAGE_TAG"
       - cp api/config/settings.py.sample api/config/settings.py
-      - sed -i "s/{DbUser}/$DatabaseUser/" src/config/settings.py
-      - sed -i "s/{DbPw}/$DatabasePW/" src/config/settings.py
-      - sed -i "s/{DbEndPoint}/$DatabaseEndpoint/" src/config/settings.py
-      - sed -i "s/{DbName}/$DbName/" src/config/settings.py
-      - sed -i "s/{mailServer}/smtp.gmail.com/" src/config/settings.py
-      - sed -i "s/{mailPort}/587/" src/config/settings.py
-      - sed -i "s/{timeZone}/America/Santo_Domingo/" src/config/settings.py
-      - sed -i "s/{AccessKeyId}/$AccessKeyId/" src/config/settings.py
-      - sed -i "s/{SecretAccessKey}/$SecretAccessKey/" src/config/settings.py
-      - sed -i "s/{UploadFileBucket}/$AssetsBucket/" src/config/settings.py
-
+      - sed -i "s/{DbUser}/$DatabaseUser/" api/config/settings.py
+      - sed -i "s/{DbPw}/$DatabasePW/" api/config/settings.py
+      - sed -i "s/{DbEndPoint}/$DatabaseEndpoint/" api/config/settings.py
+      - sed -i "s/{DbName}/$DbName/" api/config/settings.py
+      - sed -i "s/{mailServer}/smtp.gmail.com/" api/config/settings.py
+      - sed -i "s/{mailPort}/587/" api/config/settings.py
+      - sed -i "s/{timeZone}/America/Santo_Domingo/" api/config/settings.py
+      - sed -i "s/{AccessKeyId}/$AccessKeyId/" api/config/settings.py
+      - sed -i "s/{SecretAccessKey}/$SecretAccessKey/" api/config/settings.py
+      - sed -i "s/{UploadFileBucket}/$AssetsBucket/" api/config/settings.py
 
   build:
     commands:
