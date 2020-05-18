@@ -17,5 +17,6 @@ if [ "$APP_ENV" = "development" ]; then
         sleep 2
     done
 else
+    supervisord
     gunicorn --worker-class eventlet --bind :5000 wsgi:app --log-level info
 fi

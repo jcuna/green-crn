@@ -27,6 +27,7 @@ Resources:
         Enabled: true
         IPV6Enabled: true
         HttpVersion: http2
+        PriceClass: PriceClass_100
         CustomErrorResponses:
           - ErrorCachingMinTTL: 0
             ErrorCode: 400
@@ -121,11 +122,11 @@ Resources:
             CustomOriginConfig:
               HTTPSPort: 443
               HTTPPort: 80
-              OriginProtocolPolicy: https-only
-              OriginSSLProtocols:
-                - TLSv1
-                - TLSv1.1
-                - TLSv1.2
+#              OriginProtocolPolicy: https-only
+#              OriginSSLProtocols:
+#                - TLSv1
+#                - TLSv1.1
+#                - TLSv1.2
             OriginCustomHeaders:
               - HeaderName: 'X-From-CDN'
                 HeaderValue: !Sub '${ProjectName}-API'
@@ -136,11 +137,11 @@ Resources:
             CustomOriginConfig:
               HTTPSPort: 443
               HTTPPort: 80
-              OriginProtocolPolicy: https-only
-              OriginSSLProtocols:
-                - TLSv1
-                - TLSv1.1
-                - TLSv1.2
+#              OriginProtocolPolicy: https-only
+#              OriginSSLProtocols:
+#                - TLSv1
+#                - TLSv1.1
+#                - TLSv1.2
             OriginCustomHeaders:
               - HeaderName: 'X-From-CDN'
                 HeaderValue: !Sub '${ProjectName}-WebSocket'

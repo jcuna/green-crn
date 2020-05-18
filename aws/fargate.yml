@@ -187,7 +187,7 @@ Resources:
     Properties:
       HealthCheckIntervalSeconds: 10
       # will look for a 200 status code by default unless specified otherwise
-      HealthCheckPath: /api/v1.0/status
+      HealthCheckPath: /v1.0/status
       HealthCheckTimeoutSeconds: 5
       UnhealthyThresholdCount: 2
       HealthyThresholdCount: 2
