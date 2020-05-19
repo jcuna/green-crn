@@ -12,7 +12,7 @@ from dal.user import User, Role, UserAttributes, admin_access, admin_preferences
 from dal.shared import get_fillable
 
 permissions = {}
-base = Blueprint('base', __name__, url_prefix='/')
+base = Blueprint('base', __name__, url_prefix='/api')
 
 
 class Router:
