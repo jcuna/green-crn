@@ -38,11 +38,11 @@ Resources:
             ErrorCode: 403
           - ErrorCachingMinTTL: 5
             ErrorCode: 500
-#        ViewerCertificate:
-#          AcmCertificateArn: !Sub 'arn:aws:acm:${CmpCertZoneID}:${AWS::AccountId}:certificate/${CmpConsCertID}'
-#          SslSupportMethod: sni-only
-        #        Aliases:
-        #          - !Sub '${Realm}.${DomainName}'
+        ViewerCertificate:
+          AcmCertificateArn: arn:aws:acm:us-east-1:595474955319:certificate/4ef95245-69b9-4e95-bef2-38b915c89cee
+          SslSupportMethod: sni-only
+        Aliases:
+          - !Ref DomainName
         DefaultCacheBehavior:
           Compress: true
           TargetOriginId: S3StaticOrigin
