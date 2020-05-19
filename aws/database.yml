@@ -32,6 +32,7 @@ Resources:
   DatabaseCluster:
     Type: AWS::RDS::DBCluster
     Properties:
+      Port: 5432
       MasterUsername: !Sub '{{resolve:secretsmanager:${DBRandomPassword}:SecretString:username}}'
       MasterUserPassword: !Sub '{{resolve:secretsmanager:${DBRandomPassword}:SecretString:password}}'
       DatabaseName: !Sub '${Realm}${ProjectName}DB'
@@ -46,14 +47,13 @@ Resources:
       DBSubnetGroupName: !Ref DatabaseSubnetGroup
       EnableCloudwatchLogsExports:
         - postgresql
+      VpcSecurityGroupIds:
+        - !Ref DBSecurityGroup
 
-  RDSDBInstance:
+  RDSDBInstance1:
     Type: AWS::RDS::DBInstance
     Properties:
-      Port: 5432
-      DBSecurityGroups:
-        - !Ref DBSecurityGroup
-      DBInstanceIdentifier: aurora-postgresql-instance
+      DBInstanceIdentifier: aurora-postgresql-instance1
       Engine: aurora-postgresql
       DBClusterIdentifier: !Ref DatabaseCluster
       PubliclyAccessible: 'true'
