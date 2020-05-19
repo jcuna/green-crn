@@ -17,7 +17,7 @@ def test_install(no_db_client):
         User.query.count()
         assert 'no such table' in ex.value
 
-    no_db_client.get('/install')
+    no_db_client.get('/api/install')
 
     post = {
         'email': 'testuser@domain.com',
@@ -30,7 +30,7 @@ def test_install(no_db_client):
         'logo': (io.BytesIO(b'12345asdfg'), 'test.png'),
     }
 
-    rv = no_db_client.post('/install', data=post, content_type='multipart/form-data')
+    rv = no_db_client.post('/api/install', data=post, content_type='multipart/form-data')
     assert b'Redirecting' in rv.data
     u = User.query.all()
     assert len(u) == 1

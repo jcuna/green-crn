@@ -29,7 +29,7 @@ class Router:
 
             full_routes = []
             for route in re.split('\\|', concat_route):
-                full_routes.append('/' + self.version + route)
+                full_routes.append('/api/' + self.version + route)
 
             pack_name = 'views.' + parts[0]
             pack = importlib.import_module(pack_name, parts[1])

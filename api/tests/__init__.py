@@ -50,7 +50,7 @@ def tear_files():
 
 
 def endpoint(uri):
-    return '/v1.0' + uri
+    return '/api/v1.0' + uri
 
 
 def front_end_date(date: datetime = datetime.utcnow(), _time: str = str(time.min)):

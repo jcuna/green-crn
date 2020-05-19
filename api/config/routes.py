@@ -4,8 +4,6 @@ def register():
         returns: dict
     """
     return {
-        # health check
-        'shared.Health@health_url': '/status',
 
         'users.Users@users_url': '/user',
         'users.UsersManager@users_manager_url': '/users|/users/<int:user_id>',

@@ -50,8 +50,6 @@ server {
 
         # Define the maximum file size on file uploads
 
-        rewrite ^/api/?(.*) /$1 break;
-
         # Define the location of the proxy server to send the request to
         proxy_pass http://api:5000/api;
     }
