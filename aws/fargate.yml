@@ -177,6 +177,8 @@ Resources:
             - Fn::ImportValue: !Sub '${Realm}:PublicSubnet2'
           SecurityGroups:
             - !GetAtt FargateTaskSecurityGroup.GroupId
+            - Fn::ImportValue:
+                !Sub '${Realm}:ContainerSecGroup'
       LoadBalancers:
         - ContainerName: !Ref Realm
           ContainerPort: !Ref ContainerPort

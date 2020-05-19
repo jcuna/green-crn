@@ -50,6 +50,9 @@ Resources:
   RDSDBInstance1:
     Type: AWS::RDS::DBInstance
     Properties:
+      Port: 5432
+      DBSecurityGroups:
+        - !Ref DBSecurityGroup
       DBInstanceIdentifier: aurora-postgresql-instance1
       Engine: aurora-postgresql
       DBClusterIdentifier: !Ref DatabaseCluster
@@ -65,6 +68,15 @@ Resources:
         - Fn::ImportValue: !Sub '${Realm}:PublicSubnet1'
         - Fn::ImportValue: !Sub '${Realm}:PublicSubnet2'
 
+  DBSecurityGroup:
+    Type: AWS::RDS::DBSecurityGroup
+    Properties:
+      EC2VpcId:
+        Fn::ImportValue: !Sub '${Realm}:VPC'
+      DBSecurityGroupIngress:
+        - EC2SecurityGroupId:
+            Fn::ImportValue: !Sub '${Realm}:ContainerSecGroup'
+      GroupDescription: "Frontend Access"
 
 Outputs:
 

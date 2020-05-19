@@ -15,7 +15,7 @@ MAIL_PORT = {mailPort}
 MAIL_USE_TLS = True
 MAIL_USE_SSL = False
 MAIL_USERNAME = '{mailUsername}'
-MAIL_PASSWORD = 'mailPassword'
+MAIL_PASSWORD = '{mailPassword}'
 MAIL_MAX_EMAILS = None
 MAIL_ASCII_ATTACHMENTS = False
 

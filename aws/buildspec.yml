@@ -24,6 +24,8 @@ phases:
       - $(aws ecr get-login --no-include-email)
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - APP_SECRET=$(aws secretsmanager get-secret-value --secret-id ${ProjectName}/AppSecret/${Realm} | jq --raw-output '.SecretString' | jq -r .app_secret)
+      - SMTP_USER=.$(aws secretsmanager get-secret-value --secret-id ${ProjectName}/smtp/${Realm} | jq --raw-output '.SecretString' | jq -r 'keys[]')
+      - SMTP_PASS=$(aws secretsmanager get-secret-value --secret-id ${ProjectName}/smtp/${Realm} | jq --raw-output '.SecretString' | jq -r 'values[]')
       - export IMAGE_TAG=${COMMIT_HASH:=latest}
       - printf "Commit - $COMMIT_HASH"
       - printf "Image tag - $IMAGE_TAG"
@@ -35,6 +37,8 @@ phases:
       - sed -i "s/{DbName}/$DbName/" api/config/settings.py
       - sed -i "s/{mailServer}/smtp.gmail.com/" api/config/settings.py
       - sed -i "s/{mailPort}/587/" api/config/settings.py
+      - sed -i "s/{mailUsername}/$SMTP_USER/" api/config/settings.py
+      - sed -i "s/{mailPassword}/$SMTP_PASS/" api/config/settings.py
       - sed -i "s@{timeZone}@America/Santo_Domingo@" api/config/settings.py
       - sed -i "s/{AccessKeyId}/$AccessKeyId/" api/config/settings.py
       - sed -i "s/{SecretAccessKey}/$SecretAccessKey/" api/config/settings.py
