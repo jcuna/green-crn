@@ -71,7 +71,7 @@ Resources:
   DBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub '${Realm}-container-sec-group'
+      GroupName: !Sub '${Realm}-db-sec-group'
       GroupDescription: "Security group with no ingress rule"
       VpcId:
         Fn::ImportValue: !Sub '${Realm}:VPC'
