@@ -69,14 +69,18 @@ Resources:
         - Fn::ImportValue: !Sub '${Realm}:PublicSubnet2'
 
   DBSecurityGroup:
-    Type: AWS::RDS::DBSecurityGroup
+    Type: AWS::EC2::SecurityGroup
     Properties:
-      EC2VpcId:
+      GroupName: !Sub '${Realm}-container-sec-group'
+      GroupDescription: "Security group with no ingress rule"
+      VpcId:
         Fn::ImportValue: !Sub '${Realm}:VPC'
-      DBSecurityGroupIngress:
-        - EC2SecurityGroupId:
+      SecurityGroupIngress:
+        - SourceSecurityGroupId:
             Fn::ImportValue: !Sub '${Realm}:ContainerSecGroup'
-      GroupDescription: "Frontend Access"
+          IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
 
 Outputs:
 
