@@ -51,7 +51,7 @@ Resources:
             QueryString: true
         CacheBehaviors:
           - AllowedMethods: ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-            CachedMethods: ["GET", "HEAD", "OPTIONS"]
+            CachedMethods: ["HEAD", "OPTIONS"]
             ForwardedValues:
               Headers:
                 - Access-Control-Request-Headers
@@ -60,6 +60,7 @@ Resources:
                 - Authorization
                 - Accept
                 - Referer
+                - Host
               Cookies:
                 Forward: all
               QueryString: true
@@ -68,7 +69,7 @@ Resources:
             ViewerProtocolPolicy: redirect-to-https
             DefaultTTL: 0
           - AllowedMethods: ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-            CachedMethods: ["GET", "HEAD", "OPTIONS"]
+            CachedMethods: ["HEAD", "OPTIONS"]
             ForwardedValues:
               Headers:
                 - Access-Control-Request-Headers
@@ -77,6 +78,7 @@ Resources:
                 - Authorization
                 - Accept
                 - Referer
+                - Host
               Cookies:
                 Forward: all
               QueryString: true

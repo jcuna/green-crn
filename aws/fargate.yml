@@ -199,6 +199,10 @@ Resources:
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
           Value: 60 # default is 300
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
       TargetType: ip
       VpcId:
         Fn::ImportValue: !Sub '${Realm}:VPC'
