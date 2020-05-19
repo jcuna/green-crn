@@ -47,13 +47,13 @@ Resources:
       EnableCloudwatchLogsExports:
         - postgresql
 
-  RDSDBInstance1:
+  RDSDBInstance:
     Type: AWS::RDS::DBInstance
     Properties:
       Port: 5432
       DBSecurityGroups:
         - !Ref DBSecurityGroup
-      DBInstanceIdentifier: aurora-postgresql-instance1
+      DBInstanceIdentifier: aurora-postgresql-instance
       Engine: aurora-postgresql
       DBClusterIdentifier: !Ref DatabaseCluster
       PubliclyAccessible: 'true'
