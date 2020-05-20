@@ -215,7 +215,7 @@ Resources:
             TargetGroupStickinessConfig:
               DurationSeconds: 86400
               Enabled: true
-      LoadBalancerArn: "NetworkLoadBalancer"
+      LoadBalancerArn: !Ref NetworkLoadBalancer
       Port: 443
       Protocol: TLS
       Certificates:
