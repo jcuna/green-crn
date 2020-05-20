@@ -211,10 +211,6 @@ Resources:
       DefaultActions:
         - TargetGroupArn: !Ref TargetGroup
           Type: forward
-          ForwardConfig:
-            TargetGroupStickinessConfig:
-              DurationSeconds: 86400
-              Enabled: true
       LoadBalancerArn: !Ref NetworkLoadBalancer
       Port: 443
       Protocol: TLS
