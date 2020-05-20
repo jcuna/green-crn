@@ -31,6 +31,8 @@ const connectionMonitor = (socket) => {
  * @param {Function} callback
  */
 const ws = (message, namespace = '/', callback) => {
+    console.log('websockets disabled');
+    return;
     if (namespace[0] !== '/') {
         throw Error('Always start namespaces with forward slash `/`');
     }

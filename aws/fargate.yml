@@ -143,24 +143,23 @@ Resources:
         Fn::ImportValue: !Sub '${Realm}:VPC'
       SecurityGroupEgress:
         # Allow all outbound from containers
-        -
-          IpProtocol: '-1'
+        - IpProtocol: '-1'
           CidrIp: '0.0.0.0/0'
           Description: Allow all outbound from containers
       SecurityGroupIngress:
-        # Allow ALB to connect to containers
+        # Allow NLB to connect to containers
         - IpProtocol: tcp
           FromPort: 5000
           ToPort: 5000
-          SourceSecurityGroupId: !GetAtt LoadBalancerSecurityGroup.GroupId
-          Description: Allows ALB access to port 5000
+          CidrIp: 10.50.0.0/16
+          Description: Allows NLB access to port 5000
 
 
   Service:
     Type: AWS::ECS::Service
     # This dependency is needed so that the load balancer is setup correctly in time
     DependsOn:
-      - ListenerHTTP
+      - ListenerHTTPS
     Properties:
       ServiceName: !Ref Realm
       Cluster: !Ref Cluster
@@ -198,7 +197,7 @@ Resources:
       HealthyThresholdCount: 2
       Name: !Join ['', [!Ref Realm, TargetGroup]]
       Port: !Ref ContainerPort
-      Protocol: HTTP
+      Protocol: TCP
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
           Value: 60 # default is 300
@@ -210,7 +209,7 @@ Resources:
       VpcId:
         Fn::ImportValue: !Sub '${Realm}:VPC'
 
-  ListenerHTTP:
+  ListenerHTTPS:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
@@ -220,15 +219,16 @@ Resources:
             TargetGroupStickinessConfig:
               DurationSeconds: 86400
               Enabled: true
-      LoadBalancerArn: !Ref LoadBalancer
+      LoadBalancerArn: "NetworkLoadBalancer"
       Port: 443
-      Protocol: HTTPS
+      Protocol: TLS
       Certificates:
         - CertificateArn: !Sub 'arn:aws:acm:${AWS::Region}:${AWS::AccountId}:certificate/${CertificateId}'
 
-  LoadBalancer:
+  NetworkLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
+      Type: network
       LoadBalancerAttributes:
         # this is the default, but is specified here in case it needs to be changed
         - Key: idle_timeout.timeout_seconds
@@ -236,8 +236,6 @@ Resources:
       Name: !Sub '${Realm}-load-balancer'
       # "internal" is also an option
       Scheme: internet-facing
-      SecurityGroups:
-        - !Ref LoadBalancerSecurityGroup
       Subnets:
         - Fn::ImportValue: !Sub '${Realm}:PublicSubnet1'
         - Fn::ImportValue: !Sub '${Realm}:PublicSubnet2'
@@ -262,6 +260,6 @@ Resources:
 Outputs:
   Endpoint:
     Description: Endpoint
-    Value: !GetAtt 'LoadBalancer.DNSName'
+    Value: "NetworkLoadBalancer"
     Export:
       Name: !Sub '${Realm}:FargateEndpoint'
