@@ -225,10 +225,6 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Type: network
-      LoadBalancerAttributes:
-        # this is the default, but is specified here in case it needs to be changed
-        - Key: idle_timeout.timeout_seconds
-          Value: 60
       Name: !Sub '${Realm}-load-balancer'
       # "internal" is also an option
       Scheme: internet-facing
