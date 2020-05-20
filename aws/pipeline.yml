@@ -147,7 +147,8 @@ Resources:
                     "GitHubOwner": "${GitHubOwner}",
                     "Branch": "${Branch}",
                     "ProjectName": "${ProjectName}",
-                    "DomainName": "${DomainName}"
+                    "DomainName": "${DomainName}",
+                    "CertificateId": "${CertificateId}"
                   }
               InputArtifacts:
                 - Name: SourceOutput
