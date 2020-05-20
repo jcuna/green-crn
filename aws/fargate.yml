@@ -198,6 +198,7 @@ Resources:
       Name: !Join ['', [!Ref Realm, TargetGroup]]
       Port: !Ref ContainerPort
       Protocol: TCP
+      HealthCheckProtocol: HTTP
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
           Value: 60 # default is 300
