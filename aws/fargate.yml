@@ -192,9 +192,6 @@ Resources:
       HealthCheckIntervalSeconds: 10
       # will look for a 200 status code by default unless specified otherwise
       HealthCheckPath: /api/status
-      HealthCheckTimeoutSeconds: 5
-      UnhealthyThresholdCount: 2
-      HealthyThresholdCount: 2
       Name: !Join ['', [!Ref Realm, TargetGroup]]
       Port: !Ref ContainerPort
       Protocol: TCP
