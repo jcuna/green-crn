@@ -18,6 +18,9 @@ Parameters:
     Default: GreenCRN
     Type: String
 
+  CertificateId:
+    Type: String
+
 Resources:
 
   AppCloudFrontDistribution:
@@ -39,10 +42,10 @@ Resources:
           - ErrorCachingMinTTL: 5
             ErrorCode: 500
         ViewerCertificate:
-          AcmCertificateArn: arn:aws:acm:us-east-1:595474955319:certificate/4ef95245-69b9-4e95-bef2-38b915c89cee
+          AcmCertificateArn: !Sub 'arn:aws:acm:${AWS::Region}:${AWS::AccountId}:certificate/${CertificateId}'
           SslSupportMethod: sni-only
         Aliases:
-          - !Ref DomainName
+          - !Sub 'crn.${DomainName}'
         DefaultCacheBehavior:
           Compress: true
           TargetOriginId: S3StaticOrigin
@@ -118,23 +121,23 @@ Resources:
               HTTPPort: 80
               OriginProtocolPolicy: http-only
           - DomainName:
-              Fn::ImportValue: !Sub '${Realm}:FargateEndpoint'
+              Fn::ImportValue: !Sub 'api.${DomainName}'
             Id: APIOrigin
             CustomOriginConfig:
               HTTPSPort: 443
               HTTPPort: 80
-              OriginProtocolPolicy: http-only
+              OriginProtocolPolicy: https-only
             OriginCustomHeaders:
               - HeaderName: 'X-From-CDN'
                 HeaderValue: !Sub '${ProjectName}-API'
           - DomainName:
-              Fn::ImportValue: !Sub '${Realm}:FargateEndpoint'
+              Fn::ImportValue: !Sub 'api.${DomainName}'
             Id: WebSocketOrigin
             OriginPath: '/socket.io'
             CustomOriginConfig:
               HTTPSPort: 443
               HTTPPort: 80
-              OriginProtocolPolicy: http-only
+              OriginProtocolPolicy: https-only
             OriginCustomHeaders:
               - HeaderName: 'X-From-CDN'
                 HeaderValue: !Sub '${ProjectName}-WebSocket'

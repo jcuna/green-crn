@@ -19,6 +19,9 @@ Parameters:
     Type: Number
     Default: 5000
 
+  CertificateId:
+    Type: String
+
 Resources:
 
   Cluster:
@@ -213,11 +216,14 @@ Resources:
       DefaultActions:
         - TargetGroupArn: !Ref TargetGroup
           Type: forward
+          TargetGroupStickinessConfig:
+            DurationSeconds: 86400
+            Enabled: true
       LoadBalancerArn: !Ref LoadBalancer
-      Port: 80
-      Protocol: HTTP
-  #      Certificates:
-  #        - CertificateArn: !Ref Certificate
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Sub 'arn:aws:acm:${AWS::Region}:${AWS::AccountId}:certificate/${CertificateId}'
 
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -235,15 +241,15 @@ Resources:
         - Fn::ImportValue: !Sub '${Realm}:PublicSubnet1'
         - Fn::ImportValue: !Sub '${Realm}:PublicSubnet2'
 
-  #  DNSRecord:
-  #    Type: AWS::Route53::RecordSet
-  #    Properties:
-  #      HostedZoneName: !Join ['', [!Ref HostedZoneName, .]]
-  #      Name: !Join ['', [!Ref Subdomain, ., !Ref HostedZoneName, .]]
-  #      Type: A
-  #      AliasTarget:
-  #        DNSName: !GetAtt LoadBalancer.DNSName
-  #        HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
+#  DNSRecord:
+#    Type: AWS::Route53::RecordSet
+#    Properties:
+#      HostedZoneName: !Join ['', [!Ref HostedZoneName, .]]
+#      Name: !Join ['', [!Ref Subdomain, ., !Ref HostedZoneName, .]]
+#      Type: A
+#      AliasTarget:
+#        DNSName: !GetAtt LoadBalancer.DNSName
+#        HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
 
   LogGroup:
     Type: AWS::Logs::LogGroup

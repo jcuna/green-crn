@@ -29,6 +29,8 @@ Parameters:
   DomainName:
     Type: String
 
+  CertificateId:
+    Type: String
 
 Resources:
 
@@ -309,7 +311,8 @@ Resources:
                   {
                     "Realm": "${Realm}",
                     "DomainName": "${DomainName}",
-                    "ProjectName": "${ProjectName}"
+                    "ProjectName": "${ProjectName}",
+                    "CertificateId": "${CertificateId}"
                   }
                 TemplatePath: SourceOutput::aws/fargate.yml
               InputArtifacts:
@@ -333,7 +336,8 @@ Resources:
                 ParameterOverrides: !Sub |
                   {
                     "Realm": "${Realm}",
-                    "DomainName": "${DomainName}"
+                    "DomainName": "${DomainName}",
+                    "CertificateId": "${CertificateId}"
                   }
                 TemplatePath: SourceOutput::aws/cloudfront.yml
               InputArtifacts:
