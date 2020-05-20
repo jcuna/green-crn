@@ -260,6 +260,6 @@ Resources:
 Outputs:
   Endpoint:
     Description: Endpoint
-    Value: "NetworkLoadBalancer"
+    Value: !GetAtt 'NetworkLoadBalancer.DNSName'
     Export:
       Name: !Sub '${Realm}:FargateEndpoint'
