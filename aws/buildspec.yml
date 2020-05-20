@@ -41,7 +41,7 @@ phases:
       - sed -i "s/{mailPassword}/$SMTP_PASS/" api/config/settings.py
       - sed -i "s@{timeZone}@America/Santo_Domingo@" api/config/settings.py
       - sed -i "s/{AccessKeyId}/$AccessKeyId/" api/config/settings.py
-      - sed -i "s/{SecretAccessKey}/$SecretAccessKey/" api/config/settings.py
+      - sed -i "s@{SecretAccessKey}@$SecretAccessKey@" api/config/settings.py
       - sed -i "s/{UploadFileBucket}/$AssetsBucket/" api/config/settings.py
 
   build:
