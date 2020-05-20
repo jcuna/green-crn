@@ -120,8 +120,7 @@ Resources:
               HTTPSPort: 443
               HTTPPort: 80
               OriginProtocolPolicy: http-only
-          - DomainName:
-              Fn::ImportValue: !Sub 'api.${DomainName}'
+          - DomainName: !Sub 'api.${DomainName}'
             Id: APIOrigin
             CustomOriginConfig:
               HTTPSPort: 443
@@ -130,8 +129,7 @@ Resources:
             OriginCustomHeaders:
               - HeaderName: 'X-From-CDN'
                 HeaderValue: !Sub '${ProjectName}-API'
-          - DomainName:
-              Fn::ImportValue: !Sub 'api.${DomainName}'
+          - DomainName: !Sub 'api.${DomainName}'
             Id: WebSocketOrigin
             OriginPath: '/socket.io'
             CustomOriginConfig:
