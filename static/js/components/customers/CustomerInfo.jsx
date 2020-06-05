@@ -108,8 +108,16 @@ export default class CustomerInfo extends React.Component {
         return (
             <div>
                 <Table
-                    rows={ [['Nombre', current.first_name], ['Apellido', current.last_name], ['Email', current.primary_email], ['Email Secundario', current.secondary_email], ['Telefono', current.primary_phone],
-                        ['Telefono Secundario', current.secondary_phone], ['Cedula/RNC', current.identification_number], ['Dirección', current.address], ['Provincia', current.province.name]] }
+                    rows={ [
+                        ['Nombre', current.first_name],
+                        ['Apellido', current.last_name],
+                        ['Email', current.primary_email],
+                        ['Email Secundario', current.secondary_email],
+                        ['Telefono', current.primary_phone],
+                        ['Telefono Secundario', current.secondary_phone],
+                        ['Cedula/RNC', current.identification_number],
+                        ['Dirección', current.address],
+                        ['Provincia', current.province.name]] }
                 />
             </div>
         );
@@ -189,7 +197,7 @@ export default class CustomerInfo extends React.Component {
                     title: 'Cedula/RNC',
                     placeholder: 'Cedula/RNC (000-0000000-1)/(0-00-00000-0)',
                     defaultValue: current.identification_number,
-                    validate: ['required', 'regex:^(([0-9]{3}-[0-9]{7}-[0-9]{1})|([0-9]{1}-[0-9]{2}-[0-9]{5}-[0-9]{1}))$'],
+                    validate: ['required', 'regex:^(([0-9]{3}-[0-9]{7}-[0-9]{1})|([0-9]{1}-[0-9]{2}-[0-9]{5}-[0-9]{1})|(?!^0+$)[a-zA-Z0-9]{3,20})$'],
                     onChange: this.onInputChange,
                     autoComplete: 'off',
                 },
